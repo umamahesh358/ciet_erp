@@ -89,6 +89,25 @@
             color: #4a4a4a !important;
         }
 
+        #loginForm .input-glass {
+            color: #000 !important;
+            -webkit-text-fill-color: #000 !important;
+        }
+
+        #loginForm .input-glass::placeholder {
+            color: #000000;
+            -webkit-text-fill-color: #090a0b;
+        }
+
+        #loginForm .input-glass:-webkit-autofill,
+        #loginForm .input-glass:-webkit-autofill:hover,
+        #loginForm .input-glass:-webkit-autofill:focus,
+        #loginForm .input-glass:-webkit-autofill:active {
+            color: #000 !important;
+            -webkit-text-fill-color: #000 !important;
+            caret-color: #000;
+        }
+
         @media (max-width: 576px) {
             .role-grid {
                 grid-template-columns: repeat(3, 1fr);
