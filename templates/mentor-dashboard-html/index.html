@@ -1,0 +1,401 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mentor Dashboard</title>
+  <meta name="description"
+    content="Chalapathi Institute mentor management dashboard for student tracking, marks, and attendance.">
+  <link rel="stylesheet" href="{% static 'mentor-dashboard-html/css/styles.css' %}">
+  <script src="{% static 'mentor-dashboard-html/js/theme.js' %}"></script>
+</head>
+
+<body>
+
+  <!-- ── HEADER ─────────────────────────────────────────── -->
+  <header class="top-header">
+    <div class="top-header-left">
+      <button id="hamburger-menu-btn" class="hamburger-btn" aria-label="Open navigation menu" aria-expanded="false"
+        aria-controls="mobile-menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+      <img src="{% static 'mentor-dashboard-html/images/image.png' %}" alt="Chalapathi Institute Logo"
+        class="header-logo">
+    </div>
+    <div class="top-header-actions">
+      <a href="{% url 'mentor-profile' %}" class="btn btn-outline btn-sm">Mentor Profile</a>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">
+        <!-- Sun icon (shown in dark mode) -->
+        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+        <!-- Moon icon (shown in light mode) -->
+        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <nav id="mobile-menu" class="mobile-menu" aria-label="Mobile navigation">
+    <div class="mobile-menu-links">
+      <a class="mobile-menu-link" href="{% url 'mentor-dashboard' %}">Home</a>
+      <a class="mobile-menu-link" href="{% url 'mentor-profile' %}">Mentor Profile</a>
+      <a class="mobile-menu-link" href="{% url 'mentor-students' %}">Assigned Students</a>
+      <a class="mobile-menu-link" href="{% url 'mentor-courses' %}">Courses</a>
+      <a class="mobile-menu-link" href="{% url 'mentor-assign-marks' %}">Assign Marks</a>
+      <a class="mobile-menu-link" href="{% url 'mentor-upload-attendance' %}">Upload Attendance</a>
+      <a class="mobile-menu-link" href="{% url 'mentor-cohorts' %}">Cohorts</a>
+    </div>
+  </nav>
+
+  <!-- ── MAIN CONTENT ────────────────────────────────────── -->
+  <main style="padding: 2rem; max-width: 1920px; margin: 0 auto;">
+
+    <section class="home-hero card">
+      <div class="home-hero-grid home-hero-grid-home">
+        <div>
+          <p class="home-eyebrow">Mentor Dashboard</p>
+          <h1 class="home-title">Interactive Home For Academic Guidance And Student Progress</h1>
+          <p class="home-subtitle">
+            Use this space as your control center. Open the Fully Assigned Students workspace,
+            continue mark allocation, upload attendance, and keep student mentoring actions in sync.
+          </p>
+          <div class="home-context-row">
+            <span id="home-greeting" class="home-context-pill">Welcome</span>
+            <span id="home-datetime" class="home-context-pill home-context-pill-soft">Loading time...</span>
+          </div>
+          <div class="home-quick-actions">
+            <a href="{% url 'mentor-students' %}" class="btn btn-primary">Open Students Workspace</a>
+            <a href="{% url 'mentor-courses' %}" class="btn btn-amber">Courses</a>
+            <a href="{% url 'mentor-assign-marks' %}" class="btn btn-amber">Assign Marks</a>
+            <a href="{% url 'mentor-upload-attendance' %}" class="btn btn-outline">Attendance Center</a>
+            <a href="{% url 'mentor-profile' %}" class="btn btn-outline">Mentor Profile</a>
+            <a href="{% url 'mentor-profile' %}" class="btn btn-outline">Edit Mentor Details</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── MENTOR PROFILE SHOWCASE ───────────────────────── -->
+    <section class="mentor-showcase premium-card" aria-label="Mentor Profile">
+      <div class="mentor-showcase-container">
+        <!-- Profile Header with Gradient Background -->
+        <div class="mentor-showcase-header">
+          <div class="mentor-showcase-image">
+            <div class="mentor-image-wrapper">
+              <img id="mentor-pic"
+                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect fill='%23AF0C3E' width='400' height='400'/%3E%3Ctext x='50%25' y='50%25' font-size='120' fill='%23fff' text-anchor='middle' dy='.3em'%3E👨‍🏫%3C/text%3E%3C/svg%3E"
+                alt="Mentor Profile Picture" class="mentor-profile-pic">
+              <div class="mentor-status-badge">
+                <span class="status-dot status-dot-green"></span>
+                <span class="status-text">Active</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile Details -->
+          <div class="mentor-showcase-details">
+            <div class="mentor-header-info">
+              <h2 id="mentor-full-name" class="mentor-display-name">Dr. Mentor Name</h2>
+              <p id="mentor-title" class="mentor-display-title">Senior Faculty & Mentor</p>
+              <p id="mentor-dept" class="mentor-display-department">Department of Engineering</p>
+            </div>
+
+            <!-- Quick Stats - Redesigned -->
+            <div class="mentor-stats-showcase">
+              <div class="stat-box">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                  <p class="stat-value" id="mentor-students-count">150+</p>
+                  <p class="stat-name">Students</p>
+                </div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-content">
+                  <p class="stat-value" id="mentor-rating-display">4.8</p>
+                  <p class="stat-name">Rating</p>
+                </div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-icon">📚</div>
+                <div class="stat-content">
+                  <p class="stat-value" id="mentor-experience-display">8+</p>
+                  <p class="stat-name">Years</p>
+                </div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-content">
+                  <p class="stat-value">24hrs</p>
+                  <p class="stat-name">Response</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="mentor-contact-section">
+          <h3 class="section-label">Contact & Availability</h3>
+          <div class="mentor-contact-grid">
+            <!-- Email removed per request -->
+            <div class="contact-item">
+              <div class="contact-icon-wrapper">📱</div>
+              <div class="contact-info">
+                <p class="contact-label">Phone Number</p>
+                <p id="mentor-phone-display" class="contact-value">+91 9876543210</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon-wrapper">🏢</div>
+              <div class="contact-info">
+                <p class="contact-label">Office Location</p>
+                <p id="mentor-office-display" class="contact-value">Room 301, Building A</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon-wrapper">🕐</div>
+              <div class="contact-info">
+                <p class="contact-label">Office Hours</p>
+                <p id="mentor-hours-display" class="contact-value">Mon-Fri, 2-4 PM</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bio Section -->
+        <div class="mentor-bio-section">
+          <h3 class="section-label">About</h3>
+          <p id="mentor-bio-display" class="bio-text">
+            Dedicated faculty member with extensive experience in mentoring and academic guidance. Passionate about
+            student development and creating a supportive learning environment.
+          </p>
+          <p class="text-xs text-muted" style="margin:0.75rem 0 0;">Update this section from the Mentor Profile page.
+          </p>
+          <!-- Edit Profile button removed from homepage -->
+        </div>
+      </div>
+    </section>
+
+    <section class="home-stats-grid" aria-label="Dashboard insights">
+      <article class="home-stat-card" data-card="interactive">
+        <p class="home-stat-label">Total Students</p>
+        <h3 id="metric-total-students" class="home-stat-value">0</h3>
+        <p class="home-stat-note">Currently mapped in mentor view</p>
+      </article>
+      <article class="home-stat-card" data-card="interactive">
+        <p class="home-stat-label">Needs Attention</p>
+        <h3 id="metric-needs-attention" class="home-stat-value">0</h3>
+        <p class="home-stat-note">Based on CGPA < 6 or attendance < 65%</p>
+      </article>
+    </section>
+
+    <section class="home-nav-grid">
+      <a href="{% url 'mentor-students' %}" class="home-nav-card" data-card="interactive">
+        <h3>Fully Assigned Students</h3>
+        <p>Open the full student workspace with filters, profiles, status badges, and mentor chat.</p>
+        <span class="home-nav-link">Go to Students Workspace</span>
+      </a>
+      <a href="{% url 'mentor-profile' %}" class="home-nav-card" data-card="interactive">
+        <h3>Mentor Profile</h3>
+        <p>Manage your profile details, contact info, office hours, and mentoring bio.</p>
+        <span class="home-nav-link">Go to Mentor Profile</span>
+      </a>
+      <a href="{% url 'mentor-assign-marks' %}" class="home-nav-card" data-card="interactive">
+        <h3>Assign Mid Marks</h3>
+        <p>Enter mid, internal, external, and final CGPA values in a structured subject-wise view.</p>
+        <span class="home-nav-link">Go to Marks Entry</span>
+      </a>
+      <a href="{% url 'mentor-upload-attendance' %}" class="home-nav-card" data-card="interactive">
+        <h3>Upload Attendance</h3>
+        <p>Import attendance from CSV and edit total classes with per-subject controls.</p>
+        <span class="home-nav-link">Go to Attendance</span>
+      </a>
+    </section>
+
+  </main>
+  <script src="{% static 'mentor-dashboard-html/js/data.js' %}"></script>
+  <script src="{% static 'mentor-dashboard-html/js/home.js' %}"></script>
+  <script src="{% static 'mentor-dashboard-html/js/menu.js' %}"></script>
+
+  <script>
+    /**
+     * Populate Mentor Showcase with User Data
+     */
+    document.addEventListener('DOMContentLoaded', function () {
+      // Get user and mentor data from Django context
+      const userData = {
+        firstName: '{{ user.first_name|default:"Dr." }}',
+        lastName: '{{ user.last_name|default:"Mentor Name" }}',
+        email: '{{ user.email|default:"mentor@chalapathi.edu.in" }}',
+      };
+
+      const mentorData = {
+        title: '{{ mentor.designation|default:"Senior Faculty & Mentor" }}',
+        department: '{{ mentor.department|default:"Department of Engineering" }}',
+        phone: '{{ mentor.phone|default:"+91 9876543210" }}',
+        office: '{{ mentor.office|default:"Room 301, Building A" }}',
+        officeHours: '{{ mentor.office_hours|default:"Mon-Fri, 2-4 PM" }}',
+        bio: '{{ mentor.bio|default:"Dedicated faculty member with extensive experience in mentoring and academic guidance. Passionate about student development and creating a supportive learning environment." }}',
+        profilePicture: '{{ mentor.profile_picture|default:"" }}',
+        rating: parseFloat('{{ mentor.avg_rating|default:4.8 }}') || 4.8,
+        experience: parseInt('{{ mentor.years_experience|default:8 }}') || 8,
+      };
+
+      const stats = {
+        students: parseInt('{{ total_students|default:150 }}') || 150,
+      };
+
+      function getStoredMentorProfile() {
+        try {
+          const raw = localStorage.getItem('mentor-dashboard-profile');
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          return parsed && typeof parsed === 'object' ? parsed : null;
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function pickValue(primary, fallback) {
+        return primary && String(primary).trim() ? String(primary) : fallback;
+      }
+
+      function getMentorHomeData() {
+        const storedProfile = getStoredMentorProfile() || {};
+
+        return {
+          fullName: pickValue(storedProfile.name, `${userData.firstName} ${userData.lastName}`),
+          title: pickValue(storedProfile.role, mentorData.title),
+          department: pickValue(storedProfile.department, mentorData.department),
+          phone: pickValue(storedProfile.phone, mentorData.phone),
+          office: pickValue(storedProfile.officeRoom, mentorData.office),
+          officeHours: pickValue(storedProfile.officeHours, mentorData.officeHours),
+          bio: pickValue(storedProfile.bio, mentorData.bio),
+          profilePicture: pickValue(storedProfile.profilePicture, mentorData.profilePicture),
+          communication: pickValue(storedProfile.communication, ''),
+          students: pickValue(storedProfile.homeStudents, '{{ total_students|default:150 }}'),
+          rating: pickValue(storedProfile.homeRating, '{{ mentor.avg_rating|default:4.8 }}'),
+          experience: pickValue(storedProfile.homeExperience, '{{ mentor.years_experience|default:8 }}'),
+          response: pickValue(storedProfile.homeResponse, '24hrs'),
+        };
+      }
+
+      function applyMentorHomeData() {
+        const homeData = getMentorHomeData();
+
+        document.getElementById('mentor-full-name').textContent = homeData.fullName;
+        document.getElementById('mentor-title').textContent = homeData.title;
+        document.getElementById('mentor-dept').textContent = homeData.department;
+
+        const profilePicElement = document.getElementById('mentor-pic');
+        if (profilePicElement) {
+          profilePicElement.src = homeData.profilePicture || profilePicElement.src;
+        }
+
+        const mentorPhoneDisplay = document.getElementById('mentor-phone-display');
+        if (mentorPhoneDisplay) mentorPhoneDisplay.textContent = homeData.phone;
+
+        const mentorOfficeDisplay = document.getElementById('mentor-office-display');
+        if (mentorOfficeDisplay) mentorOfficeDisplay.textContent = homeData.office;
+
+        const mentorHoursDisplay = document.getElementById('mentor-hours-display');
+        if (mentorHoursDisplay) mentorHoursDisplay.textContent = homeData.officeHours;
+
+        const mentorBioDisplay = document.getElementById('mentor-bio-display');
+        if (mentorBioDisplay) mentorBioDisplay.textContent = homeData.bio;
+      }
+
+      // Update profile picture
+      const storedProfileKey = 'mentor-dashboard-profile';
+      applyMentorHomeData();
+
+      window.addEventListener('storage', (event) => {
+        if (event.key === storedProfileKey) {
+          applyMentorHomeData();
+        }
+      });
+
+      // Update contact information
+      const mentorEmailDisplay = document.getElementById('mentor-email-display');
+      if (mentorEmailDisplay) {
+        mentorEmailDisplay.textContent = userData.email;
+      }
+
+      // Update stats
+      const homeData = getMentorHomeData();
+      const studentsCountEl = document.getElementById('mentor-students-count');
+      if (studentsCountEl) studentsCountEl.textContent = `${homeData.students}+`;
+
+      const ratingDisplayEl = document.getElementById('mentor-rating-display');
+      if (ratingDisplayEl) ratingDisplayEl.textContent = homeData.rating;
+
+      const experienceDisplayEl = document.getElementById('mentor-experience-display');
+      if (experienceDisplayEl) experienceDisplayEl.textContent = `${homeData.experience}+`;
+
+      const responseDisplayEl = document.querySelector('.mentor-stats-showcase .stat-box:last-child .stat-value');
+      if (responseDisplayEl) responseDisplayEl.textContent = homeData.response;
+
+      // Add copy-to-clipboard functionality
+      const contactItems = document.querySelectorAll('.contact-item');
+      contactItems.forEach(item => {
+        item.addEventListener('click', function () {
+          const contactValue = this.querySelector('.contact-value').textContent;
+          navigator.clipboard.writeText(contactValue).then(() => {
+            // Show brief feedback
+            const originalText = this.querySelector('.contact-value').textContent;
+            const originalIcon = this.querySelector('.contact-icon').textContent;
+
+            this.querySelector('.contact-value').textContent = 'Copied!';
+            this.querySelector('.contact-icon').textContent = '✓';
+            this.style.background = 'color-mix(in srgb, var(--accent) 20%, transparent)';
+
+            setTimeout(() => {
+              this.querySelector('.contact-value').textContent = originalText;
+              this.querySelector('.contact-icon').textContent = originalIcon;
+              this.style.background = '';
+            }, 1500);
+          }).catch(err => {
+            console.error('Failed to copy:', err);
+          });
+        });
+      });
+
+      // Add stat box animation on scroll
+      const statBoxes = document.querySelectorAll('.stat-box');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.animation = 'fadeInScale 0.6s ease-out forwards';
+          }
+        });
+      }, { threshold: 0.1 });
+
+      statBoxes.forEach((box, index) => {
+        box.style.animationDelay = `${index * 0.1}s`;
+        observer.observe(box);
+      });
+    });
+  </script>
+</body>
+
+</html>

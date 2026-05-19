@@ -1,0 +1,243 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mentor Profile — Mentor Dashboard</title>
+  <meta name="description" content="Manage mentor profile details and contact information.">
+  <link rel="stylesheet" href="{% static 'mentor-dashboard-html/css/styles.css' %}">
+  <script src="{% static 'mentor-dashboard-html/js/theme.js' %}"></script>
+</head>
+
+<body>
+
+  <header class="top-header">
+    <div class="top-header-left">
+      <button id="hamburger-menu-btn" class="hamburger-btn" aria-label="Open navigation menu" aria-expanded="false"
+        aria-controls="mobile-menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+      <h1 class="font-semibold" style="font-size:0.9375rem; margin:0; color:var(--foreground);">Mentor Profile</h1>
+      <p class="text-xs text-muted" style="margin:0.125rem 0 0;">Manage your profile.</p>
+    </div>
+    <div class="top-header-actions">
+      <a href="{% url 'mentor-dashboard' %}" class="btn btn-outline btn-sm">Back to Home</a>
+      <button id="mentor-profile-logout" type="button" class="btn btn-danger btn-sm">Logout</button>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">
+        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <nav id="mobile-menu" class="mobile-menu" aria-label="Mobile navigation">
+    <div class="mobile-menu-links">
+      <a class="mobile-menu-link" href="{% url 'mentor-dashboard' %}">Home</a>
+      <a class="mobile-menu-link" href="{% url 'mentor-profile' %}">Mentor Profile</a>
+      <a class="mobile-menu-link" href="{% url 'mentor-students' %}">Assigned Students</a>
+      <a class="mobile-menu-link" href="{% url 'mentor-assign-marks' %}">Assign Marks</a>
+      <a class="mobile-menu-link" href="{% url 'mentor-upload-attendance' %}">Upload Attendance</a>
+      <a class="mobile-menu-link" href="{% url 'mentor-cohorts' %}">Cohorts</a>
+      <a class="mobile-menu-link" href="{% url 'mentor-courses' %}">Courses</a>
+    </div>
+  </nav>
+
+  <main style="padding:1.5rem; max-width:1800px; margin:0 auto;">
+    <div class="mentor-profile-layout">
+      <section class="card mentor-profile-card">
+        <p class="mentor-profile-kicker">Profile Preview</p>
+        <div class="mentor-avatar" id="mentor-avatar">M</div>
+        <h2 id="mentor-display-name" class="mentor-display-name">Mentor Name</h2>
+        <p id="mentor-display-role" class="mentor-display-role">Mentor Role</p>
+
+        <div class="mentor-progress-wrap">
+          <div class="mentor-progress-row">
+            <span>Profile Completeness</span>
+            <strong id="mentor-profile-progress-text">0%</strong>
+          </div>
+          <div class="mentor-progress-track" aria-hidden="true">
+            <div id="mentor-profile-progress-bar" class="mentor-progress-bar"></div>
+          </div>
+        </div>
+
+        <div class="mentor-meta-list">
+          <p><span>Department:</span> <strong id="mentor-display-department">-</strong></p>
+          <p><span>Email:</span> <strong id="mentor-display-email">-</strong></p>
+          <p><span>Phone:</span> <strong id="mentor-display-phone">-</strong></p>
+          <p><span>Office Room:</span> <strong id="mentor-display-office-room">-</strong></p>
+          <p><span>Office Hours:</span> <strong id="mentor-display-office-hours">-</strong></p>
+          <p><span>Preferred Contact:</span> <strong id="mentor-display-communication">-</strong></p>
+        </div>
+        <p id="mentor-display-bio" class="mentor-display-bio">Add a short bio to introduce your mentoring style and
+          focus areas.</p>
+        <p class="mentor-last-updated" id="mentor-last-updated">Last updated: Never</p>
+      </section>
+
+      <section class="card mentor-profile-card">
+        <h2 class="mentor-section-title">Edit Mentor Profile</h2>
+        <p class="text-xs text-muted" style="margin:0.25rem 0 1rem;">Keep this profile updated so mentees always see
+          accurate mentor details. Data is saved locally in this browser.</p>
+
+        <form id="mentor-profile-form" class="mentor-profile-form">
+          <div class="mentor-form-group">
+            <h3>Basic Identity</h3>
+            <p>These details appear in your profile header.</p>
+            <div class="grid-2">
+              <div>
+                <label class="form-label" for="mentor-name">Full Name</label>
+                <input id="mentor-name" class="form-control" placeholder="Ex: Dr. Keerthi Prasad" required>
+                <p class="mentor-input-help">Use your full official name.</p>
+              </div>
+              <div>
+                <label class="form-label" for="mentor-role">Designation</label>
+                <input id="mentor-role" class="form-control" placeholder="Ex: Associate Professor" required>
+                <p class="mentor-input-help">Ex: Assistant Professor / HOD / Mentor Faculty.</p>
+              </div>
+            </div>
+
+            <div style="margin-top:0.75rem;">
+              <label class="form-label" for="mentor-profile-picture-input">Profile Picture</label>
+              <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+                <label class="btn btn-outline" style="cursor:pointer;">
+                  Upload Image
+                  <input id="mentor-profile-picture-input" type="file" accept="image/*" style="display:none;">
+                </label>
+                <button id="mentor-profile-picture-clear" type="button" class="btn btn-outline btn-sm">Remove
+                  Image</button>
+                <span id="mentor-profile-picture-name" class="text-xs text-muted">No file chosen</span>
+              </div>
+              <div style="margin-top:0.75rem; display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                <img id="mentor-profile-picture-preview" alt="Selected mentor profile picture preview"
+                  style="width:72px;height:72px;border-radius:9999px;object-fit:cover;display:none;border:2px solid var(--border);background:var(--muted);">
+                <span class="text-xs text-muted">The selected image will appear here after upload.</span>
+              </div>
+              <p class="mentor-input-help">Upload a square image. This will appear on your profile and dashboard
+                homepage.</p>
+            </div>
+          </div>
+
+          <div class="mentor-form-group">
+            <h3>Academic & Contact</h3>
+            <p>Helps students know when and how to contact you.</p>
+            <div class="grid-2">
+              <div>
+                <label class="form-label" for="mentor-department">Department</label>
+                <input id="mentor-department" class="form-control" placeholder="Ex: Computer Science & Engineering"
+                  required>
+                <p class="mentor-input-help">Keep it consistent with institute naming.</p>
+              </div>
+              <div>
+                <label class="form-label" for="mentor-email">Email</label>
+                <input id="mentor-email" type="email" class="form-control" placeholder="Ex: mentor@college.edu"
+                  required>
+                <p class="mentor-input-help">Institutional email is recommended.</p>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div>
+                <label class="form-label" for="mentor-phone">Phone</label>
+                <input id="mentor-phone" class="form-control" placeholder="Ex: +91 90000 12345">
+              </div>
+              <div>
+                <label class="form-label" for="mentor-office-room">Office Room</label>
+                <input id="mentor-office-room" class="form-control" placeholder="Ex: Block B, Room 214">
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div>
+                <label class="form-label" for="mentor-office-hours">Office Hours</label>
+                <input id="mentor-office-hours" class="form-control" placeholder="Ex: Mon-Fri, 3:00 PM - 5:00 PM">
+              </div>
+              <div>
+                <label class="form-label" for="mentor-communication">Preferred Contact</label>
+                <select id="mentor-communication" class="form-control">
+                  <option value="">Select contact preference</option>
+                  <option>Email</option>
+                  <option>Phone</option>
+                  <option>In Person</option>
+                  <option>WhatsApp</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="mentor-form-group">
+            <h3>Homepage Stats</h3>
+            <p>Edit the numbers shown on your mentor homepage cards.</p>
+            <div class="grid-2">
+              <div>
+                <label class="form-label" for="mentor-home-students">Students Count</label>
+                <input id="mentor-home-students" type="number" min="0" class="form-control" placeholder="Ex: 150">
+                <p class="mentor-input-help">Shown on the Total Students card.</p>
+              </div>
+              <div>
+                <label class="form-label" for="mentor-home-rating">Rating</label>
+                <input id="mentor-home-rating" type="number" min="0" max="5" step="0.1" class="form-control"
+                  placeholder="Ex: 4.8">
+                <p class="mentor-input-help">Shown on the Rating card.</p>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div>
+                <label class="form-label" for="mentor-home-experience">Years Experience</label>
+                <input id="mentor-home-experience" type="number" min="0" class="form-control" placeholder="Ex: 8">
+                <p class="mentor-input-help">Shown on the Years card.</p>
+              </div>
+              <div>
+                <label class="form-label" for="mentor-home-response">Response Time Label</label>
+                <input id="mentor-home-response" class="form-control" placeholder="Ex: 24hrs">
+                <p class="mentor-input-help">Optional label shown on the homepage response card.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mentor-form-group">
+            <h3>Mentoring Bio</h3>
+            <p>Provide a short, clear mentoring introduction.</p>
+            <div>
+              <label class="form-label" for="mentor-bio">Bio</label>
+              <textarea id="mentor-bio" class="form-control mentor-bio-input"
+                placeholder="Write a short mentor bio..."></textarea>
+              <p class="mentor-input-help">Mention your focus areas, guidance style, and student expectations.</p>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mentor-form-actions">
+            <button type="submit" class="btn btn-primary">Save Profile</button>
+            <button type="button" id="mentor-profile-reset" class="btn btn-outline">Reset Defaults</button>
+          </div>
+          <p id="mentor-profile-message" class="mentor-profile-message" style="margin:0;" aria-live="polite"></p>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <script src="{% static 'mentor-dashboard-html/js/mentor-profile.js' %}"></script>
+  <script src="{% static 'mentor-dashboard-html/js/menu.js' %}"></script>
+</body>
+
+</html>

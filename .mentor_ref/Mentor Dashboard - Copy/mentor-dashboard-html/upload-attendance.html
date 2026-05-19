@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Attendance — Mentor Dashboard</title>
+  <meta name="description" content="Upload and manage student attendance by subject, with CSV bulk-upload support.">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/theme.js"></script>
+</head>
+<body>
+
+<!-- ── HEADER (mirrors UploadAttendance.tsx header) ─── -->
+<header class="top-header">
+  <div>
+    <h1 class="font-semibold" style="font-size:0.9375rem; margin:0; color:var(--foreground);">Upload Attendance</h1>
+    <p class="text-xs text-muted" style="margin:0.125rem 0 0;">Add total classes per subject and upload attendance for each student.</p>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <a href="index.html" class="btn btn-outline btn-sm">Back to Dashboard</a>
+    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">
+      <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ── MAIN CONTENT ─────────────────────────────────── -->
+<main style="padding:1.5rem; max-width:1800px; margin:0 auto; display:flex; flex-direction:column; gap:1.25rem;">
+
+  <!-- ── Bulk Upload (mirrors UploadAttendance.tsx section 1) ── -->
+  <section class="section">
+    <div style="padding:0.75rem 1rem;">
+      <h3 class="font-semibold text-sm" style="margin:0 0 0.25rem;">Bulk Upload (Sheet)</h3>
+      <p class="text-xs text-muted" style="margin:0 0 0.75rem;">
+        Upload a CSV sheet to import all student attendance in one go.
+        Include a <strong>Roll No</strong> column and subject columns (using subject short name/code).
+        Optional: add a row with Roll No as <code>TOTAL_CLASSES</code> to fill total classes.
+      </p>
+      <div class="d-flex align-items-center gap-2" style="flex-wrap:wrap;">
+        <label class="btn btn-primary btn-sm" style="cursor:pointer;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+          Choose CSV File
+          <input id="csv-upload-input" type="file" accept=".csv,text/csv" style="display:none;">
+        </label>
+        <p id="upload-message" class="text-xs text-muted" style="margin:0;"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Manual Entry (mirrors UploadAttendance.tsx section 2) ── -->
+  <section class="section">
+
+    <!-- Total Classes Grid (mirrors totalClassesMap grid) -->
+    <div class="section-header">
+      <h3>Total Classes Held (per subject)</h3>
+    </div>
+    <div id="total-classes-grid" class="subject-total-grid">
+      <!-- Rendered by attendance.js -->
+    </div>
+
+    <!-- Attendance Table -->
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead id="attendance-thead">
+          <!-- Rendered by attendance.js (renderAttendanceHeaders) -->
+        </thead>
+        <tbody id="attendance-tbody">
+          <!-- Rendered by attendance.js -->
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/attendance.js"></script>
+</body>
+</html>

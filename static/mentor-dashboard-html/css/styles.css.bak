@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* =============================================
+   CSS VARIABLES — Vintage/Old Color Palette
+   ============================================= */
+:root {
+  --background: #FAF8F3;
+  --foreground: #3E3B37;
+  --card: #FFFFFF;
+  --card-foreground: #3E3B37;
+  --popover: #FFFFFF;
+  --popover-foreground: #3E3B37;
+  --primary: #8B6F47;
+  --primary-foreground: #FFFFFF;
+  --secondary: #A68968;
+  --secondary-foreground: #FFFFFF;
+  --muted: #F3EFE8;
+  --muted-foreground: #7B7770;
+  --accent: #C4A57B;
+  --accent-foreground: #3E3B37;
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --border: #E8E2D5;
+  --input: #E8E2D5;
+  --ring: #8B6F47;
+  --radius: 0.75rem;
+  --success: hsl(100, 50%, 40%);
+  --warning: hsl(35, 77%, 50%);
+  --danger: hsl(0, 84%, 60%);
+}
+
+[data-theme="dark"] {
+  --background: #2A2824;
+  --foreground: #F5F1EB;
+  --card: #3A3530;
+  --card-foreground: #F5F1EB;
+  --popover: #3A3530;
+  --popover-foreground: #F5F1EB;
+  --primary: #C4A57B;
+  --primary-foreground: #2A2824;
+  --secondary: #A68968;
+  --secondary-foreground: #FFFFFF;
+  --muted: #2A2824;
+  --muted-foreground: #A89F95;
+  --accent: #D4B896;
+  --accent-foreground: #2A2824;
+  --border: #453F38;
+  --input: #453F38;
+  --ring: #C4A57B;
+  --success: hsl(100, 50%, 50%);
+  --warning: hsl(35, 77%, 60%);
+  --danger: hsl(0, 84%, 60%);
+}
+
+/* =============================================
+   BASE
+   ============================================= */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ...rest of original file... */

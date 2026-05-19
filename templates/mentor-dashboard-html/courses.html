@@ -1,0 +1,1699 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Courses - Mentor Dashboard</title>
+  <link rel="stylesheet" href="{% static 'mentor-dashboard-html/css/styles.css' %}">
+  <script src="{% static 'mentor-dashboard-html/js/theme.js' %}"></script>
+  <style>
+    .courses-container {
+      padding: 2rem;
+      max-width: 1920px;
+      margin: 0 auto;
+    }
+
+    .courses-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .courses-title {
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--foreground);
+    }
+
+    .courses-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .courses-toolbar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      background: var(--card-background);
+      padding: 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 250px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--input);
+      color: var(--foreground);
+      font-size: 0.95rem;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+    }
+
+    .search-input::placeholder {
+      color: var(--muted-foreground);
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .filter-select {
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--input);
+      color: var(--foreground);
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+    }
+
+    .filter-select:hover {
+      border-color: var(--primary);
+    }
+
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .course-card {
+      background: var(--card-background);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .course-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+      border-color: var(--primary);
+    }
+
+    [data-theme="dark"] .course-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    /* New card layout styles */
+    .course-header-new {
+      margin-bottom: 1rem;
+    }
+
+    .course-title-new {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--foreground);
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    .course-badges-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .badge-pill {
+      display: inline-block;
+      padding: 0.35rem 0.7rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      white-space: nowrap;
+      text-transform: capitalize;
+    }
+
+    .badge-dept {
+      background: #fce0e0;
+      color: #c91f3f;
+    }
+
+    .badge-year {
+      background: #fff4e0;
+      color: #d97706;
+    }
+
+    .badge-status {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .badge-institutional {
+      background: #cffafe;
+      color: #0891b2;
+    }
+
+    .course-metadata {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: var(--muted);
+      border-radius: calc(var(--radius) - 2px);
+      font-size: 0.9rem;
+    }
+
+    .metadata-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--muted-foreground);
+    }
+
+    .metadata-icon {
+      font-size: 0.95rem;
+    }
+
+    .metadata-text {
+      font-size: 0.9rem;
+    }
+
+    .metadata-label {
+      font-size: 0.9rem;
+      color: var(--muted-foreground);
+    }
+
+    .course-cohorts-info {
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: var(--muted);
+      border-radius: calc(var(--radius) - 2px);
+      font-size: 0.9rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .cohorts-label {
+      font-weight: 600;
+      color: var(--muted-foreground);
+      white-space: nowrap;
+    }
+
+    .cohorts-value {
+      color: var(--foreground);
+    }
+
+    .course-actions-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-view-details {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      padding: 0;
+    }
+
+    .btn-view-details:hover {
+      transform: translateX(2px);
+      opacity: 0.8;
+    }
+
+    .card-action-icons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      background: transparent;
+      color: var(--muted-foreground);
+    }
+
+    .btn-icon:hover {
+      background: var(--muted);
+      color: var(--foreground);
+    }
+
+    .btn-edit {
+      color: #6b7280;
+    }
+
+    .btn-edit:hover {
+      color: #3b82f6;
+      background: #dbeafe;
+    }
+
+    .btn-delete {
+      color: #6b7280;
+    }
+
+    .btn-delete:hover {
+      color: #dc2626;
+      background: #fee2e2;
+    }
+
+    .course-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .course-modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #ffffff;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      max-width: 1000px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      border: 1px solid #e5e5e5;
+    }
+
+    /* Enhanced Course Detail Modal Styles */
+    .course-detail-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .course-detail-header button {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+      padding: 0;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius);
+      transition: all 0.2s ease;
+    }
+
+    .course-detail-header button:hover {
+      background: #f0f0f0;
+      color: #000;
+    }
+
+    .course-detail-header h1 {
+      flex: 1;
+      margin: 0;
+      font-size: 1.75rem;
+      color: #000;
+    }
+
+    .course-detail-header .btn-all-courses {
+      background: var(--primary);
+      color: white;
+      border: none !important;
+      padding: 0.75rem 1.5rem !important;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .course-detail-header .btn-all-courses:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .course-overview {
+      background: linear-gradient(135deg, #c91f3f 0%, #a01830 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: var(--radius);
+      margin-bottom: 2rem;
+    }
+
+    .course-overview-eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.78rem;
+      font-weight: 700;
+      opacity: 0.9;
+      margin-bottom: 0.65rem;
+    }
+
+    .course-overview h2 {
+      font-size: 1.75rem;
+      margin: 0 0 0.5rem 0;
+      font-weight: 700;
+    }
+
+    .course-overview p {
+      margin: 0;
+      font-size: 0.95rem;
+      opacity: 0.95;
+    }
+
+    .course-overview-meta-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.9rem;
+    }
+
+    .meta-pill {
+      background: rgba(255, 255, 255, 0.16);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 0.3rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .course-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: #f8f8f8;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      border: 1px solid #e5e5e5;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.95rem;
+      color: #666;
+      font-weight: 500;
+    }
+
+    .course-sections {
+      margin-bottom: 2rem;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .detail-panel {
+      background: #ffffff;
+      border: 1px solid #e8e8e8;
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sections-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      min-height: 46px;
+      align-content: flex-start;
+    }
+
+    .section-badge {
+      background: #f0f0f0;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      color: #666;
+      border: 1px solid #d0d0d0;
+    }
+
+    .study-materials {
+      margin-bottom: 2rem;
+    }
+
+    .materials-list {
+      display: grid;
+      gap: 0.6rem;
+      min-height: 46px;
+    }
+
+    .material-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem;
+      background: #f8f8f8;
+      border: 1px solid #ececec;
+      border-radius: 8px;
+    }
+
+    .material-name {
+      color: #333;
+      font-size: 0.92rem;
+      word-break: break-word;
+    }
+
+    .material-link {
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .material-link:hover {
+      text-decoration: underline;
+    }
+
+    .study-materials-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .materials-count {
+      background: #f0f0f0;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: #c91f3f;
+      font-weight: 600;
+    }
+
+    .enrolled-students {
+      margin-bottom: 2rem;
+    }
+
+    .enrolled-students-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .enrolled-students-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #000;
+    }
+
+    .student-count-pill {
+      background: #fce0e0;
+      color: #c91f3f;
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 0.45rem;
+      vertical-align: middle;
+    }
+
+    .enrolled-students-controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .student-search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.75rem;
+      border: 1px solid #d0d0d0;
+      border-radius: var(--radius);
+      background: #f8f8f8;
+      color: #333;
+      font-size: 0.9rem;
+    }
+
+    .student-search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: white;
+    }
+
+    .student-sort-select {
+      padding: 0.75rem;
+      border: 1px solid #d0d0d0;
+      border-radius: var(--radius);
+      background: #f8f8f8;
+      color: #333;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .student-sort-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: white;
+    }
+
+    .students-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .students-table thead {
+      background: #f8f8f8;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .students-table th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      font-size: 0.9rem;
+    }
+
+    .students-table td {
+      padding: 1rem;
+      border-bottom: 1px solid #e5e5e5;
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    .students-table tbody tr:hover {
+      background: #f9f9f9;
+    }
+
+    .student-name-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .student-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #e5e5e5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #666;
+      font-size: 0.85rem;
+    }
+
+    .student-badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      background: #fce0e0;
+      color: #c91f3f;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: #666666;
+      padding: 0;
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius);
+      transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+      color: #000000;
+      background: #f0f0f0;
+    }
+
+    .modal-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      padding-right: 3rem;
+      color: #000000;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .modal-section {
+      margin-bottom: 1.75rem;
+    }
+
+    .modal-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: capitalize;
+      color: #333333;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .modal-value {
+      font-size: 1rem;
+      color: var(--foreground);
+      line-height: 1.6;
+    }
+
+    .assessments-list {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .assessment-item {
+      background: var(--muted);
+      padding: 1rem;
+      border-radius: calc(var(--radius) - 2px);
+      border-left: 3px solid var(--accent);
+    }
+
+    .assessment-name {
+      font-weight: 600;
+      color: var(--foreground);
+      margin-bottom: 0.5rem;
+    }
+
+    .assessment-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--muted-foreground);
+    }
+
+    .students-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .student-card {
+      background: var(--muted);
+      padding: 1rem;
+      border-radius: calc(var(--radius) - 2px);
+      border-left: 3px solid var(--primary);
+    }
+
+    .student-roll {
+      font-weight: 600;
+      color: var(--foreground);
+      margin-bottom: 0.25rem;
+    }
+
+    .student-name {
+      font-size: 0.9rem;
+      color: var(--muted-foreground);
+      margin-bottom: 0.35rem;
+    }
+
+    .student-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--muted-foreground);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted-foreground);
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .empty-state-title {
+      font-size: 1.25rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--foreground);
+    }
+
+    .status-message {
+      padding: 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .status-message.show {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    .status-success {
+      background: color-mix(in srgb, var(--success) 20%, transparent);
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+
+    .status-error {
+      background: color-mix(in srgb, var(--danger) 20%, transparent);
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+
+    .status-info {
+      background: color-mix(in srgb, var(--accent) 20%, transparent);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Form Styling for Modal */
+    #course-form {
+      display: grid;
+      gap: 1.5rem !important;
+    }
+
+    #edit-course-form {
+      display: grid;
+      gap: 1.5rem !important;
+    }
+
+    .modal-section input[type="text"],
+    .modal-section input[type="email"],
+    .modal-section textarea,
+    .modal-section select {
+      width: 100%;
+      padding: 0.875rem;
+      border: 1px solid #d0d0d0;
+      border-radius: var(--radius);
+      background: #f8f8f8;
+      color: #333333;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .modal-section input[type="text"]:focus,
+    .modal-section input[type="email"]:focus,
+    .modal-section textarea:focus,
+    .modal-section select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+      background: #ffffff;
+    }
+
+    .modal-section textarea {
+      resize: vertical;
+      min-height: 100px;
+      line-height: 1.5;
+    }
+
+    .modal-section textarea::placeholder {
+      color: #999999;
+    }
+
+    .modal-section input[type="text"]::placeholder,
+    .modal-section input[type="email"]::placeholder,
+    .modal-section select::placeholder {
+      color: #999999;
+    }
+
+    /* Cohorts List Styling */
+    #course-cohorts-list {
+      display: grid;
+      gap: 0.75rem;
+      max-height: 250px;
+      overflow-y: auto;
+      padding: 1rem;
+      background: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    #course-cohorts-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #course-cohorts-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #course-cohorts-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    #course-cohorts-list::-webkit-scrollbar-thumb:hover {
+      background: var(--muted-foreground);
+    }
+
+    #course-cohorts-list label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border-radius: calc(var(--radius) - 2px);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: transparent;
+    }
+
+    #course-cohorts-list label:hover {
+      background: var(--card-background);
+    }
+
+    #course-cohorts-list label input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: var(--primary);
+    }
+
+    #course-cohorts-list label span {
+      font-size: 0.95rem;
+      color: var(--foreground);
+      flex: 1;
+    }
+
+    /* Checkbox Styling */
+    #course-publish {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: var(--primary);
+    }
+
+    /* Button Styling */
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      flex: 1;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 135, 135, 0.3);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--foreground);
+      flex: 1;
+    }
+
+    .btn-outline:hover {
+      background: var(--muted);
+      border-color: var(--primary);
+    }
+
+    /* Modal Form Button Container */
+    .modal-form-buttons {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e5e5e5;
+    }
+
+    /* File Upload Area */
+    .file-upload-area {
+      border: 2px dashed #d0d0d0;
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #f8f8f8;
+    }
+
+    .file-upload-area:hover {
+      border-color: var(--primary);
+      background: #f0f0f0;
+    }
+
+    .file-upload-area.dragover {
+      border-color: var(--primary);
+      background: #efefef;
+      transform: scale(1.02);
+    }
+
+    .upload-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+      color: var(--primary);
+    }
+
+    .upload-text {
+      font-weight: 600;
+      color: #333333;
+      margin-bottom: 0.35rem;
+    }
+
+    .upload-hint {
+      font-size: 0.85rem;
+      color: #999999;
+    }
+
+    #course-materials {
+      display: none;
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: #f8f8f8;
+      border-radius: var(--radius);
+      border: 1px solid #d0d0d0;
+    }
+
+    .toggle-checkbox {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: #d0d0d0;
+      border-radius: 999px;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-checkbox:checked {
+      background: var(--primary);
+    }
+
+    .toggle-checkbox:before {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: white;
+      top: 2px;
+      left: 2px;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-checkbox:checked:before {
+      left: 22px;
+    }
+
+    .toggle-label {
+      font-weight: 600;
+      color: #333333;
+    }
+
+    /* Add Students List Styling */
+    .student-checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #e0e0e0;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .student-checkbox-item:hover {
+      background: #f0f0f0;
+    }
+
+    .student-checkbox-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--primary);
+    }
+
+    .student-checkbox-info {
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .student-checkbox-name {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .student-checkbox-name strong {
+      font-weight: 600;
+      color: #333;
+      font-size: 0.9rem;
+    }
+
+    .student-checkbox-name span {
+      font-size: 0.8rem;
+      color: #999;
+    }
+
+    .student-checkbox-roll {
+      background: #fce0e0;
+      color: #c91f3f;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .courses-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .courses-toolbar {
+        flex-direction: column;
+      }
+
+      .search-input {
+        min-width: 100%;
+      }
+
+      .courses-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-content {
+        max-width: 100%;
+        padding: 1.5rem;
+        margin: 1rem;
+        max-height: calc(100vh - 2rem);
+      }
+
+      .modal-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .course-detail-header {
+        flex-direction: row;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+      }
+
+      .course-detail-header h1 {
+        font-size: 1.3rem;
+        flex: 1;
+        min-width: 150px;
+      }
+
+      .course-detail-header .btn-all-courses {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.85rem;
+      }
+
+      .course-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .course-sections,
+      .study-materials,
+      .enrolled-students {
+        margin-bottom: 1.5rem;
+      }
+
+      .enrolled-students-controls {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .student-search-input {
+        min-width: 100%;
+      }
+
+      .student-sort-select {
+        width: 100%;
+      }
+
+      .students-table {
+        font-size: 0.85rem;
+      }
+
+      .students-table th,
+      .students-table td {
+        padding: 0.75rem;
+      }
+
+      .modal-close {
+        top: 1rem;
+        right: 1rem;
+        font-size: 1.5rem;
+        width: 2rem;
+        height: 2rem;
+      }
+
+      #course-form {
+        gap: 1.25rem !important;
+      }
+
+      .modal-section {
+        margin-bottom: 1.25rem;
+      }
+
+      .modal-form-buttons {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .modal-form-buttons .btn {
+        width: 100%;
+      }
+
+      #course-cohorts-list {
+        max-height: 200px;
+        padding: 0.75rem;
+      }
+
+      [style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+      }
+
+      .course-badges-row {
+        flex-wrap: wrap;
+      }
+
+      .badge-pill {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.6rem;
+      }
+
+      .course-metadata {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .course-actions-bottom {
+        flex-direction: column-reverse;
+        gap: 1rem;
+      }
+
+      .btn-view-details {
+        text-align: center;
+        width: 100%;
+      }
+
+      .card-action-icons {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────────── -->
+<header class="top-header">
+  <div class="top-header-left">
+    <button id="hamburger-menu-btn" class="hamburger-btn" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <img src="{% static 'mentor-dashboard-html/images/image.png' %}" alt="Chalapathi Institute Logo" class="header-logo">
+  </div>
+  <div class="top-header-actions">
+    <a href="{% url 'mentor-dashboard' %}" class="btn btn-outline btn-sm">Dashboard</a>
+    <a href="{% url 'mentor-profile' %}" class="btn btn-outline btn-sm">Mentor Profile</a>
+    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">
+      <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</header>
+
+<nav id="mobile-menu" class="mobile-menu" aria-label="Mobile navigation">
+  <div class="mobile-menu-links">
+    <a class="mobile-menu-link" href="{% url 'mentor-dashboard' %}">Home</a>
+    <a class="mobile-menu-link" href="{% url 'mentor-profile' %}">Mentor Profile</a>
+    <a class="mobile-menu-link" href="{% url 'mentor-students' %}">Assigned Students</a>
+    <a class="mobile-menu-link" href="{% url 'mentor-cohorts' %}">Cohorts</a>
+    <a class="mobile-menu-link" href="{% url 'mentor-courses' %}">Courses</a>
+    <a class="mobile-menu-link" href="{% url 'mentor-assign-marks' %}">Assign Marks</a>
+    <a class="mobile-menu-link" href="{% url 'mentor-upload-attendance' %}">Upload Attendance</a>
+  </div>
+</nav>
+
+<!-- ── MAIN CONTENT ────────────────────────────────────── -->
+<main class="courses-container">
+
+  <div class="courses-header">
+    <h1 class="courses-title">📖 Courses</h1>
+    <div class="courses-actions">
+      <button id="btn-new-course" class="btn btn-primary btn-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Course
+      </button>
+      <button id="btn-download-template" class="btn btn-outline btn-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Template
+      </button>
+    </div>
+  </div>
+
+  <!-- Status Messages -->
+  <div id="status-message" class="status-message"></div>
+
+  <!-- Search & Filter Toolbar -->
+  <div class="courses-toolbar">
+    <input 
+      type="text" 
+      id="search-courses" 
+      class="search-input" 
+      placeholder="Search courses by name or description..."
+      aria-label="Search courses"
+    >
+    <div class="filter-group">
+      <label for="filter-category" style="font-size: 0.9rem; color: var(--muted-foreground);">Category:</label>
+      <select id="filter-category" class="filter-select" aria-label="Filter by category">
+        <option value="">All Categories</option>
+        <option value="aptitude">Aptitude</option>
+        <option value="verbal">Verbal</option>
+        <option value="soft_skills">Soft Skills</option>
+        <option value="programming">Programming</option>
+        <option value="java">Java</option>
+        <option value="python">Python</option>
+      </select>
+    </div>
+    <button id="btn-clear-filters" class="btn btn-outline btn-sm">Clear</button>
+  </div>
+
+  <!-- Courses Grid -->
+  <div id="courses-grid" class="courses-grid">
+    <!-- Populated by JavaScript -->
+  </div>
+
+  <!-- Empty State -->
+  <div id="empty-state" class="empty-state" style="display: none;">
+    <div class="empty-state-icon">📚</div>
+    <div class="empty-state-title">No courses found</div>
+    <p>Try adjusting your filters or check back later for new courses.</p>
+  </div>
+
+</main>
+
+<!-- ── CREATE COURSE MODAL ──────────────────────────── -->
+<div id="create-course-modal" class="course-modal">
+  <div class="modal-content">
+    <button class="modal-close" aria-label="Close modal" onclick="document.getElementById('create-course-modal').classList.remove('active')">&times;</button>
+    <h2 class="modal-title">Create Course</h2>
+    
+    <form id="course-form">
+      <!-- Course Name -->
+      <div class="modal-section">
+        <label for="course-name" class="modal-label">Course Name</label>
+        <input type="text" id="course-name" class="search-input" placeholder="e.g. Machine Learning" required>
+      </div>
+
+      <!-- Department and Academic Year (Two columns) -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div class="modal-section">
+          <label for="course-department" class="modal-label">Department</label>
+          <select id="course-department" class="filter-select">
+            <option value="">Select Dept</option>
+            <option value="cse">CSE</option>
+            <option value="ece">ECE</option>
+            <option value="eee">EEE</option>
+            <option value="mech">MECH</option>
+            <option value="civil">CIVIL</option>
+          </select>
+        </div>
+        <div class="modal-section">
+          <label for="course-academic-year" class="modal-label">Academic Year</label>
+          <input type="text" id="course-academic-year" class="search-input" placeholder="Year I">
+        </div>
+      </div>
+
+      <!-- Section and Cohort Name (Two columns) -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div class="modal-section">
+          <label for="course-section" class="modal-label">Section (A-E)</label>
+          <select id="course-section" class="filter-select">
+            <option value="">Select Section</option>
+            <option value="A">Section A</option>
+            <option value="B">Section B</option>
+            <option value="C">Section C</option>
+            <option value="D">Section D</option>
+            <option value="E">Section E</option>
+          </select>
+        </div>
+        <div class="modal-section">
+          <label for="course-cohort-name" class="modal-label">Cohort Name</label>
+          <input type="text" id="course-cohort-name" class="search-input" placeholder="e.g. Regular 2024">
+        </div>
+      </div>
+
+      <!-- Course Materials -->
+      <div class="modal-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <label class="modal-label" style="margin-bottom: 0;">Course Materials</label>
+          <span style="font-size: 0.8rem; color: #999999;">(Optional)</span>
+        </div>
+        <div class="file-upload-area" id="file-upload-area">
+          <div class="upload-icon">☁️</div>
+          <div class="upload-text">Click or drag files here</div>
+          <div class="upload-hint">PDF, DOCX, ZIP, PPTX, MP4 • Max 50MB</div>
+        </div>
+        <input type="file" id="course-materials" accept=".pdf,.docx,.zip,.pptx,.mp4" multiple>
+      </div>
+
+      <!-- Mark as Institutional Course Toggle -->
+      <div class="modal-section">
+        <label class="toggle-switch">
+          <input type="checkbox" id="course-institutional" class="toggle-checkbox">
+          <span class="toggle-label">Mark as Institutional Course</span>
+        </label>
+      </div>
+
+      <!-- Form Buttons -->
+      <div class="modal-form-buttons">
+        <button type="button" class="btn btn-outline" onclick="document.getElementById('create-course-modal').classList.remove('active')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create & Publish</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── EDIT COURSE MODAL ───────────────────────────────── -->
+<div id="edit-course-modal" class="course-modal">
+  <div class="modal-content">
+    <button class="modal-close" aria-label="Close modal" onclick="document.getElementById('edit-course-modal').classList.remove('active')">&times;</button>
+    <h2 class="modal-title">Edit Course</h2>
+    
+    <form id="edit-course-form">
+      <input type="hidden" id="edit-course-id">
+
+      <!-- Course Name -->
+      <div class="modal-section">
+        <label for="edit-course-name" class="modal-label">Course Name</label>
+        <input type="text" id="edit-course-name" class="search-input" placeholder="e.g. Machine Learning" required>
+      </div>
+
+      <!-- Category -->
+      <div class="modal-section">
+        <label for="edit-course-category" class="modal-label">Category</label>
+        <select id="edit-course-category" class="filter-select">
+          <option value="aptitude">Aptitude</option>
+          <option value="verbal">Verbal</option>
+          <option value="soft_skills">Soft Skills</option>
+          <option value="programming">Programming</option>
+          <option value="java">Java</option>
+          <option value="dotnet">.NET</option>
+          <option value="python">Python</option>
+          <option value="abap">ABAP</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <!-- Description -->
+      <div class="modal-section">
+        <label for="edit-course-description" class="modal-label">Description</label>
+        <textarea id="edit-course-description" class="search-input" placeholder="Course description (optional)"></textarea>
+      </div>
+
+      <!-- Publish Toggle -->
+      <div class="modal-section">
+        <label class="toggle-switch">
+          <input type="checkbox" id="edit-course-publish" class="toggle-checkbox">
+          <span class="toggle-label">Publish to Profile</span>
+        </label>
+      </div>
+
+      <!-- Form Buttons -->
+      <div class="modal-form-buttons">
+        <button type="button" class="btn btn-outline" onclick="document.getElementById('edit-course-modal').classList.remove('active')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── COURSE DETAIL MODAL ────────────────────────────── -->
+<div id="course-modal" class="course-modal">
+  <div class="modal-content">
+    <!-- Header with Back Button -->
+    <div class="course-detail-header">
+      <button id="course-modal-back-btn" aria-label="Go back">←</button>
+      <h1 id="modal-course-title">Course Details</h1>
+      <button class="btn-all-courses">📚 All Courses</button>
+    </div>
+
+    <!-- Course Overview Section -->
+    <div class="course-overview">
+      <div class="course-overview-eyebrow">Course Overview</div>
+      <h2 id="modal-course-name">Course Name</h2>
+      <p id="modal-course-meta">Department • Year • Status</p>
+      <div class="course-overview-meta-row">
+        <span class="meta-pill" id="modal-pill-dept">Department</span>
+        <span class="meta-pill" id="modal-pill-year">Year</span>
+        <span class="meta-pill" id="modal-pill-status">Status</span>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="course-stats">
+      <div class="stat-card">
+        <div class="stat-number" id="modal-stat-students">0</div>
+        <div class="stat-label">Enrolled Students</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="modal-stat-sections">0</div>
+        <div class="stat-label">Sections</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="modal-stat-materials">0</div>
+        <div class="stat-label">Study Materials</div>
+      </div>
+    </div>
+
+    <div class="details-grid">
+      <!-- Assigned Sections -->
+      <div class="course-sections detail-panel">
+        <div class="section-title">
+          Assigned Sections
+        </div>
+        <div class="sections-list" id="modal-sections-list">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Study Materials -->
+      <div class="study-materials detail-panel">
+        <div class="study-materials-title">
+          Study Materials
+          <span class="materials-count" id="modal-materials-count">0 files</span>
+        </div>
+        <div id="modal-materials-list" class="materials-list">
+          <p style="color: #999; text-align: center; margin: 0;">No study materials uploaded yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enrolled Students -->
+    <div class="enrolled-students">
+      <div class="enrolled-students-header">
+        <h3 class="enrolled-students-title">Enrolled Students <span id="modal-students-count-pill" class="student-count-pill">0</span></h3>
+        <div class="enrolled-students-controls">
+          <input 
+            type="text" 
+            id="modal-student-search" 
+            class="student-search-input" 
+            placeholder="Search students..."
+            aria-label="Search students"
+          >
+          <select id="modal-student-sort" class="student-sort-select">
+            <option value="name-asc">Name A-Z</option>
+            <option value="name-desc">Name Z-A</option>
+            <option value="roll-asc">Roll No ↑</option>
+            <option value="roll-desc">Roll No ↓</option>
+          </select>
+          <button id="btn-add-students" class="btn btn-primary" style="flex: 0 1 auto; padding: 0.75rem 1rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Students
+          </button>
+        </div>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="students-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Roll No</th>
+              <th>Department</th>
+              <th>Section</th>
+              <th>Email</th>
+              <th>Phone</th>
+            </tr>
+          </thead>
+          <tbody id="modal-students-list">
+            <!-- Populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'mentor-dashboard-html/js/data.js' %}"></script>
+<script>
+  window.MENTOR_COURSES_API = "{% url 'mentor-courses-json' %}";
+</script>
+
+<!-- ── ADD STUDENTS MODAL ──────────────────────────── -->
+<div id="add-students-modal" class="course-modal">
+  <div class="modal-content" style="max-width: 600px;">
+    <button class="modal-close" aria-label="Close modal" onclick="document.getElementById('add-students-modal').classList.remove('active')">&times;</button>
+    <h2 class="modal-title">Add Students to Course</h2>
+    
+    <div class="modal-section">
+      <label for="add-students-search" class="modal-label">Search Students</label>
+      <input 
+        type="text" 
+        id="add-students-search" 
+        class="search-input" 
+        placeholder="Search by name or roll number..."
+      >
+    </div>
+
+    <div class="modal-section">
+      <label class="modal-label">Available Students</label>
+      <div id="add-students-list" style="
+        border: 1px solid #d0d0d0;
+        border-radius: var(--radius);
+        max-height: 400px;
+        overflow-y: auto;
+        background: #f8f8f8;
+      ">
+        <!-- Populated by JavaScript -->
+      </div>
+    </div>
+
+    <div class="modal-form-buttons">
+      <button type="button" class="btn btn-outline" onclick="document.getElementById('add-students-modal').classList.remove('active')">Cancel</button>
+      <button type="button" id="btn-confirm-add-students" class="btn btn-primary">Add Selected Students</button>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'mentor-dashboard-html/js/courses.js' %}?v=12"></script>
+<script src="{% static 'mentor-dashboard-html/js/menu.js' %}"></script>
+
+</body>
+</html>
