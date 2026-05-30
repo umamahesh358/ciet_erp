@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Faculty Hub – Cohort detail with study materials and student profiles.">
+    <title>Faculty Hub — Cohort Detail</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<div id="layout-wrapper">
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar" id="app-sidebar">
+        <div class="sidebar-brand" style="border-bottom:1px solid var(--border); padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:center;">
+            <img src="images/image.png" alt="CIET Logo" style="max-width:100%; max-height:56px; object-fit:contain;">
+        </div>
+        <div class="sidebar-content">
+            <div class="nav-section-label" style="padding-top:1.25rem;">Main Menu</div>
+            <nav>
+                <a href="index.html" class="nav-link"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+                <a href="cohorts.html" class="nav-link active"><i data-lucide="users"></i><span>Cohorts</span></a>
+                <a href="courses.html" class="nav-link"><i data-lucide="book-open"></i><span>Courses</span></a>
+                <a href="institution-courses.html" class="nav-link"><i data-lucide="graduation-cap"></i><span>Institution Courses</span></a>
+                <a href="index.html#updates-section" class="nav-link hod-updates">
+                    <i data-lucide="bell-ring"></i><span class="fw-semibold">HOD Updates</span>
+                    <span class="pulse-dot"></span>
+                </a>
+                <a href="settings.html" class="nav-link"><i data-lucide="settings"></i><span>Settings</span></a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="main-content">
+        <header class="top-navbar">
+            <div class="d-flex align-items-center gap-3 flex-grow-1">
+                <button class="nav-action-btn border-0" id="sidebar-toggle" aria-label="Toggle Sidebar">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div class="search-wrap d-none d-lg-block">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" placeholder="Search…">
+                </div>
+            </div>
+            <div class="navbar-actions">
+                <button class="nav-action-btn border-0" id="theme-toggle" aria-label="Toggle Theme">
+                    <i data-lucide="sun" style="width:20px;height:20px;"></i>
+                </button>
+                <button class="nav-action-btn border-0 position-relative" aria-label="Notifications">
+                    <i data-lucide="bell"></i>
+                    <span class="notif-badge"></span>
+                </button>
+                <div class="dropdown">
+                    <div class="profile-trigger" data-bs-toggle="dropdown" style="cursor:none;">
+                        <div class="d-none d-sm-block profile-name-block text-end">
+                            <p class="pname mb-0">Dr. Rajesh Kumar</p>
+                            <span class="prole">Professor</span>
+                        </div>
+                        <div class="profile-avatar"><i data-lucide="user"></i></div>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end mt-2 p-2" style="width:220px;border-radius:var(--radius-lg);">
+                        <li class="profile-user-block mb-2">
+                            <span class="fw-bold d-block" style="font-size:.85rem;color:var(--text-primary);">Dr. Rajesh Kumar</span>
+                            <small style="color:var(--text-muted);font-size:.7rem;">rajesh.kumar@university.edu</small>
+                        </li>
+                        <li><a class="dropdown-item" href="settings.html"><i data-lucide="user-cog" style="width:14px;"></i> Profile Settings</a></li>
+                        <li><hr class="dropdown-divider opacity-50 mx-2"></li>
+                        <li><a class="dropdown-item text-danger" href="#"><i data-lucide="log-out" style="width:14px;"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-content" id="detail-container">
+
+            <!-- Back + Title -->
+            <div class="d-flex align-items-center gap-3 mb-4 fade-in-up">
+                <button class="nav-action-btn border-0" onclick="history.back()">
+                    <i data-lucide="arrow-left"></i>
+                </button>
+                <div class="flex-grow-1">
+                    <h1 class="page-title mb-1" id="cohort-name">Loading…</h1>
+                    <div class="d-flex gap-2 flex-wrap mt-1" id="cohort-meta"></div>
+                </div>
+                <button class="btn btn-primary d-flex align-items-center gap-2" onclick="window.location.href='cohorts.html'">
+                    <i data-lucide="users" style="width:15px;"></i>
+                    <span class="d-none d-sm-inline">All Cohorts</span>
+                </button>
+            </div>
+
+            <!-- Hero Banner -->
+            <div class="detail-hero mb-4 fade-in-up-1">
+                <div style="position:relative;z-index:1;">
+                    <div class="d-flex align-items-center gap-2 mb-2 opacity-75">
+                        <i data-lucide="folder-open" style="width:16px;"></i>
+                        <small class="fw-semibold" style="font-size:.75rem;text-transform:uppercase;letter-spacing:1px;">Study Materials</small>
+                    </div>
+                    <h2 class="fw-bold mb-0" id="hero-cohort-name" style="font-size:1.4rem;">Cohort Study Workspace</h2>
+                </div>
+            </div>
+
+            <!-- Stat Cards -->
+            <div class="row g-3 mb-4 fade-in-up-2">
+                <div class="col-6 col-md-3">
+                    <div class="stat-card text-center">
+                        <h3 class="fw-bold mb-1" id="stat-total" style="font-size:2rem;color:var(--primary);">0</h3>
+                        <p class="mb-0" style="font-size:.78rem;color:var(--text-muted);">Total Students</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card text-center">
+                        <h3 class="fw-bold mb-1" id="stat-materials" style="font-size:2rem;color:var(--accent);">0</h3>
+                        <p class="mb-0" style="font-size:.78rem;color:var(--text-muted);">Study Materials</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card text-center">
+                        <h3 class="fw-bold mb-1" id="stat-size" style="font-size:2rem;color:#16A34A;">0 MB</h3>
+                        <p class="mb-0" style="font-size:.78rem;color:var(--text-muted);">Total Upload Size</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card text-center">
+                        <h3 class="fw-bold mb-1" id="stat-type" style="font-size:2rem;color:#EF4444;">-</h3>
+                        <p class="mb-0" style="font-size:.78rem;color:var(--text-muted);">Top File Type</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Study Materials -->
+            <div class="card p-4 mb-4 fade-in-up-3">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="fw-bold mb-0" style="color:var(--text-primary);">Uploaded Study Materials</h6>
+                </div>
+                <div id="materials-list" class="d-flex flex-column gap-2">
+                    <!-- Dynamic -->
+                </div>
+            </div>
+
+            <!-- Students List -->
+            <div class="d-flex align-items-center justify-content-between mb-3 fade-in-up-4 flex-wrap gap-3">
+                <h5 class="fw-bold mb-0" style="color:var(--text-primary);">Student Profiles</h5>
+                <div class="d-flex gap-2">
+                    <div class="search-wrap" style="max-width:260px;margin:0;">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" placeholder="Search students…" id="student-search" style="height:38px;border-radius:20px;">
+                    </div>
+                    <select class="form-select" style="width:140px;height:38px;font-size:.82rem;" id="sort-select">
+                        <option value="name">Sort: Name</option>
+                        <option value="id">Sort: Student ID</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row g-2" id="students-list"></div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/scripts.js"></script>
+<script>
+    lucide.createIcons();
+    const urlParams = new URLSearchParams(window.location.search);
+    const cohortId  = urlParams.get('id');
+    let cohortStudents = [];
+
+    function renderDetail(filter = '', sort = 'marks-desc') {
+        const cohort = cohorts.find(c => c.id === cohortId);
+        if (!cohort) {
+            document.getElementById('detail-container').innerHTML = `
+                <div class="text-center py-5">
+                    <i data-lucide="alert-circle" style="width:48px;height:48px;color:#EF4444;opacity:.5;"></i>
+                    <h4 class="mt-3" style="color:var(--text-primary);">Cohort Not Found</h4>
+                    <a href="cohorts.html" class="btn btn-primary mt-3">Back to Cohorts</a>
+                </div>`;
+            lucide.createIcons(); return;
+        }
+
+        // Title
+        document.getElementById('cohort-name').textContent      = cohort.name;
+        document.getElementById('hero-cohort-name').textContent = cohort.name;
+        document.title = `Faculty Hub — ${cohort.name}`;
+
+        // Meta badges
+        const dept = departments.find(d => d.id === cohort.departmentId);
+        const secs = sections.filter(s => (cohort.sectionIds || []).includes(s.id));
+        document.getElementById('cohort-meta').innerHTML =
+            `<span class="badge badge-primary">${dept ? dept.code : 'N/A'}</span>
+             <span class="badge badge-warning">Year ${YEAR_LABELS[cohort.year]}</span>
+             ${secs.map(s => `<span class="badge badge-muted">Sec ${s.name}</span>`).join('')}`;
+
+        // Stats
+        cohortStudents = students.filter(s => s.cohortId === cohortId);
+        const materials = Array.isArray(cohort.studyMaterials) ? cohort.studyMaterials : [];
+        const totalSizeBytes = materials.reduce((sum, file) => sum + (file.size || 0), 0);
+        const totalSizeMB = (totalSizeBytes / 1024 / 1024).toFixed(2);
+        const extCount = {};
+
+        materials.forEach(file => {
+            const ext = (file.name || '').split('.').pop()?.toUpperCase() || 'FILE';
+            extCount[ext] = (extCount[ext] || 0) + 1;
+        });
+        const topExt = Object.keys(extCount).sort((a, b) => extCount[b] - extCount[a])[0] || '-';
+
+        document.getElementById('stat-total').textContent = cohortStudents.length;
+        document.getElementById('stat-materials').textContent = materials.length;
+        document.getElementById('stat-size').textContent = `${totalSizeMB} MB`;
+        document.getElementById('stat-type').textContent = topExt;
+
+        const materialsList = document.getElementById('materials-list');
+        materialsList.innerHTML = materials.length ? materials.map(file => `
+            <div class="d-flex align-items-center justify-content-between p-2 rounded-3" style="border:1px solid var(--border);background:var(--base);">
+                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                    <div style="width:30px;height:30px;border-radius:8px;background:rgba(var(--primary-rgb),0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i data-lucide="file-text" style="width:13px;color:var(--primary);"></i>
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="small fw-bold mb-0 text-truncate">${file.name || 'Untitled file'}</p>
+                        <p class="mb-0" style="font-size:.65rem;color:var(--text-muted);">${((file.size || 0)/1024/1024).toFixed(2)} MB</p>
+                    </div>
+                </div>
+                <span class="badge badge-muted">${(file.type || '').split('/').pop()?.toUpperCase() || 'FILE'}</span>
+            </div>
+        `).join('') : `
+            <div class="text-center py-3">
+                <p class="mb-0" style="color:var(--text-muted);font-size:.85rem;">No study materials uploaded for this cohort.</p>
+            </div>
+        `;
+
+        // Filter + Sort
+        let list = cohortStudents.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()) || s.regNo?.toLowerCase().includes(filter.toLowerCase()));
+        if (sort === 'id') list.sort((a, b) => (a.regNo || '').localeCompare(b.regNo || ''));
+        else list.sort((a, b) => a.name.localeCompare(b.name));
+
+        document.getElementById('students-list').innerHTML = list.map(student => {
+            const stuDept = departments.find(d => d.id === student.departmentId) || dept;
+            const stuSec = sections.find(s => s.id === student.sectionId);
+            return `
+                <div class="col-12">
+                    <div class="card card-hover" style="padding:1rem 1.25rem;">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width:40px;height:40px;border-radius:50%;background:rgba(var(--primary-rgb),0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i data-lucide="user" style="width:16px;color:var(--primary);"></i>
+                            </div>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                                    <h6 class="fw-bold mb-0" style="color:var(--text-primary);">${student.name}</h6>
+                                    <code style="font-size:.7rem;color:var(--text-muted);">${student.regNo || ''}</code>
+                                    <span class="badge badge-primary">Year ${YEAR_LABELS[student.year] || YEAR_LABELS[cohort.year]}</span>
+                                    <span class="badge badge-muted">${stuDept ? stuDept.code : 'N/A'} - Sec ${stuSec ? stuSec.name : '-'}</span>
+                                </div>
+                                <p class="mb-0" style="font-size:.75rem;color:var(--text-muted);">Student Profile available in this cohort.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }).join('') || `<div class="col-12 text-center py-4"><p style="color:var(--text-muted);">No students match your search.</p></div>`;
+
+        lucide.createIcons();
+    }
+
+    document.getElementById('student-search').addEventListener('input', function() {
+        renderDetail(this.value, document.getElementById('sort-select').value);
+    });
+    document.getElementById('sort-select').addEventListener('change', function() {
+        renderDetail(document.getElementById('student-search').value, this.value);
+    });
+
+    renderDetail();
+</script>
+</body>
+</html>

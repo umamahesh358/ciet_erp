@@ -6,6 +6,12 @@ ui_urlpatterns = [
     path('hod/',     views.HODDashboardView.as_view(),    name='hod-dashboard'),
     path('mentor/',  views.MentorDashboardView.as_view(), name='mentor-dashboard'),
     path('portal/',  views.FacultyDashboardView.as_view(), name='faculty-dashboard'),
+    path('portal/cohorts/', views.FacultyHubCohortsView.as_view(), name='faculty-cohorts'),
+    path('portal/explore-students/', views.FacultyHubExploreStudentsView.as_view(), name='faculty-explore-students'),
+    path('portal/hod-updates/', views.FacultyHubHodUpdatesView.as_view(), name='faculty-hod-updates'),
+    path('portal/courses/', views.FacultyHubCoursesView.as_view(), name='faculty-courses'),
+    path('portal/institution-courses/', views.FacultyHubInstitutionCoursesView.as_view(), name='faculty-institution-courses'),
+    path('portal/settings/', views.FacultyHubSettingsView.as_view(), name='faculty-settings'),
     path('courses/<str:course_id>/score-template/',
          views.download_score_template, name='score-template-download'),
 ]

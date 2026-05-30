@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Faculty Hub – Institution level courses across aptitude, soft skills and programming.">
+    <title>Faculty Hub — Institution Courses</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<div id="layout-wrapper">
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar" id="app-sidebar">
+        <div class="sidebar-brand" style="border-bottom:1px solid var(--border); padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:center;">
+            <img src="images/image.png" alt="CIET Logo" style="max-width:100%; max-height:56px; object-fit:contain;">
+        </div>
+        <div class="sidebar-content">
+            <div class="nav-section-label" style="padding-top:1.25rem;">Main Menu</div>
+            <nav>
+                <a href="index.html" class="nav-link"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+                <a href="cohorts.html" class="nav-link"><i data-lucide="users"></i><span>Cohorts</span></a>
+                <a href="courses.html" class="nav-link"><i data-lucide="book-open"></i><span>Courses</span></a>
+                <a href="institution-courses.html" class="nav-link active"><i data-lucide="graduation-cap"></i><span>Institution Courses</span></a>
+                <a href="index.html#updates-section" class="nav-link hod-updates" id="nav-updates">
+                    <i data-lucide="bell-ring"></i><span class="fw-semibold">HOD Updates</span>
+                    <span class="pulse-dot"></span>
+                </a>
+                <a href="settings.html" class="nav-link"><i data-lucide="settings"></i><span>Settings</span></a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="main-content">
+        <header class="top-navbar">
+            <div class="d-flex align-items-center gap-3 flex-grow-1">
+                <button class="nav-action-btn border-0" id="sidebar-toggle" aria-label="Toggle Sidebar">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div class="search-wrap d-none d-lg-block">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" placeholder="Search institution courses…">
+                </div>
+            </div>
+            <div class="navbar-actions">
+                <button class="nav-action-btn border-0" id="theme-toggle" aria-label="Toggle Theme">
+                    <i data-lucide="sun" style="width:20px;height:20px;"></i>
+                </button>
+                <div class="dropdown">
+                    <button class="nav-action-btn border-0 position-relative" data-bs-toggle="dropdown" aria-label="Notifications">
+                        <i data-lucide="bell"></i>
+                        <span class="notif-badge"></span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end p-0 mt-2 overflow-hidden" style="width:300px;border-radius:var(--radius-lg);">
+                        <div class="notif-header">
+                            <p class="fw-bold mb-0 text-white" style="font-size:.9rem;">Notifications</p>
+                            <span class="badge bg-white rounded-pill" style="color:var(--primary);font-size:.7rem;">3 New</span>
+                        </div>
+                        <div class="p-3 border-bottom" style="border-color:var(--border)!important;">
+                            <div class="d-flex gap-3 align-items-start">
+                                <div style="width:34px;height:34px;border-radius:8px;background:rgba(var(--primary-rgb),0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                    <i data-lucide="bell" style="width:14px;color:var(--primary);"></i>
+                                </div>
+                                <div>
+                                    <p class="fw-bold mb-0" style="font-size:.8rem;color:var(--text-primary);">New Update from HOD</p>
+                                    <p class="mb-0" style="font-size:.72rem;color:var(--text-muted);">Revised evaluation policy posted.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-2 text-center" style="background:var(--muted-bg);">
+                            <a href="index.html#updates-section" class="small fw-bold text-decoration-none" style="color:var(--primary);">View all</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <div class="profile-trigger" data-bs-toggle="dropdown" style="cursor:none;">
+                        <div class="d-none d-sm-block profile-name-block text-end">
+                            <p class="pname mb-0">Dr. Rajesh Kumar</p>
+                            <span class="prole">Professor</span>
+                        </div>
+                        <div class="profile-avatar"><i data-lucide="user"></i></div>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end mt-2 p-2" style="width:230px;border-radius:var(--radius-lg);">
+                        <li class="profile-user-block mb-2">
+                            <span class="fw-bold d-block" style="font-size:.85rem;color:var(--text-primary);">Dr. Rajesh Kumar</span>
+                            <small style="color:var(--text-muted);font-size:.7rem;">rajesh.kumar@university.edu</small>
+                        </li>
+                        <li><a class="dropdown-item" href="settings.html"><i data-lucide="user-cog" style="width:14px;"></i> Profile Settings</a></li>
+                        <li><a class="dropdown-item" href="settings.html"><i data-lucide="shield-check" style="width:14px;color:#CA8A04;"></i> Security</a></li>
+                        <li><hr class="dropdown-divider opacity-50 mx-2"></li>
+                        <li><a class="dropdown-item text-danger" href="#"><i data-lucide="log-out" style="width:14px;"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-content" id="content-area">
+            <!-- ── Listing View ── -->
+            <div id="listing-view">
+                <div class="dashboard-header fade-in-up">
+                    <div>
+                        <h1 class="page-title">Institution Level Courses</h1>
+                        <p class="page-subtitle">Aptitude, verbal, soft skills &amp; programming tracks</p>
+                    </div>
+                    <button class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#instCourseModal">
+                        <i data-lucide="plus" style="width:16px;"></i> New Course
+                    </button>
+                </div>
+                <div class="row g-3 fade-in-up-1" id="inst-courses-list"></div>
+            </div>
+
+            <!-- ── Detail View ── -->
+            <div id="detail-view" style="display:none;">
+                <div class="d-flex align-items-center gap-3 mb-4 fade-in-up">
+                    <button class="nav-action-btn border-0" onclick="showListingView()">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                    <div>
+                        <h1 class="page-title mb-1" id="active-course-name">Course Name</h1>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <span class="badge badge-accent" id="active-course-category">Category</span>
+                            <span class="badge badge-primary" id="active-course-year">Year</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assigned Sections -->
+                <div class="card mb-4 fade-in-up-1">
+                    <div class="d-flex align-items-center justify-content-between p-4 pb-2">
+                        <h6 class="fw-bold mb-0" style="color:var(--text-primary);">Assigned Sections</h6>
+                        <button class="btn btn-primary d-flex align-items-center gap-1" id="detail-allocate-btn"
+                            style="font-size:.78rem;padding:.4rem .9rem;border-radius:8px;">
+                            <i data-lucide="plus" style="width:13px;"></i> Allocate
+                        </button>
+                    </div>
+                    <div class="px-4 pb-4" id="assigned-sections-list"></div>
+                </div>
+
+                <!-- Study Materials -->
+                <div class="card mb-4 fade-in-up-1">
+                    <div class="d-flex align-items-center justify-content-between p-4 pb-2">
+                        <h6 class="fw-bold mb-0" style="color:var(--text-primary);">Study Materials</h6>
+                        <span class="badge badge-primary" id="inst-materials-count">0 files</span>
+                    </div>
+                    <div class="px-4 pb-4" id="inst-study-materials-list"></div>
+                </div>
+
+                <!-- Students Completion -->
+                <div class="d-flex align-items-center justify-content-between mb-3 fade-in-up-2">
+                    <h5 class="fw-bold mb-0" style="color:var(--text-primary);">Student Profiles</h5>
+                    <div class="search-wrap" style="max-width:240px;margin:0;">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" placeholder="Search student…" id="student-search-detail"
+                            style="height:38px;border-radius:20px;">
+                    </div>
+                </div>
+                <div class="row g-2" id="students-completion-list"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ── Institution Course Modal ── -->
+<div class="modal fade" id="instCourseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="modalTitle">Create Institutional Course</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="instCourseForm">
+                    <input type="hidden" id="edit-id">
+                    <div class="row g-3 mb-3">
+                        <div class="col-8">
+                            <label class="form-label">Course Title</label>
+                            <input type="text" class="form-control pinned-select" id="inst-name" placeholder="Name this course…" required>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Year</label>
+                            <select class="form-select pinned-select" id="inst-year" required>
+                                <option value="1">Year I</option>
+                                <option value="2">Year II</option>
+                                <option value="3">Year III</option>
+                                <option value="4">Year IV</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Track Category</label>
+                        <select class="form-select" id="inst-category" required>
+                            <option value="General">General</option>
+                            <option value="Programming">Programming</option>
+                            <option value="Soft Skills">Soft Skills</option>
+                        </select>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Department</label>
+                            <select class="form-select" id="inst-dept" required>
+                                <option value="">Select Dept</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Section (A–E)</label>
+                            <select class="form-select" id="inst-section" required>
+                                <option value="A">Section A</option>
+                                <option value="B">Section B</option>
+                                <option value="C">Section C</option>
+                                <option value="D">Section D</option>
+                                <option value="E">Section E</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- File Upload -->
+                    <div class="mb-3">
+                        <label class="form-label d-flex justify-content-between">
+                            <span>Study Materials</span>
+                            <span style="color:var(--text-muted);font-weight:400;font-size:.75rem;">(Optional)</span>
+                        </label>
+                        <div class="file-drop-zone" id="inst-file-drop-zone" onclick="document.getElementById('inst-material').click()">
+                            <i data-lucide="cloud-upload" style="width:26px;height:26px;" class="mb-2"></i>
+                            <p class="fw-semibold mb-1" style="font-size:.875rem;color:var(--text-primary);">Click or drag files here</p>
+                            <p class="mb-0" style="font-size:.75rem;color:var(--text-muted);">PDF, DOCX, ZIP, PPTX · Max 25MB</p>
+                            <input type="file" id="inst-material" class="d-none" multiple>
+                        </div>
+                        <div id="inst-file-preview-list" class="mt-2 d-flex flex-column gap-2"></div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 pt-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary px-4">Create &amp; Link Tracks</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/scripts.js"></script>
+<script>
+    lucide.createIcons();
+    let isEditing = false;
+
+    function showListingView() {
+        document.getElementById('listing-view').style.display = 'block';
+        document.getElementById('detail-view').style.display  = 'none';
+    }
+    function showDetailView(courseId) {
+        const course = institutionCourses.find(c => c.id === courseId);
+        if (!course) return;
+        document.getElementById('listing-view').style.display = 'none';
+        document.getElementById('detail-view').style.display  = 'block';
+        document.getElementById('active-course-name').textContent = course.name;
+        document.getElementById('active-course-category').textContent = course.category;
+        document.getElementById('active-course-year').textContent = `Year ${YEAR_LABELS[course.year]}`;
+        document.getElementById('detail-allocate-btn').onclick = (e) => openEditModal(courseId, e);
+
+        const materials = Array.isArray(course.studyMaterials) ? course.studyMaterials : [];
+        document.getElementById('inst-materials-count').textContent = `${materials.length} file${materials.length === 1 ? '' : 's'}`;
+        document.getElementById('inst-study-materials-list').innerHTML = materials.length ? materials.map((file, index) => {
+            const sizeMb = ((file.size || 0) / 1024 / 1024).toFixed(2);
+            const typeLabel = (file.type || 'file').split('/').pop().toUpperCase();
+            const fileUrl = file.dataUrl || '#';
+            return `
+                <div class="d-flex align-items-center justify-content-between p-3 rounded-3 mb-2" style="border:1px solid var(--border);background:var(--base);">
+                    <div class="d-flex align-items-center gap-3 overflow-hidden">
+                        <div style="width:42px;height:42px;border-radius:12px;background:rgba(var(--primary-rgb),0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i data-lucide="file-text" style="width:16px;color:var(--primary);"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="fw-bold mb-0 text-truncate" style="color:var(--text-primary);">${file.name || `Material ${index + 1}`}</p>
+                            <p class="mb-0" style="font-size:.72rem;color:var(--text-muted);">${sizeMb} MB · ${typeLabel}</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                        <a class="btn btn-sm btn-outline-primary" href="${fileUrl}" target="_blank" rel="noopener">Open</a>
+                        <a class="btn btn-sm btn-primary" href="${fileUrl}" download="${file.name || 'material'}">Download</a>
+                    </div>
+                </div>
+            `;
+        }).join('') : `
+            <p style="color:var(--text-muted);font-size:.85rem;margin:0;">No study materials uploaded for this institution course.</p>
+        `;
+
+        const activeSecs = sections.filter(s => course.sectionIds.includes(s.id));
+        document.getElementById('assigned-sections-list').innerHTML = activeSecs.length
+            ? `<div class="d-flex flex-wrap gap-2">${activeSecs.map(s => {
+                const dept = departments.find(d => d.id === s.departmentId);
+                return `<span class="badge badge-muted px-3 py-2">${s.name}${dept ? ` · ${dept.code}` : ''}</span>`;
+              }).join('')}</div>`
+            : `<p style="color:var(--text-muted);font-size:.85rem;">No sections assigned yet.</p>`;
+
+        const activeStudents = students.filter(s => course.sectionIds.includes(s.sectionId));
+        document.getElementById('students-completion-list').innerHTML = activeStudents.map(student => {
+            const sec   = sections.find(s => s.id === student.sectionId);
+            const sDept = departments.find(d => d.id === student.departmentId);
+            return `
+                <div class="col-12">
+                    <div class="card card-hover" style="padding:1rem 1.25rem;">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width:36px;height:36px;border-radius:50%;background:rgba(var(--primary-rgb),0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i data-lucide="user" style="width:15px;color:var(--primary);"></i>
+                            </div>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+                                    <h6 class="fw-bold mb-0" style="color:var(--text-primary);">${student.name}</h6>
+                                    <code style="font-size:.7rem;color:var(--text-muted);">${student.regNo}</code>
+                                    ${sDept ? `<span class="badge badge-primary" style="font-size:.6rem;">${sDept.code}</span>` : ''}
+                                    ${sec ? `<span class="badge badge-muted" style="font-size:.6rem;">Sec ${sec.name}</span>` : ''}
+                                </div>
+                                <p class="mb-0" style="font-size:.75rem;color:var(--text-muted);">Student profile available in this institutional course.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }).join('') || `<div class="col-12 text-center py-4"><p style="color:var(--text-muted);">No students assigned to this course.</p></div>`;
+        lucide.createIcons();
+    }
+
+    function renderInstCourses() {
+        const container = document.getElementById('inst-courses-list');
+        if (!institutionCourses.length) {
+            container.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i data-lucide="graduation-cap" style="width:48px;height:48px;color:var(--text-muted);opacity:.4;"></i>
+                    <h5 class="mt-3 fw-semibold" style="color:var(--text-muted);">No institution courses yet</h5>
+                    <p style="color:var(--text-muted);font-size:.875rem;">Click "New Course" to get started.</p>
+                </div>`;
+            lucide.createIcons(); return;
+        }
+        container.innerHTML = institutionCourses.map(course => {
+            const secs    = sections.filter(s => course.sectionIds.includes(s.id));
+            const deptIds = [...new Set(secs.map(s => s.departmentId))];
+            const depts   = departments.filter(d => deptIds.includes(d.id));
+            const catColor = course.category === 'Programming' ? 'var(--accent)' : course.category === 'Soft Skills' ? '#EAB308' : 'var(--primary)';
+            const materialsCount = Array.isArray(course.studyMaterials) ? course.studyMaterials.length : 0;
+            return `
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="item-card card-hover" onclick="showDetailView('${course.id}')" style="cursor:none;">
+                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width:10px;height:10px;border-radius:50%;background:${catColor};flex-shrink:0;"></div>
+                                <h6 class="fw-bold mb-0" style="color:var(--text-primary);">${course.name}</h6>
+                            </div>
+                            <div class="item-card-actions">
+                                <button class="btn-icon" onclick="openEditModal('${course.id}', event)" title="Edit">
+                                    <i data-lucide="edit-2" style="width:13px;"></i>
+                                </button>
+                                <button class="btn-icon danger" onclick="deleteCourse('${course.id}', event)" title="Delete">
+                                    <i data-lucide="trash-2" style="width:13px;"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="badge badge-warning">${course.category}</span>
+                            <span class="badge badge-primary">Year ${YEAR_LABELS[course.year]}</span>
+                            ${depts.map(d => `<span class="badge badge-muted">${d.code}</span>`).join('')}
+                            <span class="badge badge-muted d-flex align-items-center gap-1">
+                                <i data-lucide="file-text" style="width:10px;"></i> ${materialsCount} materials
+                            </span>
+                        </div>
+                        <div>
+                            <small class="d-block mb-2" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);">Assigned Sections</small>
+                            <div class="d-flex flex-wrap gap-1">
+                                ${secs.map(s => `<span class="section-badge">${s.name}</span>`).join('')}
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-2 text-end" style="border-top:1px solid var(--border);">
+                            <small style="color:var(--primary);font-weight:600;font-size:.72rem;">View Details →</small>
+                        </div>
+                    </div>
+                </div>`;
+        }).join('');
+        lucide.createIcons();
+    }
+
+    function openAddModal() {
+        isEditing = false;
+        document.getElementById('modalTitle').textContent = 'Create Institutional Course';
+        document.getElementById('instCourseForm').reset();
+        document.getElementById('edit-id').value = '';
+    }
+    function openEditModal(courseId, e) {
+        e.stopPropagation();
+        isEditing = true;
+        const course = institutionCourses.find(c => c.id === courseId);
+        if (!course) return;
+        document.getElementById('modalTitle').textContent = 'Update Institutional Course';
+        document.getElementById('inst-name').value     = course.name;
+        document.getElementById('inst-category').value = course.category;
+        document.getElementById('inst-year').value     = course.year;
+        document.getElementById('edit-id').value       = course.id;
+        const firstSec = sections.find(s => course.sectionIds && course.sectionIds.includes(s.id));
+        if (firstSec) {
+            document.getElementById('inst-dept').value    = firstSec.departmentId;
+            document.getElementById('inst-section').value = firstSec.name;
+        }
+        selectedInstFiles = [];
+        renderInstFilePreviews();
+        if (instFileInput) instFileInput.value = '';
+        new bootstrap.Modal(document.getElementById('instCourseModal')).show();
+    }
+    function deleteCourse(courseId, e) {
+        e.stopPropagation();
+        if (confirm('Delete this institutional course?')) {
+            institutionCourses = institutionCourses.filter(c => c.id !== courseId);
+            saveData('inst_courses', institutionCourses);
+            renderInstCourses();
+        }
+    }
+
+    function fileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve({
+                name: file.name,
+                size: file.size,
+                type: file.type || 'application/octet-stream',
+                uploadedAt: new Date().toISOString(),
+                dataUrl: reader.result
+            });
+            reader.onerror = () => reject(new Error(`Failed to read ${file.name}`));
+            reader.readAsDataURL(file);
+        });
+    }
+
+    document.getElementById('instCourseForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const id = document.getElementById('edit-id').value;
+        const name     = document.getElementById('inst-name').value;
+        const category = document.getElementById('inst-category').value;
+        const year     = parseInt(document.getElementById('inst-year').value);
+        const dId      = document.getElementById('inst-dept').value;
+        const secName  = document.getElementById('inst-section').value;
+        const studyMaterials = selectedInstFiles.length ? await Promise.all(selectedInstFiles.map(fileToDataUrl)) : [];
+
+        let sec = sections.find(s => s.name === secName && s.departmentId === dId && s.year === year);
+        if (!sec) { sec = { id: `sec-${Date.now()}`, name: secName, departmentId: dId, year }; sections.push(sec); saveData('sections', sections); }
+
+        if (isEditing) {
+            const idx = institutionCourses.findIndex(c => c.id === id);
+            if (idx > -1) {
+                institutionCourses[idx] = {
+                    ...institutionCourses[idx],
+                    name,
+                    category,
+                    year,
+                    sectionIds: [sec.id],
+                    studyMaterials: studyMaterials.length ? studyMaterials : (institutionCourses[idx].studyMaterials || [])
+                };
+            }
+        } else {
+            institutionCourses.push({ id: `inst-${Date.now()}`, name, category, year, sectionIds: [sec.id], studyMaterials });
+        }
+        saveData('inst_courses', institutionCourses);
+        renderInstCourses();
+        bootstrap.Modal.getInstance(document.getElementById('instCourseModal')).hide();
+        e.target.reset();
+        selectedInstFiles = [];
+        renderInstFilePreviews();
+        if (instFileInput) instFileInput.value = '';
+    });
+
+    document.querySelector('[data-bs-target="#instCourseModal"]').addEventListener('click', openAddModal);
+
+    const instDeptSelect = document.getElementById('inst-dept');
+    if (instDeptSelect) instDeptSelect.innerHTML += departments.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+
+    // File Upload
+    const instFileInput   = document.getElementById('inst-material');
+    const instDropZone    = document.getElementById('inst-file-drop-zone');
+    const instPreviewList = document.getElementById('inst-file-preview-list');
+    let selectedInstFiles = [];
+
+    if (instFileInput && instDropZone) {
+        instFileInput.addEventListener('change', e => handleInstFiles(e.target.files));
+        instDropZone.addEventListener('dragover', e => { e.preventDefault(); instDropZone.classList.add('drag-over'); });
+        instDropZone.addEventListener('dragleave', () => instDropZone.classList.remove('drag-over'));
+        instDropZone.addEventListener('drop', e => { e.preventDefault(); instDropZone.classList.remove('drag-over'); if (e.dataTransfer.files) handleInstFiles(e.dataTransfer.files); });
+    }
+    function handleInstFiles(files) { for (let f of files) selectedInstFiles.push(f); renderInstFilePreviews(); }
+    function removeInstFile(i, e) { e.stopPropagation(); selectedInstFiles.splice(i, 1); renderInstFilePreviews(); }
+    function renderInstFilePreviews() {
+        if (!selectedInstFiles.length) { instPreviewList.innerHTML = ''; return; }
+        instPreviewList.innerHTML = selectedInstFiles.map((f, i) => `
+            <div class="d-flex align-items-center justify-content-between p-2 rounded-3" style="border:1px solid var(--border);background:var(--base);">
+                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                    <div style="width:30px;height:30px;border-radius:8px;background:rgba(var(--primary-rgb),0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i data-lucide="file" style="width:13px;color:var(--primary);"></i>
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="small fw-bold mb-0 text-truncate">${f.name}</p>
+                        <p class="mb-0" style="font-size:.65rem;color:var(--text-muted);">${(f.size/1024/1024).toFixed(2)} MB</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-icon danger" onclick="removeInstFile(${i},event)">
+                    <i data-lucide="x" style="width:12px;"></i>
+                </button>
+            </div>`).join('');
+        lucide.createIcons();
+    }
+    const origAddInst = openAddModal;
+    openAddModal = function() { origAddInst(); selectedInstFiles = []; renderInstFilePreviews(); if (instFileInput) instFileInput.value = ''; };
+    const origEditInst = openEditModal;
+    openEditModal = function(id, e) { origEditInst(id, e); selectedInstFiles = []; renderInstFilePreviews(); if (instFileInput) instFileInput.value = ''; };
+
+    renderInstCourses();
+</script>
+</body>
+</html>

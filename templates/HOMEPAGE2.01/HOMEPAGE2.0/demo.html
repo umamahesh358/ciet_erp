@@ -1,0 +1,1063 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CIET – Chalapathi Institute of Engineering & Technology</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#AF0C3E',
+                        secondary: '#8F0830',
+                        accent: '#22D3EE',
+                        base: '#FFFFFF',
+                        card: '#F8FAFC',
+                        border: '#E2E8F0',
+                        darkbase: '#0F172A',
+                        darkcard: '#1E293B',
+                        darkborder: '#334155',
+                        textprimary: '#0F172A',
+                        textsecondary: '#475569',
+                        darktextprimary: '#F8FAFC',
+                        darktextsecondary: '#94A3B8',
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* ========== BASE RESETS ========== */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* ========== HERO SLIDER ========== */
+        .slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 1.4s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .slide.active {
+            opacity: 1;
+            z-index: 10;
+        }
+
+        /* ========== NAVBAR ========== */
+        #navbar {
+            transition: background 0.5s ease, backdrop-filter 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        #navbar.scrolled {
+            background: rgba(15, 23, 42, 0.82);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .nav-link {
+            position: relative;
+            letter-spacing: .08em;
+            font-size: .8rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            text-transform: uppercase;
+            padding-bottom: 2px;
+            transition: color .25s;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #AF0C3E;
+            transition: width .3s ease;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* ========== HERO TEXT ANIMATIONS ========== */
+        @keyframes heroFadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(36px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes heroBadgePop {
+            from {
+                opacity: 0;
+                transform: scale(.8) translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .hero-badge {
+            animation: heroBadgePop .7s .2s both;
+        }
+
+        .hero-title {
+            animation: heroFadeUp .9s .45s both;
+        }
+
+        .hero-sub {
+            animation: heroFadeUp .9s .7s both;
+        }
+
+        .hero-btn {
+            animation: heroFadeUp .9s .95s both;
+        }
+
+        /* ========== VIDEO PULSE RING ========== */
+        @keyframes pulseRing {
+            0% {
+                transform: scale(1);
+                opacity: .6;
+            }
+
+            100% {
+                transform: scale(1.18);
+                opacity: 0;
+            }
+        }
+
+        .pulse-ring::before {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: inherit;
+            border: 2px solid #AF0C3E;
+            animation: pulseRing 2s ease-out infinite;
+        }
+
+        /* ========== SECTION REVEAL ========== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity .7s ease, transform .7s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-44px);
+            transition: opacity .7s ease, transform .7s ease;
+        }
+
+        .reveal-right {
+            opacity: 0;
+            transform: translateX(44px);
+            transition: opacity .7s ease, transform .7s ease;
+        }
+
+        .reveal-left.visible,   
+        .reveal-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* ========== CARD HOVER GLOW ========== */
+        .card-glow {
+            transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+        }
+
+        .card-glow:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(175, 12, 62, .15);
+            border-color: #AF0C3E;
+        }
+
+        /* ========== PROGRAM CARDS ========== */
+        .prog-icon {
+            transition: background .3s, color .3s, transform .3s;
+        }
+
+        .prog-card:hover .prog-icon {
+            background: #AF0C3E;
+            color: #fff;
+            transform: scale(1.12) rotate(-6deg);
+        }
+
+        /* ========== COUNTER NUMBERS ========== */
+        .counter-num {
+            background: linear-gradient(135deg, #AF0C3E 0%, #22D3EE 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* White variant for primary-bg sections */
+        .counter-num-white {
+            color: #fff;
+        }
+
+        /* ========== STAT CARD SHIMMER ========== */
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        .shimmer-border {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shimmer-border::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .06), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2.5s infinite;
+        }
+
+        /* ========== RECRUITER TAGS ========== */
+        .tag {
+            transition: background .25s, color .25s, transform .2s;
+        }
+
+        .tag:hover {
+            background: #AF0C3E;
+            color: #fff;
+            border-color: #AF0C3E;
+            transform: translateY(-2px);
+        }
+
+        /* ========== FOOTER LINK ========== */
+        .footer-link {
+            transition: color .2s, padding-left .2s;
+        }
+
+        .footer-link:hover {
+            color: #22D3EE;
+            padding-left: 4px;
+        }
+
+        /* ========== SCROLLBAR ========== */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0F172A;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #AF0C3E;
+            border-radius: 4px;
+        }
+
+        /* ========== CAMPUS IMAGE HOVER ========== */
+        .campus-img {
+            overflow: hidden;
+        }
+
+        .campus-img img {
+            transition: transform .5s ease;
+        }
+
+        .campus-img:hover img {
+            transform: scale(1.06);
+        }
+
+        /* ========== GRADIENT DIVIDER ========== */
+        .grad-divider {
+            height: 3px;
+            background: linear-gradient(90deg, #AF0C3E, #22D3EE, #8F0830);
+            background-size: 200%;
+            animation: shimmer 3s linear infinite;
+        }
+    </style>
+</head>
+
+<body class="bg-base text-textprimary">
+
+    <!-- ============================================================ -->
+    <!-- NAVBAR                                                        -->
+    <!-- ============================================================ -->
+    <header id="navbar" class="fixed top-0 w-full z-50">
+        <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+
+            <!-- Logo -->
+            <a href="#" class="flex items-center gap-3 group">
+                <img src="{% static 'homepage2/assets/ciet-logo__1_-removebg-preview.png' %}" class="h-9 transition-transform duration-300 group-hover:scale-105"
+                    alt="CIET logo" />
+                <span
+                    class="hidden md:block text-[15px] font-extrabold uppercase tracking-widest text-white leading-tight">
+                    Chalapathi Institute<br>of Engineering &amp; Technology
+                </span>
+            </a>
+
+            <!-- Desktop nav -->
+            <nav class="hidden md:flex items-center gap-8">
+                <a href="#about" class="nav-link">About</a>
+                <a href="#programs" class="nav-link">Academics</a>
+                <a href="#research" class="nav-link">Research</a>
+                <a href="#placements" class="nav-link">Placements</a>
+                <a href="#campus" class="nav-link">Campus</a>
+            </nav>
+
+            <!-- CTA -->
+            <a href="{% url 'login' %}" id="nav-cta"
+                class="hidden md:inline-flex items-center gap-2 bg-primary hover:bg-secondary text-white text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded transition-all duration-300 hover:shadow-lg hover:shadow-primary/30">
+                Login
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+            </a>
+        </div>
+        <!-- Gradient underline -->
+        <div class="grad-divider opacity-0 transition-opacity duration-500" id="navbar-divider"></div>
+    </header>
+
+
+    <!-- ============================================================ -->
+    <!-- HERO SECTION                                                  -->
+    <!-- ============================================================ -->
+    <section class="relative h-screen w-full overflow-hidden bg-black">
+
+        <!-- SLIDE 1 – video -->
+        <div class="slide active">
+            <video autoplay muted loop playsinline class="w-full h-full object-cover scale-105">
+                <source src="{% static 'homepage2/assets/Chalapathi Engineering Institutions - 2025 (2).mp4' %}" type="video/mp4">
+            </video>
+        </div>
+
+        <!-- Overlays -->
+        <div
+            class="absolute inset-0 bg-gradient-to-r from-darkbase/90 via-darkbase/50 to-transparent z-20 pointer-events-none">
+        </div>
+        <div
+            class="absolute inset-0 bg-gradient-to-t from-darkbase/80 via-transparent to-transparent z-20 pointer-events-none">
+        </div>
+
+        <!-- Hero Content -->
+        <div class="absolute inset-0 flex items-center z-30 px-6 md:px-24">
+            <div class="max-w-2xl text-white">
+                <span
+                    class="hero-badge inline-block bg-primary/90 backdrop-blur px-4 py-1.5 text-[10px] font-bold uppercase tracking-[.25em] rounded mb-5">
+                    Welcome to CIET Portal
+                </span>
+                <h1 class="hero-title text-5xl md:text-7xl font-black leading-[1.05] drop-shadow-md">
+                    Education for Life.<br>
+                    <span class="text-accent">Education</span> for Living.
+                </h1>
+                <p class="hero-sub mt-6 text-base md:text-lg text-gray-300 font-medium leading-relaxed max-w-lg">
+                    Transforming minds through rigorous engineering curriculum, innovative research, and global
+                    collaborations.
+                </p>
+                <div class="hero-btn mt-10 flex flex-wrap gap-4">
+                    <a href="#programs"
+                        class="inline-flex items-center gap-2 bg-primary hover:bg-secondary text-white text-sm font-bold uppercase tracking-wider px-8 py-3.5 rounded transition-all duration-300 hover:shadow-xl hover:shadow-primary/40">
+                        Register Now
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
+                            viewBox="0 0 24 24">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                    <a href="#about"
+                        class="inline-flex items-center gap-2 border-2 border-white/40 hover:border-white text-white text-sm font-bold uppercase tracking-wider px-7 py-3.5 rounded transition-all duration-300 backdrop-blur">
+                        Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll indicator -->
+
+    </section>
+
+
+    <!-- ============================================================ -->
+    <!-- ABOUT STRIP                                                   -->
+    <!-- ============================================================ -->
+    <section id="about" class="py-24 px-6 md:px-24 bg-base">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+            <div class="reveal">
+                <p class="text-xs font-bold uppercase tracking-[.25em] text-primary mb-4">About the University</p>
+                <h2 class="text-4xl md:text-5xl font-black text-textprimary leading-tight mb-6">
+                    Shaping the<br><span class="text-primary">Leaders of Tomorrow</span>
+                </h2>
+                <p class="text-textsecondary leading-relaxed mb-6">
+                    Chalapathi Institute of Engineering and Technology is a multi-disciplinary institution
+                    driving societal impact through education, innovation, and compassion-driven initiatives
+                    since its founding in Guntur, Andhra Pradesh.
+                </p>
+                <div class="h-1 w-20 bg-gradient-to-r from-primary to-accent rounded"></div>
+            </div>
+            <div class="reveal" style="transition-delay:.15s">
+                <div class="grid grid-cols-2 gap-5">
+                    <div class="card-glow bg-card border border-border rounded-2xl p-6 text-center shimmer-border">
+                        <p class="text-4xl font-black counter-num" data-target="25">0</p>
+                        <p class="text-xs uppercase tracking-widest text-textsecondary mt-2 font-semibold">Years of
+                            Excellence</p>
+                    </div>
+                    <div class="card-glow bg-card border border-border rounded-2xl p-6 text-center shimmer-border"
+                        style="transition-delay:.08s">
+                        <p class="text-4xl font-black counter-num" data-target="8000">0</p>
+                        <p class="text-xs uppercase tracking-widest text-textsecondary mt-2 font-semibold">Students
+                            Enrolled</p>
+                    </div>
+                    <div class="card-glow bg-card border border-border rounded-2xl p-6 text-center shimmer-border"
+                        style="transition-delay:.16s">
+                        <p class="text-4xl font-black counter-num" data-target="350">0</p>
+                        <p class="text-xs uppercase tracking-widest text-textsecondary mt-2 font-semibold">Faculty
+                            Members</p>
+                    </div>
+                    <div class="card-glow bg-card border border-border rounded-2xl p-6 text-center shimmer-border"
+                        style="transition-delay:.24s">
+                        <p class="text-4xl font-black counter-num" data-target="12">0</p>
+                        <p class="text-xs uppercase tracking-widest text-textsecondary mt-2 font-semibold">Departments
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================ -->
+    <!-- ACADEMICS GRID                                                -->
+    <!-- ============================================================ -->
+    <section id="programs" class="py-20 bg-card">
+        <div class="mx-auto max-w-7xl px-6">
+            <div class="reveal text-center mb-14">
+                <p class="text-xs font-bold uppercase tracking-[.25em] text-primary mb-3">Academic Programs</p>
+                <h2 class="text-3xl md:text-4xl font-black text-textprimary uppercase tracking-widest">What's Your
+                    Interest?</h2>
+                <div class="h-1 w-24 bg-gradient-to-r from-primary to-accent mx-auto mt-5 rounded"></div>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 reveal" style="transition-delay:.1s">
+                <!-- CS -->
+                <a href="#" class="prog-card group border border-border bg-base rounded-2xl p-8 text-center card-glow">
+                    <div
+                        class="prog-icon h-16 w-16 mx-auto mb-5 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
+                        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-base text-textprimary group-hover:text-primary transition">Computer
+                        Science</h3>
+                    <p class="text-xs text-textsecondary mt-2 leading-relaxed">AI, ML, Cloud & Full-Stack Development
+                    </p>
+                </a>
+                <!-- EEE -->
+                <a href="#" class="prog-card group border border-border bg-base rounded-2xl p-8 text-center card-glow">
+                    <div
+                        class="prog-icon h-16 w-16 mx-auto mb-5 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
+                        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-base text-textprimary group-hover:text-primary transition">Electronics
+                    </h3>
+                    <p class="text-xs text-textsecondary mt-2 leading-relaxed">VLSI, Embedded Systems & IoT</p>
+                </a>
+                <!-- Business -->
+                <a href="#" class="prog-card group border border-border bg-base rounded-2xl p-8 text-center card-glow">
+                    <div
+                        class="prog-icon h-16 w-16 mx-auto mb-5 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
+                        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-base text-textprimary group-hover:text-primary transition">Business &amp;
+                        Mgmt</h3>
+                    <p class="text-xs text-textsecondary mt-2 leading-relaxed">MBA, Finance & Entrepreneurship</p>
+                </a>
+                <!-- Data Science -->
+                <a href="#" class="prog-card group border border-border bg-base rounded-2xl p-8 text-center card-glow">
+                    <div
+                        class="prog-icon h-16 w-16 mx-auto mb-5 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
+                        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path
+                                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-base text-textprimary group-hover:text-primary transition">Data Science
+                    </h3>
+                    <p class="text-xs text-textsecondary mt-2 leading-relaxed">Analytics, Big Data & Visualization</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================ -->
+    <!-- QUICK LINKS                                                   -->
+    <!-- ============================================================ -->
+    <section id="quick-links" class="py-20 bg-base">
+        <div class="mx-auto max-w-7xl px-6">
+            <div class="reveal text-center mb-14">
+                <p class="text-xs font-bold uppercase tracking-[.25em] text-primary mb-3">Quick Access</p>
+                <h2 class="text-3xl md:text-4xl font-black text-textprimary">Navigate the university <span
+                        class="text-primary">in one click.</span></h2>
+            </div>
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+
+                <article class="reveal card-glow rounded-2xl border border-border bg-card p-7"
+                    style="transition-delay:.05s">
+                    <div
+                        class="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8">
+                            <path d="M4 19h16M5 19V9l7-4 7 4v10" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-textprimary">Admissions</h3>
+                    <p class="mt-2 text-sm text-textsecondary leading-relaxed">Track timelines, eligibility, and
+                        scholarships.</p>
+                    <a href="#"
+                        class="inline-flex items-center gap-1 mt-4 text-xs font-bold text-primary hover:gap-3 transition-all">
+                        Learn more <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"
+                            viewBox="0 0 24 24">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </article>
+
+                <article class="reveal card-glow rounded-2xl border border-border bg-card p-7"
+                    style="transition-delay:.1s">
+                    <div
+                        class="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/15 text-accent">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8">
+                            <path d="M4 7h16M4 12h10M4 17h7" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-textprimary">Programs</h3>
+                    <p class="mt-2 text-sm text-textsecondary leading-relaxed">Undergraduate, postgraduate, and doctoral
+                        catalog.</p>
+                    <a href="#"
+                        class="inline-flex items-center gap-1 mt-4 text-xs font-bold text-accent hover:gap-3 transition-all">
+                        Learn more <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"
+                            viewBox="0 0 24 24">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </article>
+
+                <article class="reveal card-glow rounded-2xl border border-border bg-card p-7"
+                    style="transition-delay:.15s">
+                    <div
+                        class="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8">
+                            <path d="M12 3v18M5 8h14M6 17h12" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-textprimary">Research</h3>
+                    <p class="mt-2 text-sm text-textsecondary leading-relaxed">Explore labs, centers, and funded
+                        projects.</p>
+                    <a href="#"
+                        class="inline-flex items-center gap-1 mt-4 text-xs font-bold text-primary hover:gap-3 transition-all">
+                        Learn more <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"
+                            viewBox="0 0 24 24">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </article>
+
+                <article class="reveal card-glow rounded-2xl border border-border bg-card p-7"
+                    style="transition-delay:.2s">
+                    <div
+                        class="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8">
+                            <path d="M5 12h14M12 5v14" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-textprimary">Placements</h3>
+                    <p class="mt-2 text-sm text-textsecondary leading-relaxed">Career pathways with global recruiters.
+                    </p>
+                    <a href="#"
+                        class="inline-flex items-center gap-1 mt-4 text-xs font-bold text-primary hover:gap-3 transition-all">
+                        Learn more <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"
+                            viewBox="0 0 24 24">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </article>
+
+                <article class="reveal card-glow rounded-2xl border border-border bg-card p-7"
+                    style="transition-delay:.25s">
+                    <div
+                        class="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/15 text-accent">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8">
+                            <path d="M3 12h18M6 6h12M6 18h12" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-textprimary">Campus Life</h3>
+                    <p class="mt-2 text-sm text-textsecondary leading-relaxed">Clubs, culture, athletics, and wellness.
+                    </p>
+                    <a href="#"
+                        class="inline-flex items-center gap-1 mt-4 text-xs font-bold text-accent hover:gap-3 transition-all">
+                        Learn more <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"
+                            viewBox="0 0 24 24">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </article>
+
+                <article class="reveal card-glow rounded-2xl border border-border bg-card p-7"
+                    style="transition-delay:.3s">
+                    <div
+                        class="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8">
+                            <path d="M12 6v12M6 12h12" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-textprimary">Scholarships</h3>
+                    <p class="mt-2 text-sm text-textsecondary leading-relaxed">Merit, need-based, and global
+                        fellowships.</p>
+                    <a href="#"
+                        class="inline-flex items-center gap-1 mt-4 text-xs font-bold text-primary hover:gap-3 transition-all">
+                        Learn more <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"
+                            viewBox="0 0 24 24">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================ -->
+    <!-- RESEARCH & STATS (full-width crimson)                         -->
+    <!-- ============================================================ -->
+    <section id="research" class="py-24 bg-primary relative overflow-hidden">
+        <!-- Decorative blobs -->
+        <div class="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-white/5 blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -right-10 w-96 h-96 rounded-full bg-white/5 blur-3xl pointer-events-none"></div>
+
+        <div class="mx-auto max-w-7xl px-6">
+            <div class="grid md:grid-cols-[1.1fr_.9fr] gap-14 items-center">
+
+                <!-- Left copy -->
+                <div class="reveal-left text-white">
+                    <p class="text-xs font-bold uppercase tracking-[.25em] text-white/60 mb-4">Research &amp; Innovation
+                    </p>
+                    <h2 class="text-3xl md:text-5xl font-black uppercase tracking-wide leading-tight mb-6">
+                        Turning Ideas Into<br>Global Breakthroughs.
+                    </h2>
+                    <p class="text-base text-white/75 leading-relaxed mb-8 max-w-md">
+                        From advanced materials to digital health, our researchers lead interdisciplinary
+                        projects funded by international agencies. Innovation centers nurture student
+                        entrepreneurs and startup ecosystems.
+                    </p>
+                    <a href="#"
+                        class="inline-flex items-center gap-2 border-2 border-white/60 hover:bg-white hover:text-primary text-white text-sm font-bold uppercase tracking-wider px-7 py-3 rounded transition-all duration-300">
+                        Explore Labs
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
+                            viewBox="0 0 24 24">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Right stat grid -->
+                <div class="reveal-right grid grid-cols-2 gap-5">
+                    <div
+                        class="shimmer-border border border-white/20 backdrop-blur rounded-2xl p-7 text-center text-white">
+                        <p class="text-5xl font-black counter-num-white" data-target="680">0</p>
+                        <p class="text-[10px] font-bold uppercase tracking-widest opacity-60 mt-2">Active Projects</p>
+                    </div>
+                    <div
+                        class="shimmer-border border border-white/20 backdrop-blur rounded-2xl p-7 text-center text-white">
+                        <p class="text-5xl font-black counter-num-white" data-target="240">0</p>
+                        <p class="text-[10px] font-bold uppercase tracking-widest opacity-60 mt-2">Patents Filed</p>
+                    </div>
+                    <div
+                        class="shimmer-border border border-white/20 backdrop-blur rounded-2xl p-7 text-center text-white col-span-2">
+                        <div class="flex items-center justify-around">
+                            <div>
+                                <p class="text-5xl font-black counter-num-white" data-target="14000">0</p>
+                                <p class="text-[10px] font-bold uppercase tracking-widest opacity-60 mt-2">Publications
+                                </p>
+                            </div>
+                            <div class="h-16 w-px bg-white/20"></div>
+                            <div>
+                                <p class="text-5xl font-black counter-num-white" data-target="120">0</p>
+                                <p class="text-[10px] font-bold uppercase tracking-widest opacity-60 mt-2">Startups
+                                    Incubated</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Research image row -->
+            <div class="mt-16 reveal relative rounded-3xl overflow-hidden shadow-2xl h-72">
+                <img src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1400&q=80"
+                    alt="Research laboratory" class="w-full h-full object-cover" loading="lazy" />
+                <div class="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent"></div>
+                <div class="absolute left-10 top-1/2 -translate-y-1/2 text-white">
+                    <p class="text-2xl font-black">Innovation Hub</p>
+                    <p class="text-sm opacity-75 mt-1">120+ startups incubated in 5 years.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================ -->
+    <!-- CAMPUS LIFE                                                   -->
+    <!-- ============================================================ -->
+    <section id="campus" class="py-24 bg-card">
+        <div class="mx-auto max-w-7xl px-6">
+            <div class="reveal text-center mb-14">
+                <p class="text-xs font-bold uppercase tracking-[.25em] text-primary mb-3">Campus Life</p>
+                <h2 class="text-3xl md:text-4xl font-black text-textprimary">A thriving community <span
+                        class="text-primary">beyond the classroom.</span></h2>
+                <div class="h-1 w-24 bg-gradient-to-r from-primary to-accent mx-auto mt-5 rounded"></div>
+            </div>
+
+            <!-- Image grid -->
+            <div class="grid md:grid-cols-3 gap-5 reveal">
+                <div class="campus-img rounded-2xl shadow-md h-64">
+                    <img src="{% static 'homepage2/assets/Screenshot 2026-04-13 111252.png' %}" alt="Library" class="h-full w-full object-cover rounded-2xl"
+                        loading="lazy">
+                </div>
+                <div class="campus-img rounded-2xl shadow-md h-64">
+                    <img src="{% static 'homepage2/assets/006.png' %}" alt="Student clubs"
+                        class="h-full w-full object-cover rounded-2xl" loading="lazy">
+                </div>
+                <div class="campus-img rounded-2xl shadow-md h-64">
+                    <img src="{% static 'homepage2/assets/008.png' %}" alt="Sports complex" class="h-full w-full object-cover rounded-2xl"
+                        loading="lazy">
+                </div>
+            </div>
+
+            <!-- Text cards -->
+            <div class="grid gap-6 md:grid-cols-3 mt-7 reveal" style="transition-delay:.1s">
+                <div class="card-glow rounded-2xl border border-border bg-base p-6">
+                    <div class="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M9 20H4v-2a3 3 0 015.356-1.857M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <h4 class="font-bold text-textprimary mb-2">Student Clubs</h4>
+                    <p class="text-sm text-textsecondary leading-relaxed">120+ student-led clubs with leadership and
+                        cultural immersion programs.</p>
+                </div>
+                <div class="card-glow rounded-2xl border border-border bg-base p-6">
+                    <div class="h-10 w-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center mb-4">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M3 12h18M3 6h18M3 18h18" />
+                        </svg>
+                    </div>
+                    <h4 class="font-bold text-textprimary mb-2">World-Class Sports</h4>
+                    <p class="text-sm text-textsecondary leading-relaxed">World-class sports arenas, wellness centers,
+                        and outdoor recreation trails.</p>
+                </div>
+                <div class="card-glow rounded-2xl border border-border bg-base p-6">
+                    <div class="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <h4 class="font-bold text-textprimary mb-2">Residential Campus</h4>
+                    <p class="text-sm text-textsecondary leading-relaxed">Residential campuses with global dining,
+                        safety, and 24/7 support.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================ -->
+    <!-- PLACEMENTS & CAREERS                                          -->
+    <!-- ============================================================ -->
+    <section id="placements" class="py-24 bg-base">
+        <div class="mx-auto max-w-7xl px-6">
+            <div class="grid gap-14 md:grid-cols-[1.1fr_.9fr] items-start">
+
+                <!-- Left -->
+                <div class="reveal-left">
+                    <p class="text-xs font-bold uppercase tracking-[.25em] text-primary mb-4">Placements &amp; Careers
+                    </p>
+                    <h2 class="text-3xl md:text-5xl font-black text-textprimary leading-tight mb-6">
+                        Launch your career with<br><span class="text-primary">global industry leaders.</span>
+                    </h2>
+                    <p class="text-textsecondary leading-relaxed mb-8 max-w-lg">
+                        Our career development center offers structured mentorship, skill accelerators,
+                        and year-round recruiter engagement across 550+ companies.
+                    </p>
+                    <div class="grid grid-cols-3 gap-5">
+                        <div class="card-glow rounded-2xl border border-border bg-card p-5 text-center shimmer-border">
+                            <p class="text-3xl font-black counter-num" data-target="94">0</p>
+                            <p class="text-[10px] uppercase tracking-widest text-textsecondary mt-2 font-semibold">
+                                Placement %</p>
+                        </div>
+                        <div class="card-glow rounded-2xl border border-border bg-card p-5 text-center shimmer-border">
+                            <p class="text-3xl font-black counter-num" data-target="18">0</p>
+                            <p class="text-[10px] uppercase tracking-widest text-textsecondary mt-2 font-semibold">LPA
+                                Avg CTC</p>
+                        </div>
+                        <div class="card-glow rounded-2xl border border-border bg-card p-5 text-center shimmer-border">
+                            <p class="text-3xl font-black counter-num" data-target="550">0</p>
+                            <p class="text-[10px] uppercase tracking-widest text-textsecondary mt-2 font-semibold">
+                                Recruiters</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Recruiter card -->
+                <div class="reveal-right card-glow rounded-3xl border border-border bg-card p-8 shadow-sm">
+                    <p class="text-sm font-bold text-textprimary mb-5">Top Recruiters</p>
+                    <div class="flex flex-wrap gap-3">
+                        <span
+                            class="tag rounded-full border border-border text-textsecondary bg-base px-4 py-1.5 text-xs font-bold cursor-default">Microsoft</span>
+                        <span
+                            class="tag rounded-full border border-border text-textsecondary bg-base px-4 py-1.5 text-xs font-bold cursor-default">Google</span>
+                        <span
+                            class="tag rounded-full border border-border text-textsecondary bg-base px-4 py-1.5 text-xs font-bold cursor-default">Amazon</span>
+                        <span
+                            class="tag rounded-full border border-border text-textsecondary bg-base px-4 py-1.5 text-xs font-bold cursor-default">Deloitte</span>
+                        <span
+                            class="tag rounded-full border border-border text-textsecondary bg-base px-4 py-1.5 text-xs font-bold cursor-default">Bain
+                            &amp; Co</span>
+                        <span
+                            class="tag rounded-full border border-border text-textsecondary bg-base px-4 py-1.5 text-xs font-bold cursor-default">Siemens</span>
+                        <span
+                            class="tag rounded-full border border-border text-textsecondary bg-base px-4 py-1.5 text-xs font-bold cursor-default">Adobe</span>
+                        <span
+                            class="tag rounded-full border border-border text-textsecondary bg-base px-4 py-1.5 text-xs font-bold cursor-default">PwC</span>
+                        <span
+                            class="tag rounded-full border border-border text-textsecondary bg-base px-4 py-1.5 text-xs font-bold cursor-default">TCS</span>
+                        <span
+                            class="tag rounded-full border border-border text-textsecondary bg-base px-4 py-1.5 text-xs font-bold cursor-default">Infosys</span>
+                        <span
+                            class="tag rounded-full border border-border text-textsecondary bg-base px-4 py-1.5 text-xs font-bold cursor-default">Wipro</span>
+                    </div>
+                    <div
+                        class="mt-6 rounded-2xl bg-primary/8 border border-primary/20 p-5 text-sm text-textsecondary leading-relaxed">
+                        <span class="text-primary font-bold">Career Services</span> include aptitude labs, mock
+                        interviews, resume clinics, and alumni mentorship sessions throughout the year.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================ -->
+    <!-- CTA BANNER                                                    -->
+    <!-- ============================================================ -->
+    <section class="py-24 bg-darkbase relative overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute top-0 left-1/3 w-80 h-80 rounded-full bg-primary/20 blur-3xl"></div>
+            <div class="absolute bottom-0 right-1/4 w-64 h-64 rounded-full bg-accent/10 blur-3xl"></div>
+        </div>
+        <div class="mx-auto max-w-3xl px-6 text-center relative z-10 reveal">
+            <p class="text-xs font-bold uppercase tracking-[.25em] text-accent mb-4">Ready to Begin?</p>
+            <h2 class="text-4xl md:text-6xl font-black text-white leading-tight mb-6">
+                Your Future Starts<br>at <span class="text-primary">CIET</span>.
+            </h2>
+            <p class="text-textsecondary mb-10 max-w-lg mx-auto leading-relaxed">
+                Join thousands of students who have chosen excellence. Applications are open for the 2026 academic year.
+            </p>
+            <div class="flex flex-wrap gap-4 justify-center">
+                <a href="#"
+                    class="inline-flex items-center gap-2 bg-primary hover:bg-secondary text-white text-sm font-bold uppercase tracking-wider px-10 py-4 rounded transition-all duration-300 hover:shadow-xl hover:shadow-primary/30">
+                    Apply Now
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
+                        viewBox="0 0 24 24">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </a>
+                <a href="#"
+                    class="inline-flex items-center gap-2 border-2 border-white/20 hover:border-accent text-white text-sm font-bold uppercase tracking-wider px-8 py-4 rounded transition-all duration-300">
+                    Contact Admissions
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================ -->
+    <!-- FOOTER                                                        -->
+    <!-- ============================================================ -->
+    <footer class="bg-darkbase pt-20 pb-8 text-white">
+        <div class="mx-auto max-w-7xl px-6 grid md:grid-cols-4 gap-12 mb-14">
+            <div>
+                <img src="{% static 'homepage2/assets/ciet-logo__1_-removebg-preview.png' %}" class="h-12 invert brightness-0 mb-5 object-contain" alt="CIET" />
+                <p class="text-sm text-gray-400 leading-relaxed">
+                    Chalapathi Institute of Engineering and Technology<br>
+                    Guntur, Andhra Pradesh — A prestigious institute offering transformational learning.
+                </p>
+            </div>
+            <div>
+                <h4 class="text-sm font-bold mb-5 border-b border-gray-700 pb-3 uppercase tracking-widest">About</h4>
+                <ul class="space-y-3 text-sm text-gray-400">
+                    <li><a href="#" class="footer-link">Overview</a></li>
+                    <li><a href="#" class="footer-link">Rankings</a></li>
+                    <li><a href="#" class="footer-link">Careers</a></li>
+                    <li><a href="#" class="footer-link">Events</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-sm font-bold mb-5 border-b border-gray-700 pb-3 uppercase tracking-widest">Academics
+                </h4>
+                <ul class="space-y-3 text-sm text-gray-400">
+                    <li><a href="#" class="footer-link">Undergraduate</a></li>
+                    <li><a href="#" class="footer-link">Postgraduate</a></li>
+                    <li><a href="#" class="footer-link">Research Centers</a></li>
+                    <li><a href="#" class="footer-link">Libraries</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-sm font-bold mb-5 border-b border-gray-700 pb-3 uppercase tracking-widest">Contact</h4>
+                <ul class="space-y-3 text-sm text-gray-400">
+                    <li>Guntur, Andhra Pradesh</li>
+                    <li>+91 80222 01234</li>
+                    <li><a href="mailto:admissions@ciet.ac.in" class="footer-link">admissions@ciet.ac.in</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="grad-divider opacity-30 mb-8"></div>
+        <div
+            class="mx-auto max-w-7xl px-6 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-4">
+            <p>© 2026 Chalapathi Institute of Engineering and Technology. All Rights Reserved.</p>
+            <div class="flex gap-5">
+                <a href="#" class="hover:text-white transition">Privacy Policy</a>
+                <a href="#" class="hover:text-white transition">Terms of Use</a>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- ============================================================ -->
+    <!-- SCRIPTS                                                       -->
+    <!-- ============================================================ -->
+    <script>
+        /* ---- NAVBAR scroll effect ---- */
+        const navbar = document.getElementById('navbar');
+        const divider = document.getElementById('navbar-divider');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 60) {
+                navbar.classList.add('scrolled');
+                divider.style.opacity = '1';
+            } else {
+                navbar.classList.remove('scrolled');
+                divider.style.opacity = '0';
+            }
+        });
+
+        /* ---- HERO VIDEO slider (single slide right now, ready for more) ---- */
+        const slides = document.querySelectorAll('.slide');
+        let slideIdx = 0;
+        if (slides.length > 1) {
+            setInterval(() => {
+                slides[slideIdx].classList.remove('active');
+                slideIdx = (slideIdx + 1) % slides.length;
+                slides[slideIdx].classList.add('active');
+            }, 7000);
+        }
+
+        /* ---- INTERSECTION REVEAL ---- */
+        const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    // Respect any inline transition-delay already set
+                    e.target.classList.add('visible');
+                    io.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.12 });
+        revealEls.forEach(el => io.observe(el));
+
+        /* ---- COUNTER ANIMATION ---- */
+        function animateCounter(el) {
+            const target = parseInt(el.dataset.target, 10);
+            const duration = 1600;
+            const start = performance.now();
+            const step = (now) => {
+                const elapsed = now - start;
+                const progress = Math.min(elapsed / duration, 1);
+                // Ease out expo
+                const eased = 1 - Math.pow(2, -10 * progress);
+                const current = Math.round(eased * target);
+                el.textContent = current.toLocaleString();
+                if (progress < 1) requestAnimationFrame(step);
+                else el.textContent = target.toLocaleString();
+            };
+            requestAnimationFrame(step);
+        }
+
+        const counterEls = document.querySelectorAll('[data-target]');
+        const counterIO = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    animateCounter(e.target);
+                    counterIO.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.4 });
+        counterEls.forEach(el => counterIO.observe(el));
+    </script>
+
+</body>
+
+</html>

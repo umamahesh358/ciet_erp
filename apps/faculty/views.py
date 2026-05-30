@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.views import View
+from django.views.generic import TemplateView
 from django.utils.timezone import now
 from django.db.models import Count, Avg, Q, Sum
 from django.http import HttpResponse, JsonResponse
@@ -18,6 +19,7 @@ from apps.faculty.models import (
     CourseMaterial, CourseAssessment, StudentCourseScore
 )
 from apps.core.models import Announcement
+from apps.notifications.models import Notification, NotificationRecipient
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions
@@ -34,6 +36,108 @@ class RoleRequiredMixin(LoginRequiredMixin):
         if self.allowed_roles and request.user.role not in self.allowed_roles:
             return redirect('dashboard')
         return super().dispatch(request, *args, **kwargs)
+
+
+class FacultyHubTemplateView(RoleRequiredMixin, TemplateView):
+    allowed_roles = ['Faculty', 'Mentor', 'HOD']
+    
+    def get(self, request, *args, **kwargs):
+        """Mark notifications as read when visiting any faculty portal page."""
+        user = request.user
+        
+        # Get user's departments
+        user_departments = list(user.departments.all())
+        if user.role == 'HOD' and not user_departments:
+            hod_dept = Department.objects.filter(hod=user).first()
+            if hod_dept:
+                user_departments = [hod_dept]
+        
+        # Build department filter (same logic as context processor)
+        dept_filter = Q(target_department__isnull=True)
+        if user_departments:
+            dept_filter = dept_filter | Q(target_department__in=user_departments)
+        
+        # Get all relevant notifications for this user
+        relevant_notifications = Notification.objects.filter(
+            Q(is_global=True) |
+            (
+                (Q(target_role='All') | Q(target_role=user.role)) &
+                dept_filter
+            )
+        ).distinct()
+        
+        # Mark all relevant notifications as read for this user
+        for notification in relevant_notifications:
+            NotificationRecipient.objects.get_or_create(
+                user=user,
+                notification=notification,
+                defaults={'is_read': True, 'read_at': now()}
+            )
+            # If it already exists and isn't marked as read, update it
+            NotificationRecipient.objects.filter(
+                user=user,
+                notification=notification,
+                is_read=False
+            ).update(is_read=True, read_at=now())
+        
+        return super().get(request, *args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        """Add unread notifications count to context for all faculty portal pages."""
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # Get user's departments
+        user_departments = list(user.departments.all())
+        if user.role == 'HOD' and not user_departments:
+            hod_dept = Department.objects.filter(hod=user).first()
+            if hod_dept:
+                user_departments = [hod_dept]
+        
+        # Build department filter
+        dept_filter = Q(target_department__isnull=True)
+        if user_departments:
+            dept_filter = dept_filter | Q(target_department__in=user_departments)
+        
+        # Get updated unread count
+        total_relevant = Notification.objects.filter(
+            Q(is_global=True) |
+            (
+                (Q(target_role='All') | Q(target_role=user.role)) &
+                dept_filter
+            )
+        ).count()
+        
+        read_count = NotificationRecipient.objects.filter(user=user, is_read=True).count()
+        unread_count = max(0, total_relevant - read_count)
+        
+        context['hod_unread_count'] = unread_count
+        return context
+
+
+class FacultyHubCohortsView(FacultyHubTemplateView):
+    template_name = 'faculty/cohorts.html'
+
+
+class FacultyHubExploreStudentsView(FacultyHubTemplateView):
+    template_name = 'faculty/explore_students.html'
+
+
+class FacultyHubHodUpdatesView(FacultyHubTemplateView):
+    template_name = 'faculty/hod_updates.html'
+
+
+class FacultyHubCoursesView(FacultyHubTemplateView):
+    template_name = 'faculty/courses.html'
+
+
+class FacultyHubInstitutionCoursesView(FacultyHubTemplateView):
+    def get(self, request, *args, **kwargs):
+        return redirect(f"{request.path.replace('institution-courses/', 'courses/')}?type=institutional")
+
+
+class FacultyHubSettingsView(FacultyHubTemplateView):
+    template_name = 'faculty/settings.html'
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -59,7 +163,7 @@ class HODDashboardView(RoleRequiredMixin, View):
         direct_assignments = StudentMentorAssignment.objects.filter(
             academic_year=current_year,
             students__department=dept
-        ).distinct().prefetch_related('students', 'mentor')
+        ).distinct()
 
         dept_students = StudentProfile.objects.filter(
             department=dept, is_deleted=False
@@ -301,7 +405,7 @@ class MentorDashboardView(RoleRequiredMixin, View):
         # ── Institution courses published to this mentor's dashboard ──
         inst_courses = InstitutionCourse.objects.filter(
             cohorts__students__in=students
-        ).distinct().prefetch_related('assessments')
+        ).distinct()
 
         return render(request, 'faculty/mentor_dashboard.html', {
             'student_stats':  student_stats,
@@ -350,16 +454,53 @@ class FacultyDashboardView(RoleRequiredMixin, View):
     allowed_roles = ['Faculty', 'HOD', 'Mentor']
 
     def get(self, request):
-        departments = request.user.departments.all()
+        user = request.user
+        departments = user.departments.all()
+        
+        # ── Mark notifications as read ──
+        user_departments = list(user.departments.all())
+        if user.role == 'HOD' and not user_departments:
+            hod_dept = Department.objects.filter(hod=user).first()
+            if hod_dept:
+                user_departments = [hod_dept]
+        
+        # Build department filter
+        dept_filter = Q(target_department__isnull=True)
+        if user_departments:
+            dept_filter = dept_filter | Q(target_department__in=user_departments)
+        
+        # Get all relevant notifications for this user
+        relevant_notifications = Notification.objects.filter(
+            Q(is_global=True) |
+            (
+                (Q(target_role='All') | Q(target_role=user.role)) &
+                dept_filter
+            )
+        ).distinct()
+        
+        # Mark all relevant notifications as read for this user
+        for notification in relevant_notifications:
+            NotificationRecipient.objects.get_or_create(
+                user=user,
+                notification=notification,
+                defaults={'is_read': True, 'read_at': now()}
+            )
+            # If it already exists and isn't marked as read, update it
+            NotificationRecipient.objects.filter(
+                user=user,
+                notification=notification,
+                is_read=False
+            ).update(is_read=True, read_at=now())
+        
         # ── My subjects ──
         my_subjects = Subject.objects.filter(
-            faculty=request.user, is_deleted=False
+            faculty=user, is_deleted=False
         ).select_related('department')
 
         # ── Syllabus coverage per subject ──
         syllabus_by_subject = {}
         for subj in my_subjects:
-            units = SyllabusCoverage.objects.filter(subject=subj, faculty=request.user).order_by('unit_number')
+            units = SyllabusCoverage.objects.filter(subject=subj, faculty=user).order_by('unit_number')
             total = units.aggregate(t=Sum('total_topics'))['t'] or 0
             covered = units.aggregate(c=Sum('covered_topics'))['c'] or 0
             syllabus_by_subject[subj.id] = {
@@ -382,10 +523,10 @@ class FacultyDashboardView(RoleRequiredMixin, View):
 
         # ── Institution courses (own + admin + dept cohorts) ──
         my_courses = InstitutionCourse.objects.filter(
-            Q(created_by=request.user) |
+            Q(created_by=user) |
             Q(created_by__is_superuser=True) |
             Q(cohorts__department__in=departments)
-        ).filter(is_deleted=False).distinct().prefetch_related('cohorts', 'assessments', 'materials')
+        ).filter(is_deleted=False).distinct()
 
         # ── Student performance in my subjects ──
         subject_performance = []
@@ -406,6 +547,18 @@ class FacultyDashboardView(RoleRequiredMixin, View):
         dept_students = StudentProfile.objects.filter(
             department__in=departments, is_deleted=False
         ).select_related('user', 'department') if departments.exists() else StudentProfile.objects.none()
+        
+        # ── Calculate unread notifications count ──
+        total_relevant = Notification.objects.filter(
+            Q(is_global=True) |
+            (
+                (Q(target_role='All') | Q(target_role=user.role)) &
+                dept_filter
+            )
+        ).count()
+        
+        read_count = NotificationRecipient.objects.filter(user=user, is_read=True).count()
+        unread_count = max(0, total_relevant - read_count)
 
         return render(request, 'faculty/faculty_dashboard.html', {
             'my_subjects':        my_subjects,
@@ -417,6 +570,7 @@ class FacultyDashboardView(RoleRequiredMixin, View):
             'departments':        departments,
             'perf_labels':        json.dumps(perf_labels),
             'perf_values':        json.dumps(perf_values),
+            'hod_unread_count':   unread_count,
         })
 
     def post(self, request):

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Faculty Hub – Manage and publish academic courses.">
+    <title>Faculty Hub — Courses</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<div id="layout-wrapper">
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar" id="app-sidebar">
+        <div class="sidebar-brand" style="border-bottom:1px solid var(--border); padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:center;">
+            <img src="images/image.png" alt="CIET Logo" style="max-width:100%; max-height:56px; object-fit:contain;">
+        </div>
+        <div class="sidebar-content">
+            <div class="nav-section-label" style="padding-top:1.25rem;">Main Menu</div>
+            <nav>
+                <a href="index.html" class="nav-link"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+                <a href="cohorts.html" class="nav-link"><i data-lucide="users"></i><span>Cohorts</span></a>
+                <a href="courses.html" class="nav-link active"><i data-lucide="book-open"></i><span>Courses</span></a>
+                <a href="institution-courses.html" class="nav-link"><i data-lucide="graduation-cap"></i><span>Institution Courses</span></a>
+                <a href="index.html#updates-section" class="nav-link hod-updates" id="nav-updates">
+                    <i data-lucide="bell-ring"></i><span class="fw-semibold">HOD Updates</span>
+                    <span class="pulse-dot"></span>
+                </a>
+                <a href="settings.html" class="nav-link"><i data-lucide="settings"></i><span>Settings</span></a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="main-content">
+        <header class="top-navbar">
+            <div class="d-flex align-items-center gap-3 flex-grow-1">
+                <button class="nav-action-btn border-0" id="sidebar-toggle" aria-label="Toggle Sidebar">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div class="search-wrap d-none d-lg-block">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" placeholder="Search courses…">
+                </div>
+            </div>
+            <div class="navbar-actions">
+                <button class="nav-action-btn border-0" id="theme-toggle" aria-label="Toggle Theme">
+                    <i data-lucide="sun" style="width:20px;height:20px;"></i>
+                </button>
+                <div class="dropdown">
+                    <button class="nav-action-btn border-0 position-relative" data-bs-toggle="dropdown" aria-label="Notifications">
+                        <i data-lucide="bell"></i>
+                        <span class="notif-badge"></span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end p-0 mt-2 overflow-hidden" style="width:300px;border-radius:var(--radius-lg);">
+                        <div class="notif-header">
+                            <p class="fw-bold mb-0 text-white" style="font-size:.9rem;">Notifications</p>
+                            <span class="badge bg-white rounded-pill" style="color:var(--primary);font-size:.7rem;">3 New</span>
+                        </div>
+                        <div class="p-3 border-bottom" style="border-color:var(--border)!important;">
+                            <div class="d-flex gap-3 align-items-start">
+                                <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-2"
+                                    style="width:34px;height:34px;background:rgba(var(--primary-rgb),0.1);">
+                                    <i data-lucide="bell" style="width:14px;color:var(--primary);"></i>
+                                </div>
+                                <div>
+                                    <p class="fw-bold mb-0" style="font-size:.8rem;color:var(--text-primary);">New Update from HOD</p>
+                                    <p class="mb-0" style="font-size:.72rem;color:var(--text-muted);">Revised evaluation policy posted.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-2 text-center" style="background:var(--muted-bg);">
+                            <a href="index.html#updates-section" class="small fw-bold text-decoration-none" style="color:var(--primary);">View all</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <div class="profile-trigger" data-bs-toggle="dropdown" style="cursor:none;">
+                        <div class="d-none d-sm-block profile-name-block text-end">
+                            <p class="pname mb-0">Dr. Rajesh Kumar</p>
+                            <span class="prole">Professor</span>
+                        </div>
+                        <div class="profile-avatar"><i data-lucide="user"></i></div>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end mt-2 p-2" style="width:230px;border-radius:var(--radius-lg);">
+                        <li class="profile-user-block mb-2">
+                            <span class="fw-bold d-block" style="font-size:.85rem;color:var(--text-primary);">Dr. Rajesh Kumar</span>
+                            <small style="color:var(--text-muted);font-size:.7rem;">rajesh.kumar@university.edu</small>
+                        </li>
+                        <li><a class="dropdown-item" href="settings.html"><i data-lucide="user-cog" style="width:14px;"></i> Profile Settings</a></li>
+                        <li><a class="dropdown-item" href="settings.html"><i data-lucide="shield-check" style="width:14px;color:#CA8A04;"></i> Security</a></li>
+                        <li><hr class="dropdown-divider opacity-50 mx-2"></li>
+                        <li><a class="dropdown-item text-danger" href="#"><i data-lucide="log-out" style="width:14px;"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-content">
+            <div class="dashboard-header fade-in-up">
+                <div>
+                    <h1 class="page-title">Course Management</h1>
+                    <p class="page-subtitle">Create, manage and assign courses to departments</p>
+                </div>
+                <button class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#courseModal">
+                    <i data-lucide="plus" style="width:16px;"></i> New Course
+                </button>
+            </div>
+
+            <div class="row g-3 fade-in-up-1" id="courses-list">
+                <!-- Dynamic -->
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ── Course Modal ── -->
+<div class="modal fade" id="courseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Create Course</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="courseCreateForm">
+                    <div class="mb-3">
+                        <label class="form-label">Course Name</label>
+                        <input type="text" class="form-control" id="new-course-name" placeholder="e.g. Machine Learning" required>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Department</label>
+                            <select class="form-select" id="new-course-dept" required>
+                                <option value="">Select Dept</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Academic Year</label>
+                            <select class="form-select" id="new-course-year" required>
+                                <option value="1">Year I</option>
+                                <option value="2">Year II</option>
+                                <option value="3">Year III</option>
+                                <option value="4">Year IV</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Section (A–E)</label>
+                            <select class="form-select" id="new-course-section" required>
+                                <option value="A">Section A</option>
+                                <option value="B">Section B</option>
+                                <option value="C">Section C</option>
+                                <option value="D">Section D</option>
+                                <option value="E">Section E</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Cohort Name</label>
+                            <input type="text" class="form-control" id="new-course-cohort" placeholder="e.g. Regular 2024">
+                        </div>
+                    </div>
+                    <!-- File Upload -->
+                    <div class="mb-3">
+                        <label class="form-label d-flex justify-content-between">
+                            <span>Course Materials</span>
+                            <span style="color:var(--text-muted);font-weight:400;font-size:.75rem;">(Optional)</span>
+                        </label>
+                        <div class="file-drop-zone" id="course-file-drop-zone" onclick="document.getElementById('new-course-material').click()">
+                            <i data-lucide="cloud-upload" style="width:28px;height:28px;" class="mb-2"></i>
+                            <p class="fw-semibold mb-1" style="font-size:.875rem;color:var(--text-primary);">Click or drag files here</p>
+                            <p class="mb-0" style="font-size:.75rem;color:var(--text-muted);">PDF, DOCX, ZIP, PPTX, MP4 · Max 50MB</p>
+                            <input type="file" id="new-course-material" class="d-none" multiple>
+                        </div>
+                        <div id="course-file-preview-list" class="mt-2 d-flex flex-column gap-2"></div>
+                    </div>
+                    <!-- Institutional Toggle -->
+                    <div class="mb-3 p-3 rounded-3" style="background:var(--muted-bg);border:1px solid var(--border);">
+                        <div class="form-check form-switch d-flex align-items-center gap-3 p-0 m-0">
+                            <input class="form-check-input ms-0" type="checkbox" id="new-course-inst" role="switch">
+                            <label class="form-check-label fw-semibold" for="new-course-inst" style="font-size:.875rem;color:var(--text-primary);">
+                                Mark as Institutional Course
+                            </label>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 pt-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary px-4">Create &amp; Publish</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/scripts.js"></script>
+<script>
+    lucide.createIcons();
+    let isEditingCourse = false;
+    let editingCourseId = null;
+
+    function renderCourses() {
+        const container = document.getElementById('courses-list');
+        if (!courses.length) {
+            container.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i data-lucide="book-open" style="width:48px;height:48px;color:var(--text-muted);opacity:.4;"></i>
+                    <h5 class="mt-3 fw-semibold" style="color:var(--text-muted);">No courses yet</h5>
+                    <p style="color:var(--text-muted);font-size:.875rem;">Click "New Course" to get started.</p>
+                </div>`;
+            lucide.createIcons();
+            return;
+        }
+
+        container.innerHTML = courses.map(course => {
+            const dept = departments.find(d => d.id === course.departmentId);
+            const chs  = cohorts.filter(c  => (course.cohortIds  || []).includes(c.id));
+            const secs = sections.filter(s  => (course.sectionIds || []).includes(s.id));
+            const materialsCount = Array.isArray(course.studyMaterials) ? course.studyMaterials.length : 0;
+
+            return `
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="item-card card-hover" onclick="location.href='course-detail.html?id=${course.id}'" style="cursor:none;">
+                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width:10px;height:10px;border-radius:50%;background:${course.published ? 'var(--primary)' : 'var(--text-muted)'};flex-shrink:0;"></div>
+                                <h6 class="fw-bold mb-0" style="color:var(--text-primary);">${course.name}</h6>
+                            </div>
+                            <div class="item-card-actions">
+                                <button class="btn-icon" onclick="openEditCourseModal('${course.id}', event)" title="Edit">
+                                    <i data-lucide="edit-2" style="width:13px;"></i>
+                                </button>
+                                <button class="btn-icon danger" onclick="deleteCourse('${course.id}', event)" title="Delete">
+                                    <i data-lucide="trash-2" style="width:13px;"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="badge badge-primary">${dept ? dept.code : 'N/A'}</span>
+                            <span class="badge badge-warning">Year ${YEAR_LABELS[course.year]}</span>
+                            <span class="badge ${course.published ? 'badge-success' : 'badge-muted'}">${course.published ? 'Published' : 'Draft'}</span>
+                            ${course.isInstitutional ? '<span class="badge badge-accent">Institutional</span>' : ''}
+                            <span class="badge badge-muted d-flex align-items-center gap-1">
+                                <i data-lucide="file-text" style="width:10px;"></i> ${materialsCount} materials
+                            </span>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            ${secs.map(s => `<span class="section-badge">Sec ${s.name}</span>`).join('')}
+                        </div>
+                        ${chs.length > 0 ? `<p class="mb-0" style="font-size:.78rem;color:var(--text-muted);"><span style="color:var(--text-secondary);font-weight:500;">Cohorts:</span> ${chs.map(c => c.name).join(', ')}</p>` : ''}
+                        <div class="mt-3 pt-2 text-end" style="border-top:1px solid var(--border);">
+                            <small style="color:var(--primary);font-weight:600;font-size:.72rem;">View Details →</small>
+                        </div>
+                    </div>
+                </div>`;
+        }).join('');
+        lucide.createIcons();
+    }
+
+    function openAddCourseModal() {
+        isEditingCourse = false;
+        document.getElementById('courseCreateForm').reset();
+        document.getElementById('courseModal').querySelector('.modal-title').textContent = 'Create Course';
+    }
+
+    function openEditCourseModal(id, e) {
+        e.stopPropagation();
+        isEditingCourse = true;
+        editingCourseId = id;
+        const course = courses.find(c => c.id === id);
+        if (!course) return;
+        document.getElementById('courseModal').querySelector('.modal-title').textContent = 'Update Course';
+        document.getElementById('new-course-name').value = course.name;
+        document.getElementById('new-course-dept').value = course.departmentId;
+        document.getElementById('new-course-year').value = course.year;
+        const firstSec = sections.find(s => course.sectionIds && course.sectionIds.includes(s.id));
+        if (firstSec) document.getElementById('new-course-section').value = firstSec.name;
+        const firstCoh = cohorts.find(c => course.cohortIds && course.cohortIds.includes(c.id));
+        if (firstCoh) document.getElementById('new-course-cohort').value = firstCoh.name;
+        document.getElementById('new-course-inst').checked = !!course.isInstitutional;
+        new bootstrap.Modal(document.getElementById('courseModal')).show();
+    }
+
+    function deleteCourse(id, e) {
+        e.stopPropagation();
+        if (confirm('Delete this course?')) {
+            courses = courses.filter(c => c.id !== id);
+            saveData('courses', courses);
+            renderCourses();
+        }
+    }
+
+    function fileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve({
+                name: file.name,
+                size: file.size,
+                type: file.type || 'application/octet-stream',
+                uploadedAt: new Date().toISOString(),
+                dataUrl: reader.result
+            });
+            reader.onerror = () => reject(new Error(`Failed to read ${file.name}`));
+            reader.readAsDataURL(file);
+        });
+    }
+
+    document.getElementById('courseCreateForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const name    = document.getElementById('new-course-name').value;
+        const dId     = document.getElementById('new-course-dept').value;
+        const year    = parseInt(document.getElementById('new-course-year').value);
+        const secName = document.getElementById('new-course-section').value;
+        const cohName = document.getElementById('new-course-cohort').value;
+        const isInst  = document.getElementById('new-course-inst').checked;
+        const studyMaterials = selectedCourseFiles.length
+            ? await Promise.all(selectedCourseFiles.map(fileToDataUrl))
+            : [];
+
+        let sec = sections.find(s => s.name === secName && s.departmentId === dId && s.year === year);
+        if (!sec) {
+            sec = { id: `sec-${Date.now()}`, name: secName, departmentId: dId, year };
+            sections.push(sec);
+            saveData('sections', sections);
+        }
+
+        let cohId = null;
+        if (cohName) {
+            let coh = cohorts.find(c => c.name === cohName && c.departmentId === dId);
+            if (!coh) {
+                coh = { id: `coh-${Date.now()}`, name: cohName, departmentId: dId, year, sectionIds: [sec.id] };
+                cohorts.push(coh);
+                saveData('cohorts', cohorts);
+            }
+            cohId = coh.id;
+        }
+
+        if (isEditingCourse) {
+            const idx = courses.findIndex(c => c.id === editingCourseId);
+            if (idx > -1) {
+                courses[idx] = {
+                    ...courses[idx],
+                    name,
+                    departmentId: dId,
+                    year,
+                    sectionIds: [sec.id],
+                    cohortIds: cohId ? [cohId] : [],
+                    isInstitutional: isInst,
+                    studyMaterials: studyMaterials.length ? studyMaterials : (courses[idx].studyMaterials || [])
+                };
+            }
+        } else {
+            courses.push({
+                id: `crs-${Date.now()}`,
+                name,
+                departmentId: dId,
+                year,
+                sectionIds: [sec.id],
+                cohortIds: cohId ? [cohId] : [],
+                published: true,
+                isInstitutional: isInst,
+                assessmentName: 'New Assessment',
+                assessmentScore: 0,
+                studyMaterials
+            });
+        }
+        saveData('courses', courses);
+
+        if (isInst) {
+            const existing = institutionCourses.find(ic => ic.name === name && ic.year === year);
+            if (!existing) {
+                institutionCourses.push({ id: `inst-${Date.now()}`, name, category: 'Institutional', sectionIds: [sec.id], year });
+                saveData('inst_courses', institutionCourses);
+            }
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById('courseModal')).hide();
+        e.target.reset();
+        selectedCourseFiles = [];
+        renderCourseFilePreviews();
+        if (courseFileInput) courseFileInput.value = '';
+        renderCourses();
+    });
+
+    document.querySelector('[data-bs-target="#courseModal"]').addEventListener('click', openAddCourseModal);
+
+    const deptFormSelect = document.getElementById('new-course-dept');
+    if (deptFormSelect) deptFormSelect.innerHTML += departments.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+
+    // File Upload
+    const courseFileInput   = document.getElementById('new-course-material');
+    const courseDropZone    = document.getElementById('course-file-drop-zone');
+    const coursePreviewList = document.getElementById('course-file-preview-list');
+    let selectedCourseFiles = [];
+
+    if (courseFileInput && courseDropZone) {
+        courseFileInput.addEventListener('change', e => handleCourseFiles(e.target.files));
+        courseDropZone.addEventListener('dragover', e => { e.preventDefault(); courseDropZone.classList.add('drag-over'); });
+        courseDropZone.addEventListener('dragleave', () => courseDropZone.classList.remove('drag-over'));
+        courseDropZone.addEventListener('drop', e => {
+            e.preventDefault(); courseDropZone.classList.remove('drag-over');
+            if (e.dataTransfer.files) handleCourseFiles(e.dataTransfer.files);
+        });
+    }
+
+    function handleCourseFiles(files) { for (let f of files) selectedCourseFiles.push(f); renderCourseFilePreviews(); }
+    function removeCourseFile(i, e) { e.stopPropagation(); selectedCourseFiles.splice(i, 1); renderCourseFilePreviews(); }
+    function renderCourseFilePreviews() {
+        if (!selectedCourseFiles.length) { coursePreviewList.innerHTML = ''; return; }
+        coursePreviewList.innerHTML = selectedCourseFiles.map((f, i) => `
+            <div class="d-flex align-items-center justify-content-between p-2 rounded-3" style="border:1px solid var(--border);background:var(--base);">
+                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                    <div style="width:30px;height:30px;border-radius:8px;background:rgba(var(--primary-rgb),0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i data-lucide="file" style="width:13px;color:var(--primary);"></i>
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="small fw-bold mb-0 text-truncate">${f.name}</p>
+                        <p class="mb-0" style="font-size:.65rem;color:var(--text-muted);">${(f.size/1024/1024).toFixed(2)} MB</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-icon danger" onclick="removeCourseFile(${i},event)">
+                    <i data-lucide="x" style="width:12px;"></i>
+                </button>
+            </div>`).join('');
+        lucide.createIcons();
+    }
+
+    const origAddCourse = openAddCourseModal;
+    openAddCourseModal = function() { origAddCourse(); selectedCourseFiles = []; renderCourseFilePreviews(); if (courseFileInput) courseFileInput.value = ''; };
+    const origEditCourse = openEditCourseModal;
+    openEditCourseModal = function(id, e) { origEditCourse(id, e); selectedCourseFiles = []; renderCourseFilePreviews(); if (courseFileInput) courseFileInput.value = ''; };
+
+    renderCourses();
+</script>
+</body>
+</html>

@@ -12,7 +12,7 @@ class DashboardView(View):
             exams = announcements.filter(category='Exam')[:5]
             success_stories = announcements.filter(category='Event')[:5]
             
-            return render(request, 'landing.html', {
+            return render(request, 'HOMEPAGE2.01/HOMEPAGE2.0/demo.html', {
                 'news': news,
                 'exams': exams,
                 'success_stories': success_stories
@@ -41,7 +41,7 @@ class StudentListView(LoginRequiredMixin, TemplateView):
 
 
 class FacultyListView(LoginRequiredMixin, TemplateView):
-    template_name = 'faculty_list.html'
+    template_name = 'faculty/faculty_dashboard.html'
 
 
 class EventListView(LoginRequiredMixin, View):

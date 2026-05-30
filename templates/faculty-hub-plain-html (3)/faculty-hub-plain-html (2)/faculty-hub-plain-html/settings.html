@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Faculty Hub – Account settings and security preferences.">
+    <title>Faculty Hub — Settings</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<div id="layout-wrapper">
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar" id="app-sidebar">
+        <div class="sidebar-brand" style="border-bottom:1px solid var(--border); padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:center;">
+            <img src="images/image.png" alt="CIET Logo" style="max-width:100%; max-height:56px; object-fit:contain;">
+        </div>
+        <div class="sidebar-content">
+            <div class="nav-section-label" style="padding-top:1.25rem;">Main Menu</div>
+            <nav>
+                <a href="index.html" class="nav-link"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+                <a href="cohorts.html" class="nav-link"><i data-lucide="users"></i><span>Cohorts</span></a>
+                <a href="courses.html" class="nav-link"><i data-lucide="book-open"></i><span>Courses</span></a>
+                <a href="institution-courses.html" class="nav-link"><i data-lucide="graduation-cap"></i><span>Institution Courses</span></a>
+                <a href="index.html#updates-section" class="nav-link hod-updates" id="nav-updates">
+                    <i data-lucide="bell-ring"></i><span class="fw-semibold">HOD Updates</span>
+                    <span class="pulse-dot"></span>
+                </a>
+                <a href="settings.html" class="nav-link active"><i data-lucide="settings"></i><span>Settings</span></a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="main-content">
+        <header class="top-navbar">
+            <div class="d-flex align-items-center gap-3 flex-grow-1">
+                <button class="nav-action-btn border-0" id="sidebar-toggle" aria-label="Toggle Sidebar">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div class="search-wrap d-none d-lg-block">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" placeholder="Search settings…">
+                </div>
+            </div>
+            <div class="navbar-actions">
+                <button class="nav-action-btn border-0" id="theme-toggle" aria-label="Toggle Theme">
+                    <i data-lucide="sun" style="width:20px;height:20px;"></i>
+                </button>
+                <div class="dropdown">
+                    <button class="nav-action-btn border-0 position-relative" data-bs-toggle="dropdown" aria-label="Notifications">
+                        <i data-lucide="bell"></i>
+                        <span class="notif-badge"></span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end p-0 mt-2 overflow-hidden" style="width:300px;border-radius:var(--radius-lg);">
+                        <div class="notif-header">
+                            <p class="fw-bold mb-0 text-white" style="font-size:.9rem;">Notifications</p>
+                            <span class="badge bg-white rounded-pill" style="color:var(--primary);font-size:.7rem;">3 New</span>
+                        </div>
+                        <div class="p-3 border-bottom" style="border-color:var(--border)!important;">
+                            <div class="d-flex gap-3 align-items-start">
+                                <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-2" style="width:34px;height:34px;background:rgba(var(--primary-rgb),0.1);">
+                                    <i data-lucide="bell" style="width:14px;color:var(--primary);"></i>
+                                </div>
+                                <div>
+                                    <p class="fw-bold mb-0" style="font-size:.8rem;color:var(--text-primary);">New Update from HOD</p>
+                                    <p class="mb-0" style="font-size:.72rem;color:var(--text-muted);">Revised evaluation policy posted.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-2 text-center" style="background:var(--muted-bg);">
+                            <a href="index.html#updates-section" class="small fw-bold text-decoration-none" style="color:var(--primary);">View all</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <div class="profile-trigger" data-bs-toggle="dropdown" style="cursor:none;">
+                        <div class="d-none d-sm-block profile-name-block text-end">
+                            <p class="pname mb-0">Dr. Rajesh Kumar</p>
+                            <span class="prole">Professor</span>
+                        </div>
+                        <div class="profile-avatar"><i data-lucide="user"></i></div>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end mt-2 p-2" style="width:230px;border-radius:var(--radius-lg);">
+                        <li class="profile-user-block mb-2">
+                            <span class="fw-bold d-block" style="font-size:.85rem;color:var(--text-primary);">Dr. Rajesh Kumar</span>
+                            <small style="color:var(--text-muted);font-size:.7rem;">rajesh.kumar@university.edu</small>
+                        </li>
+                        <li><a class="dropdown-item" href="settings.html"><i data-lucide="user-cog" style="width:14px;"></i> Profile Settings</a></li>
+                        <li><a class="dropdown-item" href="#security-section"><i data-lucide="shield-check" style="width:14px;color:#CA8A04;"></i> Security</a></li>
+                        <li><hr class="dropdown-divider opacity-50 mx-2"></li>
+                        <li><a class="dropdown-item text-danger" href="#"><i data-lucide="log-out" style="width:14px;"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-content" style="max-width:920px;margin:0 auto;">
+            <div class="dashboard-header fade-in-up">
+                <div>
+                    <h1 class="page-title">Account Settings</h1>
+                    <p class="page-subtitle">Manage your academic profile</p>
+                </div>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+                <div class="col-12 col-lg-10 fade-in-up-1">
+                    <div class="section-card h-100">
+                        <div class="section-card-header">
+                            <div class="icon-wrap primary">
+                                <i data-lucide="user" style="width:18px;"></i>
+                            </div>
+                            <h5 class="fw-bold mb-0" style="color:var(--text-primary);">Profile Management</h5>
+                        </div>
+
+                        <!-- Avatar -->
+                        <div class="d-flex align-items-center gap-4 mb-4 p-3 rounded-3" style="background:var(--muted-bg);border:1px solid var(--border);">
+                            <div class="position-relative flex-shrink-0">
+                                <div class="d-flex align-items-center justify-content-center rounded-circle" style="width:76px;height:76px;background:var(--base);border:2px solid var(--border);box-shadow:var(--shadow-sm);">
+                                    <i data-lucide="user" style="width:30px;color:var(--primary);opacity:.6;"></i>
+                                </div>
+                                <button class="btn btn-primary position-absolute bottom-0 end-0 d-flex align-items-center justify-content-center" style="width:28px;height:28px;padding:0;border-radius:50%;border:2px solid var(--base);">
+                                    <i data-lucide="camera" style="width:12px;"></i>
+                                </button>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="color:var(--text-primary);">Photo Identification</h6>
+                                <p class="mb-0" style="font-size:.82rem;color:var(--text-muted);">Visible on your faculty profile across all modules.</p>
+                            </div>
+                        </div>
+
+                        <form class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" style="font-size:.65rem;text-transform:uppercase;letter-spacing:.8px;">Full Name</label>
+                                <input type="text" class="form-control" value="Dr. Rajesh Kumar">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" style="font-size:.65rem;text-transform:uppercase;letter-spacing:.8px;">Contact Email</label>
+                                <input type="email" class="form-control" value="rajesh.kumar@university.edu" readonly style="opacity:.7;">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label" style="font-size:.65rem;text-transform:uppercase;letter-spacing:.8px;">Department</label>
+                                <select class="form-select" id="settings-dept-select"></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" style="font-size:.65rem;text-transform:uppercase;letter-spacing:.8px;">Designation</label>
+                                <input type="text" class="form-control" value="Professor">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" style="font-size:.65rem;text-transform:uppercase;letter-spacing:.8px;">Employee ID</label>
+                                <input type="text" class="form-control" value="FAC-2024-0091" readonly style="opacity:.7;">
+                            </div>
+                            <div class="col-12 mt-2">
+                                <button type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2 py-2 hover-lift">
+                                    <i data-lucide="save" style="width:16px;"></i> Save All Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/scripts.js"></script>
+<script>
+    const deptSelect = document.getElementById('settings-dept-select');
+    if (deptSelect) {
+        deptSelect.innerHTML = departments.map(d => `<option value="${d.id}"${d.id === 'dept-1' ? ' selected' : ''}>${d.name}</option>`).join('');
+    }
+    lucide.createIcons();
+</script>
+</body>
+</html>
