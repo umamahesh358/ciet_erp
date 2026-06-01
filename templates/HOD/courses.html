@@ -1,0 +1,253 @@
+{% extends 'HOD/base_hod.html' %}
+{% load static %}
+
+{% block portal_tab_title %}HOD Courses{% endblock %}
+{% block portal_title %}Curriculum & Courses{% endblock %}
+
+{% block portal_content %}
+{% if no_dept %}
+<div class="card p-4 text-center">
+  <div class="empty-state">
+    <div class="empty-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+    <div class="empty-title">Department Not Mapped</div>
+    <div class="empty-desc">Your account is not mapped to a department yet. Please contact the system administrator.</div>
+  </div>
+</div>
+{% else %}
+
+<!-- ═══ HEADER ═══ -->
+<div class="flex-between">
+  <div>
+    <h2 class="section-title">Course & Curriculum Controls</h2>
+    <p class="section-sub">Assign subjects to faculty, manage training sessions, and upload academic lesson plans.</p>
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <button class="btn-primary" data-bs-toggle="modal" data-bs-target="#createSubjectModal">
+      <i class="bi bi-plus-lg me-1"></i> Create Subject
+    </button>
+    <a class="btn-outline" href="{% url 'hod-dashboard' %}">
+      <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+    </a>
+  </div>
+</div>
+
+<!-- ═══ TWO-COLUMN ACTION BOARDS ═══ -->
+<div class="row g-4 mb-4">
+  <!-- Assign Course to Teacher -->
+  <div class="col-lg-6">
+    <div class="card p-4 h-100">
+      <h5 class="fw-bold mb-1">Assign Course to Teacher</h5>
+      <p class="text-muted text-sm mb-4">Map a department course/subject to a specific active faculty member.</p>
+      
+      <form method="post" class="row g-3">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="assign_course_to_teacher">
+        <div class="col-12">
+          <label class="form-label text-sm fw-bold">Course / Subject</label>
+          <select class="form-select text-sm" name="subject_id" required>
+            <option value="">Select subject</option>
+            {% for subject in subjects %}
+            <option value="{{ subject.id }}">{{ subject.code }} - {{ subject.name }} (Sem {{ subject.semester }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label text-sm fw-bold">Faculty Member</label>
+          <select class="form-select text-sm" name="faculty_id" required>
+            <option value="">Select teacher</option>
+            {% for teacher in faculty_list %}
+            <option value="{{ teacher.id }}">{{ teacher.full_name|default:teacher.email }} ({{ teacher.role }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 mt-4">
+          <button type="submit" class="btn-primary w-100 justify-content-center">
+            <i class="bi bi-check2-circle me-1"></i> Save Course Assignment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Upload Lesson Plan -->
+  <div class="col-lg-6">
+    <div class="card p-4 h-100">
+      <h5 class="fw-bold mb-1">Upload Lesson Plan</h5>
+      <p class="text-muted text-sm mb-4">Upload a curriculum lesson plan for a subject in the current academic year.</p>
+      
+      <form method="post" enctype="multipart/form-data" class="row g-3">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="upload_lesson_plan">
+        <div class="col-md-8">
+          <label class="form-label text-sm fw-bold">Subject</label>
+          <select class="form-select text-sm" name="subject_id" required>
+            <option value="">Select subject</option>
+            {% for subject in subjects %}
+            <option value="{{ subject.id }}">{{ subject.code }} - {{ subject.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label text-sm fw-bold">Academic Year</label>
+          <input type="text" class="form-control text-sm" name="academic_year" value="{{ current_year }}" required>
+        </div>
+        <div class="col-12">
+          <label class="form-label text-sm fw-bold">Select File (PDF/Word)</label>
+          <input type="file" class="form-control text-sm" name="file" required>
+        </div>
+        <div class="col-12 mt-4">
+          <button type="submit" class="btn-outline w-100 justify-content-center">
+            <i class="bi bi-cloud-arrow-up me-1"></i> Upload Lesson Plan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CURRICULUM SUBJECTS TABLE ═══ -->
+<div class="card p-4 mb-4">
+  <h5 class="fw-bold mb-1">Department Subject Catalog</h5>
+  <p class="text-muted text-sm mb-3">All subjects offered by the department and their assigned teachers.</p>
+  
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--border); font-size:12px; color:var(--muted);">
+          <th>CODE</th>
+          <th>SUBJECT NAME</th>
+          <th>SEMESTER</th>
+          <th>CREDITS</th>
+          <th>TYPE</th>
+          <th>ASSIGNED FACULTY</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for subject in subjects %}
+        <tr style="border-bottom: 1px solid var(--border); font-size:13px;">
+          <td class="fw-bold" style="color:var(--primary);">{{ subject.code }}</td>
+          <td class="fw-bold">{{ subject.name }}</td>
+          <td><span class="tag">Semester {{ subject.semester }}</span></td>
+          <td>{{ subject.credits }} Credits</td>
+          <td>
+            {% if subject.type == 'Theory' or subject.type == 'theory' %}
+              <span class="tag tag-blue">Theory</span>
+            {% else %}
+              <span class="tag tag-cyan">Practical / Lab</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if subject.faculty %}
+              <span class="tag tag-primary">{{ subject.faculty.full_name|default:subject.faculty.email }}</span>
+            {% else %}
+              <span class="text-muted small">Not Assigned</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-muted py-3 text-center">No subjects mapped in curriculum.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ TRAINING PROGRAMS LIST ═══ -->
+<div class="card p-4" id="training">
+  <h5 class="fw-bold mb-1">Department Training Programs</h5>
+  <p class="text-muted text-sm mb-4">Active capacity-building, skills, and placement training programs in progress.</p>
+  
+  <div class="row g-3">
+    {% for tp in training_programs %}
+    <div class="col-md-6">
+      <div class="border rounded-3 p-3 h-100 d-flex flex-column justify-content-between" style="background:#f8fafc; border-color:var(--border);">
+        <div class="d-flex justify-content-between gap-2 mb-2">
+          <div>
+            <div class="fw-bold" style="font-size:14px;">{{ tp.title }}</div>
+            <div class="smaller text-muted" style="font-size:12px;"><i class="bi bi-calendar-event me-1"></i>{{ tp.start_date }}{% if tp.end_date %} - {{ tp.end_date }}{% endif %}</div>
+          </div>
+          {% if tp.is_active %}
+            <span class="tag tag-green" style="height:fit-content;"><span class="status-dot"></span>Active</span>
+          {% else %}
+            <span class="tag" style="height:fit-content;">Inactive</span>
+          {% endif %}
+        </div>
+        <div class="text-muted text-sm mt-2" style="font-size:12px;">
+          <i class="bi bi-geo-alt me-1"></i> Venue: <strong>{{ tp.venue|default:'Main Campus' }}</strong>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12"><p class="text-muted mb-0 py-3 text-center">No active training sessions yet.</p></div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block modals %}
+{% if not no_dept %}
+<!-- MODAL: Create Course/Subject -->
+<div class="modal fade" id="createSubjectModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 rounded-4 shadow">
+      <div class="modal-header border-bottom-0 pb-0">
+        <h5 class="modal-title fw-bold">Create New Subject</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="save_subject">
+        <div class="modal-body pb-0">
+          <div class="mb-3">
+            <label class="form-label text-sm fw-bold">Subject Name</label>
+            <input type="text" name="name" class="form-control text-sm" placeholder="e.g. Machine Learning" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-sm fw-bold">Subject Code</label>
+            <input type="text" name="code" class="form-control text-sm" placeholder="e.g. CSE-302" required>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label text-sm fw-bold">Semester</label>
+              <input type="number" name="semester" min="1" max="8" class="form-control text-sm" value="3" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-sm fw-bold">Credits</label>
+              <input type="number" name="credits" min="1" max="6" class="form-control text-sm" value="3" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-sm fw-bold">Subject Type</label>
+            <select name="type" class="form-select text-sm">
+              <option value="Theory">Theory</option>
+              <option value="Practical">Practical / Lab</option>
+              <option value="Elective">Elective</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-sm fw-bold">Assign Teacher (Optional)</label>
+            <select name="faculty_id" class="form-select text-sm">
+              <option value="">Leave Unassigned</option>
+              {% for teacher in faculty_list %}
+              <option value="{{ teacher.id }}">{{ teacher.full_name|default:teacher.email }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 pt-0">
+          <button type="button" class="btn-outline" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-primary">Create Subject</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,567 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block portal_tab_title %}HOD Portal{% endblock %} | CIET</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Portal Custom CSS -->
+  <link href="{% static 'css/portal.css' %}?v=2" rel="stylesheet">
+  <style>
+    .modal-backdrop { z-index: 1040; }
+    .modal { z-index: 1050; }
+    .drawer-overlay { z-index: 1060; }
+    .drawer { z-index: 1070; }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- Sidebar Overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="app-wrapper">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">CI</div>
+      <span class="logo-text">CIET HOD Portal</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <p class="nav-group-label">MAIN COMMAND</p>
+      
+      <a class="nav-item {% if request.resolver_match.url_name == 'hod-dashboard' %}active{% endif %}"
+         href="{% url 'hod-dashboard' %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Overview
+      </a>
+
+      <a class="nav-item {% if request.resolver_match.url_name == 'hod-courses' %}active{% endif %}"
+         href="{% url 'hod-courses' %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        Courses
+      </a>
+
+      <a class="nav-item {% if request.resolver_match.url_name == 'hod-students' %}active{% endif %}"
+         href="{% url 'hod-students' %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+        Students
+      </a>
+
+      <a class="nav-item {% if request.resolver_match.url_name == 'hod-faculty' %}active{% endif %}"
+         href="{% url 'hod-faculty' %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Faculty Map
+      </a>
+
+      <a class="nav-item {% if request.resolver_match.url_name == 'hod-events' %}active{% endif %}"
+         href="{% url 'hod-events' %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        Events
+      </a>
+
+      <a class="nav-item" href="#profile" id="sidebar-profile-nav">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        Profile & Settings
+      </a>
+
+
+
+      <a class="nav-item danger" href="{% url 'logout' %}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Sign Out
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ═══ MAIN AREA ═══ -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="page-title">{% block portal_title %}HOD Command Center{% endblock %}</span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:16px;">
+
+
+        <div class="user-chip" style="cursor:pointer;" onclick="window.location.hash='#profile'">
+          <div class="user-chip-info">
+            <div class="name">{{ request.user.full_name|default:request.user.email }}</div>
+            <div class="role">HOD · {{ dept.code|default:"Department" }}</div>
+          </div>
+          <div class="avatar">
+            {{ request.user.full_name|first|upper|default:"H" }}
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <main class="main-content">
+      <!-- Django Messages -->
+      {% if messages %}
+      <div id="djangoMessages" style="margin-bottom:16px;">
+        {% for message in messages %}
+        {% if message.tags == 'error' %}
+        <div style="padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:8px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">
+        {% elif message.tags == 'success' %}
+        <div style="padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:8px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;" data-confetti="true">
+        {% else %}
+        <div style="padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:8px;background:#f8fafc;color:#334155;border:1px solid #e2e8f0;">
+        {% endif %}
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- HOD Profile Settings SPA Section -->
+      <div id="hodProfileSection" style="display: none; margin-bottom: 24px; transition: opacity 0.3s ease;">
+        <!-- Profile Header/Breadcrumbs -->
+        <div class="flex-between" style="margin-bottom:24px;">
+          <div>
+            <h1 class="section-title">HOD Profile & Settings</h1>
+            <p class="section-sub">Manage your personal information, contact credentials, bio, and academic profile.</p>
+          </div>
+          <div>
+             <a href="#" class="btn-ghost" style="font-size:12px;font-weight:700;padding:8px 16px;text-decoration:none;">Overview →</a>
+          </div>
+        </div>
+
+        <form id="hodProfileFullForm">
+          <div class="row g-4">
+            <!-- Left Card: Profile Overview & Picture -->
+            <div class="col-lg-4">
+              <div class="card p-4 text-center h-100 d-flex flex-column align-items-center">
+                <!-- Avatar Wrapper -->
+                <div style="position:relative; width:120px; height:120px; margin:0 auto 20px;">
+                  <div id="hodProfileImageContainer" style="width:120px; height:120px; border-radius:50%; background:var(--primary-light); display:flex; align-items:center; justify-content:center; overflow:hidden; border:4px solid var(--border); box-shadow:var(--shadow);">
+                    <span id="hodProfileLetter" style="font-size:48px; font-weight:800; color:var(--primary);">{{ request.user.full_name|first|upper|default:"H" }}</span>
+                  </div>
+                  <label style="position:absolute; bottom:0; right:0; width:34px; height:34px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#fff; font-size:16px; box-shadow:var(--shadow-md);" title="Change profile photo">
+                    <i class="bi bi-camera-fill"></i>
+                    <input type="file" id="hodProfilePhotoInput" style="display:none;" accept="image/*">
+                  </label>
+                </div>
+
+                <h4 id="hodProfileNameDisplay" class="fw-bold mb-1" style="color:var(--text);">{{ request.user.full_name|default:request.user.email }}</h4>
+                <div class="badge bg-danger mb-3" style="background-color: var(--primary) !important;">{{ request.user.role|default:"HOD" }}</div>
+                <div class="text-muted text-sm mb-4" id="hodProfileDeptDisplay">Department of {{ dept.name|default:"Not Mapped" }}</div>
+                
+                <!-- Extra HOD Stats -->
+                <div class="w-100 p-3 rounded-3 mb-3 text-start" style="background:#f8fafc; border:1px solid var(--border);">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted text-sm">Faculty Count:</span>
+                    <span class="fw-bold text-sm" style="color:var(--text);">{{ faculty_list|length|default:"—" }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted text-sm">Active Courses:</span>
+                    <span class="fw-bold text-sm" style="color:var(--text);">{{ subjects|length|default:"—" }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted text-sm">Dept Students:</span>
+                    <span class="fw-bold text-sm" style="color:var(--text);">{{ total_students|default:"—" }}</span>
+                  </div>
+                </div>
+
+                <!-- Academic Info -->
+                <div class="w-100 p-3 rounded-3 text-start" style="background:#f8fafc; border:1px solid var(--border);">
+                  <div style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Academic Identity</div>
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <i class="bi bi-envelope text-muted"></i>
+                    <span class="text-xs" id="hodProfileEmailDisplay" style="word-break: break-all;">{{ request.user.email }}</span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-telephone text-muted"></i>
+                    <span class="text-xs" id="hodProfilePhoneDisplay">{{ request.user.phone|default:"Not provided" }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Edit Forms -->
+            <div class="col-lg-8">
+              <div class="d-flex flex-column gap-4">
+                <!-- Card 1: Identity Settings -->
+                <div class="card p-4">
+                  <h5 class="fw-bold mb-3" style="color:var(--text);">
+                    <i class="bi bi-person-fill me-2" style="color:var(--primary);"></i>Identity Details
+                  </h5>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label text-sm fw-bold">Full Name</label>
+                      <input type="text" id="hodProfileNameInput" class="form-control text-sm" value="{{ request.user.full_name }}" required placeholder="e.g. Dr. Uma Mahesh">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label text-sm fw-bold">Academic Rank / Designation</label>
+                      <input type="text" id="hodProfileDesignationInput" class="form-control text-sm" value="Professor & HOD" placeholder="e.g. Professor & Head">
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label text-sm fw-bold">Professional Bio / Overview</label>
+                      <textarea id="hodProfileBioInput" rows="3" class="form-control text-sm" placeholder="e.g. Professor & Head of CSE Department. Passionate about AI & Research."></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 2: Contact Details -->
+                <div class="card p-4">
+                  <h5 class="fw-bold mb-3" style="color:var(--text);">
+                    <i class="bi bi-envelope-fill me-2" style="color:var(--primary);"></i>Contact Information
+                  </h5>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label text-sm fw-bold">Primary Email Address</label>
+                      <input type="email" id="hodProfileEmailInput" class="form-control text-sm" value="{{ request.user.email }}" required placeholder="yourname@college.edu">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label text-sm fw-bold">Mobile Phone Number</label>
+                      <input type="text" id="hodProfilePhoneInput" class="form-control text-sm" value="{{ request.user.phone }}" placeholder="10-digit mobile number">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label text-sm fw-bold">Office Room / Cabin</label>
+                      <input type="text" id="hodProfileCabinInput" class="form-control text-sm" placeholder="e.g. Block-A, Cabin 302">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label text-sm fw-bold">Office Hours</label>
+                      <input type="text" id="hodProfileHoursInput" class="form-control text-sm" placeholder="e.g. Mon-Fri 2:00 PM - 4:00 PM">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 3: Academic Links & Profiles -->
+                <div class="card p-4">
+                  <h5 class="fw-bold mb-3" style="color:var(--text);">
+                    <i class="bi bi-link-45deg me-2" style="color:var(--primary);"></i>Professional Links
+                  </h5>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label text-sm fw-bold"><i class="bi bi-linkedin me-1 text-primary"></i> LinkedIn URL</label>
+                      <input type="url" id="hodProfileLinkedin" class="form-control text-sm" placeholder="https://linkedin.com/in/username">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label text-sm fw-bold"><i class="bi bi-github me-1 text-dark"></i> GitHub URL</label>
+                      <input type="url" id="hodProfileGithub" class="form-control text-sm" placeholder="https://github.com/username">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label text-sm fw-bold"><i class="bi bi-google me-1 text-danger"></i> Google Scholar</label>
+                      <input type="url" id="hodProfileScholar" class="form-control text-sm" placeholder="https://scholar.google.com/citations?user=...">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label text-sm fw-bold"><i class="bi bi-globe me-1 text-success"></i> Personal Portfolio</label>
+                      <input type="url" id="hodProfileWebsite" class="form-control text-sm" placeholder="https://www.yourname.com">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Save & Cancel Buttons -->
+                <div class="d-flex gap-3 mb-4">
+                  <button type="submit" class="btn-primary" style="padding:12px 36px; font-size:14px; font-weight:700;">
+                    <i class="bi bi-floppy me-2"></i>Save Profile Changes
+                  </button>
+                  <a href="#" class="btn-outline d-flex align-items-center justify-content-center" style="padding:12px 36px; font-size:14px; font-weight:700; text-decoration:none;">
+                    Cancel
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div id="hodMainBlock">
+         {% block portal_content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Canvas Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<!-- Portal Custom JS -->
+<script src="{% static 'js/portal.js' %}?v=3"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // ── CONFETTI MESSAGES ──
+    const successMsg = document.querySelector('[data-confetti="true"]');
+    if (successMsg) {
+      triggerConfetti();
+    }
+
+    // ── SPA ROUTING FOR PROFILE ──
+    const originalTitle = document.querySelector('.topbar .page-title')?.textContent || 'HOD Command Center';
+    
+    function handleRouting() {
+      const isProfile = window.location.hash === '#profile';
+      const profileSec = document.getElementById('hodProfileSection');
+      const mainBlock = document.getElementById('hodMainBlock');
+      const pageTitleEl = document.querySelector('.topbar .page-title');
+      
+      if (isProfile) {
+        if (profileSec && mainBlock) {
+          mainBlock.style.display = 'none';
+          profileSec.style.display = 'block';
+          profileSec.style.opacity = '1';
+        }
+        if (pageTitleEl) {
+          pageTitleEl.textContent = 'HOD Profile & Settings';
+        }
+        
+        // Update nav active states
+        document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => {
+          if (el.getAttribute('id') === 'sidebar-profile-nav') {
+            el.classList.add('active');
+          } else {
+            el.classList.remove('active');
+          }
+        });
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        if (profileSec && mainBlock) {
+          mainBlock.style.display = 'block';
+          profileSec.style.display = 'none';
+        }
+        if (pageTitleEl) {
+          pageTitleEl.textContent = originalTitle;
+        }
+        
+        // Restore original nav active states
+        document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => {
+          if (el.getAttribute('id') === 'sidebar-profile-nav') {
+            el.classList.remove('active');
+          } else {
+            const isOriginalActive = el.dataset.originalActive === 'true';
+            if (isOriginalActive) {
+              el.classList.add('active');
+            } else {
+              el.classList.remove('active');
+            }
+          }
+        });
+      }
+    }
+    
+    // Tag original active nav item
+    document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => {
+      if (el.classList.contains('active')) {
+        el.dataset.originalActive = 'true';
+      }
+    });
+
+    window.addEventListener('hashchange', handleRouting);
+
+    // ── HOD PROFILE LOGIC ──
+    loadHodProfile();
+    handleRouting(); // run once on load
+
+    const hodProfilePhotoInput = document.getElementById('hodProfilePhotoInput');
+    if (hodProfilePhotoInput) {
+      hodProfilePhotoInput.addEventListener('change', function() {
+        const file = hodProfilePhotoInput.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            document.getElementById('hodProfileImageContainer').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+            document.getElementById('hodProfileImageContainer').dataset.base64 = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    const hodProfileFullForm = document.getElementById('hodProfileFullForm');
+    if (hodProfileFullForm) {
+      hodProfileFullForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const profile = {
+          full_name: document.getElementById('hodProfileNameInput').value.trim(),
+          designation: document.getElementById('hodProfileDesignationInput').value.trim(),
+          bio: document.getElementById('hodProfileBioInput').value.trim(),
+          email: document.getElementById('hodProfileEmailInput').value.trim(),
+          phone: document.getElementById('hodProfilePhoneInput').value.trim(),
+          cabin: document.getElementById('hodProfileCabinInput').value.trim(),
+          hours: document.getElementById('hodProfileHoursInput').value.trim(),
+          linkedin: document.getElementById('hodProfileLinkedin').value.trim(),
+          github: document.getElementById('hodProfileGithub').value.trim(),
+          scholar: document.getElementById('hodProfileScholar').value.trim(),
+          website: document.getElementById('hodProfileWebsite').value.trim(),
+          photo: document.getElementById('hodProfileImageContainer').dataset.base64 || document.getElementById('hodProfileImageContainer').querySelector('img')?.src || ''
+        };
+        localStorage.setItem('hod_profile', JSON.stringify(profile));
+        
+        // Apply instantly
+        applyHodProfile(profile);
+        
+        // Confetti & Toast
+        triggerConfetti();
+        if (typeof showToast === 'function') {
+          showToast('Profile updated successfully!', 'success');
+        } else {
+          // Native fallback toast
+          const toast = document.createElement('div');
+          toast.style.position = 'fixed';
+          toast.style.bottom = '20px';
+          toast.style.right = '20px';
+          toast.style.background = '#16a34a';
+          toast.style.color = '#fff';
+          toast.style.padding = '12px 24px';
+          toast.style.borderRadius = '8px';
+          toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+          toast.style.zIndex = '9999';
+          toast.style.fontSize = '14px';
+          toast.style.fontWeight = '600';
+          toast.textContent = 'Profile updated successfully!';
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // Navigate back to overview dashboard or top
+        setTimeout(() => {
+          window.location.hash = '';
+        }, 1500);
+      });
+    }
+  });
+
+  function triggerConfetti() {
+    var duration = 2.5 * 1000;
+    var animationEnd = Date.now() + duration;
+    var defaults = { 
+      startVelocity: 30, spread: 360, ticks: 80, zIndex: 10000,
+      colors: ['#AF0C3E', '#FFC700', '#2E3192', '#16a34a', '#22d3ee']
+    };
+    function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+    var interval = setInterval(function() {
+      var timeLeft = animationEnd - Date.now();
+      if (timeLeft <= 0) return clearInterval(interval);
+      var particleCount = 50 * (timeLeft / duration);
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+    }, 250);
+  }
+
+  function loadHodProfile() {
+    const saved = localStorage.getItem('hod_profile');
+    if (saved) {
+      try {
+        const profile = JSON.parse(saved);
+        applyHodProfile(profile);
+        
+        // Populate inputs
+        if (document.getElementById('hodProfileNameInput')) document.getElementById('hodProfileNameInput').value = profile.full_name || '';
+        if (document.getElementById('hodProfileDesignationInput')) document.getElementById('hodProfileDesignationInput').value = profile.designation || '';
+        if (document.getElementById('hodProfileBioInput')) document.getElementById('hodProfileBioInput').value = profile.bio || '';
+        if (document.getElementById('hodProfileEmailInput')) document.getElementById('hodProfileEmailInput').value = profile.email || '';
+        if (document.getElementById('hodProfilePhoneInput')) document.getElementById('hodProfilePhoneInput').value = profile.phone || '';
+        if (document.getElementById('hodProfileCabinInput')) document.getElementById('hodProfileCabinInput').value = profile.cabin || '';
+        if (document.getElementById('hodProfileHoursInput')) document.getElementById('hodProfileHoursInput').value = profile.hours || '';
+        
+        if (document.getElementById('hodProfileLinkedin')) document.getElementById('hodProfileLinkedin').value = profile.linkedin || '';
+        if (document.getElementById('hodProfileGithub')) document.getElementById('hodProfileGithub').value = profile.github || '';
+        if (document.getElementById('hodProfileScholar')) document.getElementById('hodProfileScholar').value = profile.scholar || '';
+        if (document.getElementById('hodProfileWebsite')) document.getElementById('hodProfileWebsite').value = profile.website || '';
+        
+        if (profile.photo && document.getElementById('hodProfileImageContainer')) {
+          document.getElementById('hodProfileImageContainer').innerHTML = `<img src="${profile.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        }
+      } catch(e) {}
+    }
+  }
+
+  function applyHodProfile(profile) {
+    // 1. Update user chip names
+    document.querySelectorAll('.user-chip .name').forEach(el => {
+      el.textContent = profile.full_name;
+    });
+    
+    // 2. Update user chip avatars
+    document.querySelectorAll('.user-chip .avatar').forEach(el => {
+      if (profile.photo) {
+        el.innerHTML = `<img src="${profile.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+      } else {
+        el.textContent = profile.full_name.charAt(0).toUpperCase();
+      }
+    });
+
+    // 3. Update profile section displays
+    const nameDisp = document.getElementById('hodProfileNameDisplay');
+    if (nameDisp) nameDisp.textContent = profile.full_name;
+    
+    const emailDisp = document.getElementById('hodProfileEmailDisplay');
+    if (emailDisp) emailDisp.textContent = profile.email;
+    
+    const phoneDisp = document.getElementById('hodProfilePhoneDisplay');
+    if (phoneDisp) phoneDisp.textContent = profile.phone || 'Not provided';
+
+    const deptDisp = document.getElementById('hodProfileDeptDisplay');
+    if (deptDisp && profile.designation) {
+      const parts = deptDisp.textContent.split('Department of ');
+      const deptName = parts.length > 1 ? parts[1] : 'Department';
+      deptDisp.textContent = `${profile.designation} · Department of ${deptName}`;
+    }
+
+    // 4. Update dashboard bio
+    const subText = document.querySelector('.section-sub');
+    if (subText && profile.bio) {
+      const yearMatch = subText.textContent.match(/Academic Year \d{4}-\d{4}/);
+      const yearStr = yearMatch ? yearMatch[0] : 'Overview';
+      subText.textContent = `${yearStr} · ${profile.bio}`;
+    }
+  }
+</script>
+
+{% block modals %}{% endblock %}
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,599 @@
+{% extends 'HOD/base_hod.html' %}
+{% load static %}
+
+{% block portal_tab_title %}HOD Dashboard{% endblock %}
+{% block portal_title %}{{ dept.name }} Command Center{% endblock %}
+
+{% block portal_content %}
+{% if no_dept %}
+<div class="card p-4 text-center">
+  <div class="empty-state">
+    <div class="empty-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+    <div class="empty-title">Department Not Mapped</div>
+    <div class="empty-desc">Your account is not mapped to a department yet. Please contact the system administrator.</div>
+  </div>
+</div>
+{% else %}
+
+<!-- ═══ HEADER ROW ═══ -->
+<div class="flex-between">
+  <div>
+    <h2 class="section-title">{{ dept.name }} Overview</h2>
+    <p class="section-sub">Academic Year {{ current_year }} · Centralized department dashboard for mentoring, curriculum, and performance.</p>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button class="btn-outline" data-bs-toggle="modal" data-bs-target="#directMentorAssignModal">
+      <i class="bi bi-person-plus me-1"></i> Assign Mentor
+    </button>
+    <button class="btn-outline" data-bs-toggle="modal" data-bs-target="#trainingModal">
+      <i class="bi bi-plus-lg me-1"></i> Add Training
+    </button>
+    <button class="btn-primary" data-bs-toggle="modal" data-bs-target="#announcementModal">
+      <i class="bi bi-megaphone me-1"></i> Post Announcement
+    </button>
+  </div>
+</div>
+
+<!-- ═══ STATISTICS GRID ═══ -->
+<div class="stats-grid mb-4">
+  <div class="stat-card">
+    <div class="card-label">DEPARTMENT STUDENTS</div>
+    <div class="d-flex align-items-baseline gap-2 mt-3">
+      <span class="display-6 fw-bold" style="color:var(--primary);">{{ total_students }}</span>
+      <span class="text-muted text-sm">Active Students</span>
+    </div>
+    <div class="trend mt-2">
+      <i class="bi bi-people-fill"></i>
+      <span>Pass Rate: {{ pass_count }} / {{ total_students }} ({{ attendance_pct }}% Attendance)</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="card-label">AVERAGE PERFORMANCE</div>
+    <div class="cgpa-wrap">
+      <div class="cgpa-circle" id="cgpaCircle" data-avg-cgpa="{{ avg_cgpa }}">
+        <div class="cgpa-value">
+          <span class="cgpa-num">{{ avg_cgpa }}</span>
+          <span class="cgpa-sub">CGPA</span>
+        </div>
+      </div>
+      <div>
+        <div class="rank">Pass Count: {{ pass_count }}</div>
+        <div class="cohort text-muted">Fail Count: {{ fail_count }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="card-label">MENTOR ASSIGNMENT</div>
+    <div class="d-flex align-items-baseline gap-2 mt-3">
+      <span class="display-6 fw-bold text-success">{{ mentor_assigned }}</span>
+      <span class="text-muted text-sm">/ {{ total_students }} Assigned</span>
+    </div>
+    <div class="trend mt-2" style="color:var(--amber);">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ mentor_unassigned }} students need mentoring</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADDITIONAL METRICS GRID ═══ -->
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card p-3 h-100">
+      <div class="card-label">Active Announcements</div>
+      <div class="d-flex align-items-baseline gap-2 mt-2">
+        <span class="display-6 fw-bold text-danger" style="color:var(--alert-red) !important;">{{ announcements|length }}</span>
+        <span class="text-muted text-sm">Visible to Department</span>
+      </div>
+      <div class="trend mt-2 text-danger" style="color:var(--alert-red);">
+        <i class="bi bi-megaphone-fill"></i>
+        <span>Broadcasted to all student portals</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card p-3 h-100">
+      <div class="card-label">Training Programs</div>
+      <div class="d-flex align-items-baseline gap-2 mt-2">
+        <span class="display-6 fw-bold text-primary" style="color:var(--primary) !important;">{{ training_programs|length }}</span>
+        <span class="text-muted text-sm">Total Sessions</span>
+      </div>
+      <div class="trend mt-2" style="color:var(--green);">
+        <i class="bi bi-award-fill"></i>
+        <span>Internal training active this semester</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CHARTS & REPORTS SECTION ═══ -->
+<div class="row g-4 mb-4">
+  <div class="col-xl-8">
+    <!-- ═══ PERFORMANCE CHARTS GRID ═══ -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="card p-4 h-100">
+          <h5 class="fw-bold mb-1" style="font-size: 14px;">Principal Performance Snapshot</h5>
+          <p class="text-muted text-sm mb-3" style="font-size: 11px; line-height: 1.4;">Overall key performance indices calculated and forwarded for review.</p>
+          <div style="height:220px; position:relative;"><canvas id="principalChart"></canvas></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card p-4 h-100">
+          <h5 class="fw-bold mb-1" style="font-size: 14px;">Batch Performance Comparison</h5>
+          <p class="text-muted text-sm mb-3" style="font-size: 11px; line-height: 1.4;">Comparison of average student CGPA across current batches.</p>
+          <div style="height:220px; position:relative;"><canvas id="batchChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION REPORTS TABLE -->
+    <div class="card p-4 mb-4" id="section-performance">
+      <h5 class="fw-bold mb-3">Section Wise Performance Reports</h5>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border); font-size:12px; color:var(--muted);">
+              <th>SECTION</th>
+              <th>STUDENTS</th>
+              <th>PASS COUNT</th>
+              <th>FAIL COUNT</th>
+              <th>AVG CGPA</th>
+              <th>ATTENDANCE %</th>
+              <th>CLASS TEACHER</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for report in section_reports %}
+            <tr style="border-bottom: 1px solid var(--border); font-size:13px;">
+              <td class="fw-bold">{{ report.section.name }}</td>
+              <td>{{ report.student_count }}</td>
+              <td><span class="tag tag-green">{{ report.pass_count }} Pass</span></td>
+              <td><span class="tag tag-blue" style="color:#ef4444 !important; background:#fef2f2 !important; border-color:#fecaca !important;">{{ report.fail_count }} Fail</span></td>
+              <td class="fw-bold" style="color:var(--primary);">{{ report.avg_cgpa }}</td>
+              <td><span class="tag tag-cyan">{{ report.attendance_pct }}%</span></td>
+              <td>
+                {% if report.class_teacher %}
+                  <span class="tag tag-primary">{{ report.class_teacher.full_name|default:report.class_teacher.email }}</span>
+                {% else %}
+                  <span class="text-muted small">Not Assigned</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="text-muted py-3 text-center">No section reports available.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TRAINING SESSIONS LIST -->
+    <div class="card p-4">
+      <h5 class="fw-bold mb-3">Training Programs Timeline</h5>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border); font-size:12px; color:var(--muted);">
+              <th>TITLE</th>
+              <th>DATES</th>
+              <th>VENUE</th>
+              <th>STATUS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tp in training_programs %}
+            <tr style="border-bottom: 1px solid var(--border); font-size:13px;">
+              <td class="fw-bold">{{ tp.title }}</td>
+              <td class="text-muted">{{ tp.start_date }}{% if tp.end_date %} - {{ tp.end_date }}{% endif %}</td>
+              <td>{{ tp.venue|default:'-' }}</td>
+              <td>
+                {% if tp.is_active %}
+                  <span class="tag tag-green"><span class="status-dot"></span>Active</span>
+                {% else %}
+                  <span class="tag">Inactive</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-muted py-3 text-center">No training sessions mapped.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SIDEBAR METRICS & QUICK ACTIONS ═══ -->
+  <div class="col-xl-4">
+
+
+    <!-- CURRICULUM STATUS -->
+    <div class="card p-4 mb-4">
+      <h5 class="fw-bold mb-3">Course Faculty Map</h5>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border); font-size:12px; color:var(--muted);">
+              <th>COURSE</th>
+              <th>FACULTY</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for subject in subjects %}
+            <tr style="border-bottom: 1px solid var(--border); font-size:12px;">
+              <td class="fw-bold">{{ subject.code }}</td>
+              <td>
+                {% if subject.faculty %}
+                  {{ subject.faculty.full_name|default:subject.faculty.email }}
+                {% else %}
+                  <span class="text-muted small">Unassigned</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="2" class="text-muted py-3 text-center">No curriculum mapped.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="card p-4 mb-4">
+      <h6 class="fw-bold mb-3">Quick Actions</h6>
+      <div class="d-grid gap-2">
+        <a class="btn-primary justify-content-center" href="{% url 'hod-faculty' %}">
+          <i class="bi bi-person-badge me-2"></i> Assign Mentors
+        </a>
+        <a class="btn-outline justify-content-center" href="{% url 'hod-courses' %}">
+          <i class="bi bi-journal-bookmark me-2"></i> Review Courses
+        </a>
+        <a class="btn-outline justify-content-center" href="{% url 'hod-events' %}">
+          <i class="bi bi-calendar-event me-2"></i> Create Event
+        </a>
+      </div>
+    </div>
+
+    <!-- DIRECT MENTOR LIST -->
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3">Direct Mentor Assignments</h6>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0 smaller">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border); font-size:11px; color:var(--muted);">
+              <th>MENTOR</th>
+              <th class="text-end">STUDENTS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in direct_assignments %}
+            <tr style="border-bottom: 1px solid var(--border); font-size:12px;">
+              <td class="fw-bold">{{ a.mentor.full_name|default:a.mentor.email|slice:":18" }}</td>
+              <td class="text-end"><span class="tag tag-primary">{{ a.students.count }} students</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="2" class="text-muted py-3 text-center">No assignments yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block modals %}
+{% if not no_dept %}
+<!-- MODAL: Assign Mentor -->
+<div class="modal fade" id="directMentorAssignModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 rounded-4 shadow">
+      <div class="modal-header border-bottom-0 pb-0">
+        <h5 class="modal-title fw-bold">Assign Mentor to Students</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="assign_mentor_students">
+        <div class="modal-body pb-0">
+          <div class="mb-3">
+            <label class="form-label text-sm fw-bold">Mentor</label>
+            <select name="mentor_id" class="form-select text-sm" required>
+              <option value="">Select Mentor</option>
+              {% for mentor in mentors %}
+              <option value="{{ mentor.id }}">{{ mentor.full_name|default:mentor.email }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-sm fw-bold">Students</label>
+            <div class="border rounded p-2" style="max-height: 180px; overflow-y: auto; background:#f8fafc;">
+              {% for student in dept_students %}
+              <div class="form-check text-sm mb-1">
+                <input class="form-check-input" type="checkbox" name="student_ids" value="{{ student.id }}" id="md{{ student.id }}">
+                <label class="form-check-label" for="md{{ student.id }}">
+                  {{ student.user.full_name|default:student.user.email }} ({{ student.roll_no }}){% if student.section %} · {{ student.section.name }}{% endif %}
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 pt-0">
+          <button type="button" class="btn-outline" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-primary">Save Assignment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Training Program -->
+<div class="modal fade" id="trainingModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content border-0 rounded-4 shadow">
+      <div class="modal-header border-bottom-0 pb-0">
+        <h5 class="modal-title fw-bold" id="trainingModalTitle">New Training Program</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="trainingAction" value="create_training">
+        <input type="hidden" name="training_id" id="trainingId">
+        <div class="modal-body pb-0">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label text-sm fw-bold">Title</label>
+              <input type="text" name="title" id="trainingTitle" class="form-control text-sm" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-sm fw-bold">Venue</label>
+              <input type="text" name="venue" id="trainingVenue" class="form-control text-sm">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-sm fw-bold">Start Date</label>
+              <input type="date" name="start_date" id="trainingStart" class="form-control text-sm" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-sm fw-bold">End Date</label>
+              <input type="date" name="end_date" id="trainingEnd" class="form-control text-sm">
+            </div>
+            <div class="col-12">
+              <label class="form-label text-sm fw-bold">Description</label>
+              <textarea name="description" id="trainingDescription" rows="3" class="form-control text-sm"></textarea>
+            </div>
+            <div class="col-12 mb-2">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="is_active" id="trainingActive" checked>
+                <label class="form-check-label text-sm" for="trainingActive">Mark Active immediately</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 pt-0">
+          <button type="button" class="btn-outline" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-primary" id="trainingSubmitBtn">Create Session</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Announcement -->
+<div class="modal fade" id="announcementModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content border-0 rounded-4 shadow">
+      <div class="modal-header border-bottom-0 pb-0">
+        <h5 class="modal-title fw-bold">Publish Announcement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create_announcement">
+        <div class="modal-body pb-0">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label text-sm fw-bold">Title</label>
+              <input type="text" name="title" class="form-control text-sm" required placeholder="e.g., Semester Exam Registration">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label text-sm fw-bold">Category</label>
+              <select name="category" class="form-select text-sm">
+                {% for val, label in announcement_categories %}
+                <option value="{{ val }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label text-sm fw-bold">Content</label>
+              <textarea name="content" rows="4" class="form-control text-sm" required placeholder="Details about this announcement..."></textarea>
+            </div>
+            <div class="col-12 mb-2">
+              <label class="form-label text-sm fw-bold">Link (optional)</label>
+              <input type="url" name="link" class="form-control text-sm" placeholder="https://">
+            </div>
+            <div class="col-12 mb-2">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="is_active" checked>
+                <label class="form-check-label text-sm">Publish immediately</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 pt-0">
+          <button type="button" class="btn-outline" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-primary">Post Announcement</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if not no_dept %}
+{{ perf_labels|json_script:"perf-labels" }}
+{{ perf_values|json_script:"perf-values" }}
+{{ principal_labels|json_script:"principal-labels" }}
+{{ principal_values|json_script:"principal-values" }}
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // ── DYNAMIC LINT-FREE STYLES FOR CHIPS AND PROGRESS BARS ──
+    const cgpaCircle = document.getElementById('cgpaCircle');
+    if (cgpaCircle) {
+      const avgCgpa = parseFloat(cgpaCircle.dataset.avgCgpa) || 0;
+      cgpaCircle.style.background = `conic-gradient(var(--primary) 0% ${avgCgpa * 10}%, #e2e8f0 ${avgCgpa * 10}% 100%)`;
+    }
+
+    // ── NATIVE SINGLE-DECODED JSON PARSER ──
+    const getJsonData = (id) => {
+      const el = document.getElementById(id);
+      return el ? JSON.parse(el.textContent) : [];
+    };
+
+    const labelsData = getJsonData('perf-labels');
+    const valuesData = getJsonData('perf-values');
+    const principalLabels = getJsonData('principal-labels');
+    const principalValues = getJsonData('principal-values');
+
+    const ctx = document.getElementById('batchChart');
+    if (ctx) {
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labelsData,
+          datasets: [{
+            label: 'Average CGPA',
+            data: valuesData,
+            borderColor: '#AF0C3E',
+            backgroundColor: 'rgba(175, 12, 62, 0.08)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointBackgroundColor: '#AF0C3E',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              titleFont: { family: 'Inter', size: 12, weight: 'bold' },
+              bodyFont: { family: 'Inter', size: 12 },
+              padding: 10,
+              cornerRadius: 8
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: 'Inter', size: 11, weight: '500' }, color: '#64748b' }
+            },
+            y: {
+              min: 0,
+              max: 10,
+              grid: { color: '#f1f5f9' },
+              ticks: { font: { family: 'Inter', size: 11 }, color: '#64748b', stepSize: 2 }
+            }
+          }
+        }
+      });
+    }
+
+    const principalCtx = document.getElementById('principalChart');
+    if (principalCtx) {
+      new Chart(principalCtx, {
+        type: 'bar',
+        data: {
+          labels: principalLabels,
+          datasets: [{
+            data: principalValues,
+            backgroundColor: [
+              'rgba(175, 12, 62, 0.85)',
+              'rgba(22, 163, 74, 0.85)',
+              'rgba(217, 119, 6, 0.85)',
+              'rgba(8, 145, 178, 0.85)',
+              'rgba(220, 38, 38, 0.85)'
+            ],
+            borderRadius: 8,
+            barThickness: 16
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              padding: 10,
+              cornerRadius: 8
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: '#f1f5f9' },
+              ticks: { font: { family: 'Inter', size: 11 }, color: '#64748b' }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { font: { family: 'Inter', size: 11, weight: '500' }, color: '#0f172a' }
+            }
+          }
+        }
+      });
+    }
+
+    // Modal Edit Mode Helpers
+    const trainingModal = document.getElementById('trainingModal');
+    if (trainingModal) {
+      trainingModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const editMode = button?.getAttribute('data-edit-mode') === '1';
+
+        document.getElementById('trainingAction').value = editMode ? 'update_training' : 'create_training';
+        document.getElementById('trainingModalTitle').textContent = editMode ? 'Edit Training Program' : 'New Training Program';
+        document.getElementById('trainingSubmitBtn').textContent = editMode ? 'Update' : 'Create';
+
+        if (editMode) {
+          document.getElementById('trainingId').value = button.getAttribute('data-training-id') || '';
+          document.getElementById('trainingTitle').value = button.getAttribute('data-training-title') || '';
+          document.getElementById('trainingDescription').value = button.getAttribute('data-training-description') || '';
+          document.getElementById('trainingStart').value = button.getAttribute('data-training-start') || '';
+          document.getElementById('trainingEnd').value = button.getAttribute('data-training-end') || '';
+          document.getElementById('trainingVenue').value = button.getAttribute('data-training-venue') || '';
+          document.getElementById('trainingActive').checked = button.getAttribute('data-training-active') === '1';
+        } else {
+          document.getElementById('trainingId').value = '';
+          document.getElementById('trainingTitle').value = '';
+          document.getElementById('trainingDescription').value = '';
+          document.getElementById('trainingStart').value = '';
+          document.getElementById('trainingEnd').value = '';
+          document.getElementById('trainingVenue').value = '';
+          document.getElementById('trainingActive').checked = true;
+        }
+      });
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}

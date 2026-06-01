@@ -1,0 +1,278 @@
+{% extends 'HOD/base_hod.html' %}
+{% load static %}
+
+{% block portal_tab_title %}HOD Students{% endblock %}
+{% block portal_title %}Students Directory & Statistics{% endblock %}
+
+{% block portal_content %}
+{% if no_dept %}
+<div class="card p-4 text-center">
+  <div class="empty-state">
+    <div class="empty-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+    <div class="empty-title">Department Not Mapped</div>
+    <div class="empty-desc">Your account is not mapped to a department yet. Please contact the system administrator.</div>
+  </div>
+</div>
+{% else %}
+
+<!-- ═══ HEADER ═══ -->
+<div class="flex-between">
+  <div>
+    <h2 class="section-title">Department Student Performance Overview</h2>
+    <p class="section-sub">Detailed statistics of branch student success, pass rates, average marks, and class attendance.</p>
+  </div>
+  <a class="btn-outline" href="{% url 'hod-dashboard' %}">
+    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+  </a>
+</div>
+
+<!-- ═══ OVERVIEW CARDS ═══ -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card p-3 text-center">
+      <div class="card-label">TOTAL STUDENTS</div>
+      <div class="fs-2 fw-bold mt-2" style="color:var(--primary);">{{ college_total }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card p-3 text-center">
+      <div class="card-label">PASS RATE</div>
+      <div class="fs-2 fw-bold mt-2 text-success">{{ college_pass_pct }}%</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card p-3 text-center">
+      <div class="card-label">ATTENDANCE</div>
+      <div class="fs-2 fw-bold mt-2 text-info" style="color:var(--cyan-dark) !important;">{{ college_attendance_pct }}%</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card p-3 text-center">
+      <div class="card-label">AVERAGE CGPA</div>
+      <div class="fs-2 fw-bold mt-2 text-warning" style="color:var(--amber) !important;">{{ college_avg_cgpa }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CHARTS ═══ -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="card p-4 h-100">
+      <h5 class="fw-bold mb-1">Section Wise Comparison</h5>
+      <p class="text-muted text-sm mb-3">Pass Percentage vs Average Attendance across sections.</p>
+      <div style="height:280px; position:relative;"><canvas id="branchChart"></canvas></div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card p-4 h-100">
+      <h5 class="fw-bold mb-1">Performance Overview</h5>
+      <p class="text-muted text-sm mb-3">Overall performance breakdown metrics forwarded to Principal.</p>
+      <div style="height:280px; position:relative;"><canvas id="collegeChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SECTION OVERVIEW TABLE ═══ -->
+<div class="card p-4 mb-4">
+  <h5 class="fw-bold mb-1">Section Overview</h5>
+  <p class="text-muted text-sm mb-3">Department-wide snapshot compared on section levels.</p>
+  
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--border); font-size:12px; color:var(--muted);">
+          <th>SECTION</th>
+          <th>STUDENT COUNT</th>
+          <th>PASS RATE</th>
+          <th>ATTENDANCE RATE</th>
+          <th>AVG CGPA</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for report in section_reports %}
+        <tr style="border-bottom: 1px solid var(--border); font-size:13px;">
+          <td class="fw-bold">{{ report.section.name }}</td>
+          <td>{{ report.student_count }}</td>
+          <td><span class="tag tag-green">{{ report.pass_pct }}% Pass</span></td>
+          <td><span class="tag tag-cyan">{{ report.attendance_pct }}% Present</span></td>
+          <td class="fw-bold" style="color:var(--primary);">{{ report.avg_cgpa }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-muted py-3 text-center">No section overview data available.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ STUDENT DETAILS TABLE ═══ -->
+<div class="card p-4">
+  <h5 class="fw-bold mb-1">Student Performance Directory</h5>
+  <p class="text-muted text-sm mb-3">Performance list for each individual student within the department.</p>
+  
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--border); font-size:12px; color:var(--muted);">
+          <th>STUDENT</th>
+          <th>ROLL NO</th>
+          <th>SECTION</th>
+          <th>BATCH</th>
+          <th>CGPA</th>
+          <th>PASS STATUS</th>
+          <th>ATTENDANCE %</th>
+          <th>MARKS AVG</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in student_reports %}
+        <tr style="border-bottom: 1px solid var(--border); font-size:13px;">
+          <td class="fw-bold">{{ row.student.user.full_name|default:row.student.user.email }}</td>
+          <td class="text-muted">{{ row.student.roll_no }}</td>
+          <td><span class="tag">{{ row.student.section.name|default:'-' }}</span></td>
+          <td>{{ row.student.batch }}</td>
+          <td class="fw-bold" style="color:var(--primary);">{{ row.student.cgpa }}</td>
+          <td>
+            {% if row.pass_status == 'Pass' %}
+              <span class="tag tag-green">Pass</span>
+            {% else %}
+              <span class="tag tag-blue" style="color:#ef4444 !important; background:#fef2f2 !important; border-color:#fecaca !important;">Fail</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if row.attendance_pct >= 75 %}
+              <span class="tag tag-cyan">{{ row.attendance_pct }}%</span>
+            {% else %}
+              <span class="tag tag-amber" style="color:#dc2626 !important; background:#fef2f2 !important; border-color:#fecaca !important;">{{ row.attendance_pct }}%</span>
+            {% endif %}
+          </td>
+          <td class="fw-bold">{{ row.marks_avg }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-muted py-3 text-center">No students registered in this department.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if not no_dept %}
+{{ section_labels|json_script:"section-labels" }}
+{{ section_pass_values|json_script:"section-pass-values" }}
+{{ section_attendance_values|json_script:"section-attendance-values" }}
+{{ college_chart_values|json_script:"college-chart-values" }}
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // ── NATIVE SINGLE-DECODED JSON PARSER ──
+  const getJsonData = (id) => {
+    const el = document.getElementById(id);
+    return el ? JSON.parse(el.textContent) : [];
+  };
+
+  const labels = getJsonData('section-labels');
+  const passValues = getJsonData('section-pass-values');
+  const attendanceValues = getJsonData('section-attendance-values');
+  const collegeValues = getJsonData('college-chart-values');
+
+  const branchEl = document.getElementById('branchChart');
+  if (branchEl) {
+    new Chart(branchEl, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          { 
+            label: 'Pass %', 
+            data: passValues, 
+            backgroundColor: 'rgba(175, 12, 62, 0.85)', 
+            borderRadius: 6,
+            barThickness: 16
+          },
+          { 
+            label: 'Attendance %', 
+            data: attendanceValues, 
+            backgroundColor: 'rgba(34, 211, 238, 0.85)', 
+            borderRadius: 6,
+            barThickness: 16
+          },
+        ]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { font: { family: 'Inter', size: 11, weight: '500' }, boxWidth: 12, padding: 12 }
+          },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            padding: 10,
+            cornerRadius: 8
+          }
+        },
+        scales: { 
+          x: {
+            grid: { display: false },
+            ticks: { font: { family: 'Inter', size: 11, weight: '500' }, color: '#64748b' }
+          },
+          y: { 
+            beginAtZero: true, 
+            max: 100,
+            grid: { color: '#f1f5f9' },
+            ticks: { font: { family: 'Inter', size: 11 }, color: '#64748b', stepSize: 20 }
+          } 
+        } 
+      }
+    });
+  }
+
+  const collegeEl = document.getElementById('collegeChart');
+  if (collegeEl) {
+    new Chart(collegeEl, {
+      type: 'doughnut',
+      data: {
+        labels: ['Pass %', 'Attendance %', 'Avg CGPA'],
+        datasets: [{
+          data: collegeValues,
+          backgroundColor: [
+            'rgba(175, 12, 62, 0.85)', // primary (crimson)
+            'rgba(34, 211, 238, 0.85)', // cyan
+            'rgba(217, 119, 6, 0.85)'   // amber
+          ],
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: { font: { family: 'Inter', size: 11, weight: '500' }, boxWidth: 12, padding: 12 }
+          },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            padding: 10,
+            cornerRadius: 8
+          }
+        },
+        cutout: '75%'
+      }
+    });
+  }
+});
+</script>
+{% endif %}
+{% endblock %}

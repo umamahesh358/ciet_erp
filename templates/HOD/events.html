@@ -1,0 +1,125 @@
+{% extends 'HOD/base_hod.html' %}
+{% load static %}
+
+{% block portal_tab_title %}HOD Events{% endblock %}
+{% block portal_title %}Manage Campus & Branch Events{% endblock %}
+
+{% block portal_content %}
+{% if no_dept %}
+<div class="card p-4 text-center">
+  <div class="empty-state">
+    <div class="empty-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+    <div class="empty-title">Department Not Mapped</div>
+    <div class="empty-desc">Your account is not mapped to a department yet. Please contact the system administrator.</div>
+  </div>
+</div>
+{% else %}
+
+<!-- ═══ HEADER ═══ -->
+<div class="flex-between">
+  <div>
+    <h2 class="section-title">Department & College Events</h2>
+    <p class="section-sub">Publish and broadcast events to all active student portals and notifications panels.</p>
+  </div>
+  <a class="btn-outline" href="{% url 'hod-dashboard' %}">
+    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+  </a>
+</div>
+
+<!-- ═══ TWO-COLUMN EVENTS BOARD ═══ -->
+<div class="row g-4">
+  <!-- CREATE NEW EVENT FORM -->
+  <div class="col-lg-5">
+    <div class="card p-4">
+      <h5 class="fw-bold mb-1">Publish New Event</h5>
+      <p class="text-muted text-sm mb-4">Complete the fields below to dispatch and publish a new campus event.</p>
+      
+      <form method="post" enctype="multipart/form-data" class="row g-3">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create_event">
+        <div class="col-12">
+          <label class="form-label text-sm fw-bold">Event Title</label>
+          <input type="text" class="form-control text-sm" name="title" placeholder="e.g., Annual Tech Fest 2026" required>
+        </div>
+        <div class="col-12">
+          <label class="form-label text-sm fw-bold">Location / Venue</label>
+          <input type="text" class="form-control text-sm" name="location" placeholder="e.g., Seminar Hall - Block A" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label text-sm fw-bold">Date & Time</label>
+          <input type="datetime-local" class="form-control text-sm" name="date" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label text-sm fw-bold">Event Banner</label>
+          <input type="file" class="form-control text-sm" name="image" accept="image/*">
+        </div>
+        <div class="col-12">
+          <label class="form-label text-sm fw-bold">Event Description</label>
+          <textarea class="form-control text-sm" name="description" rows="5" placeholder="Details regarding the event schedule, rules, registrations, etc..." required></textarea>
+        </div>
+        <div class="col-12 mt-4">
+          <button type="submit" class="btn-primary w-100 justify-content-center">
+            <i class="bi bi-calendar-plus me-1"></i> Publish & Broadcast Event
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- EVENT HISTORY / PREVIEW LIST -->
+  <div class="col-lg-7">
+    <div class="card p-4">
+      <h5 class="fw-bold mb-1">Active & Past Broadcasted Events</h5>
+      <p class="text-muted text-sm mb-4">Preview of all events dispatched and displayed across the department portal.</p>
+      
+      <div class="row g-3">
+        {% for event in events %}
+        <div class="col-12">
+          <div class="event-card event-card-full">
+            <!-- Elegant calendar date box -->
+            <div class="event-date-box">
+              <span class="day">{{ event.date|date:'d' }}</span>
+              <span class="month">{{ event.date|date:'M' }}</span>
+            </div>
+            
+            <div class="event-divider"></div>
+            
+            <div class="event-info">
+              <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                <span class="event-name fw-bold" style="color:var(--text); font-size:14px;">{{ event.title }}</span>
+                {% if event.is_active %}
+                  <span class="tag tag-green"><span class="status-dot"></span>Active</span>
+                {% else %}
+                  <span class="tag">Past</span>
+                {% endif %}
+              </div>
+              <div class="event-meta mb-2" style="font-size:12px;">
+                <span><i class="bi bi-geo-alt me-1"></i>{{ event.location }}</span>
+                <span class="pipe">|</span>
+                <span><i class="bi bi-clock me-1"></i>{{ event.date|date:'H:i' }}</span>
+              </div>
+              <p class="text-muted text-sm mb-0" style="font-size:12.5px; line-height:1.5;">{{ event.description|truncatechars:160 }}</p>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-4">
+          <div class="empty-state">
+            <div class="empty-icon"><i class="bi bi-calendar-x fs-2 text-muted"></i></div>
+            <div class="empty-title">No Events Published</div>
+            <div class="empty-desc">You have not published or broadcasted any events for this department yet.</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}

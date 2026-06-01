@@ -29,6 +29,24 @@ class Timetable(BaseModel):
         return f"{self.department.name} - Sem {self.semester}"
 
 
+class SectionTimetable(BaseModel):
+    """Class-wise timetable for a section within a department."""
+    department   = models.ForeignKey('academics.Department', on_delete=models.CASCADE)
+    section      = models.ForeignKey('academics.Section', on_delete=models.CASCADE, related_name='timetables')
+    uploaded_by  = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True)
+    semester     = models.IntegerField()
+    valid_from   = models.DateField()
+    valid_to     = models.DateField(null=True, blank=True)
+    file         = models.FileField(upload_to='section_timetables/')
+    academic_year = models.CharField(max_length=15, blank=True, default='')
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.department.name} - {self.section.name} - Sem {self.semester}"
+
+
 class AcademicCalendar(BaseModel):
     """Semester-level academic calendar uploaded by HOD."""
     department   = models.ForeignKey('academics.Department', on_delete=models.CASCADE, related_name='calendars')
@@ -89,6 +107,25 @@ class StudentMentorAssignment(BaseModel):
 
     def __str__(self):
         return f"Mentor: {self.mentor.email} ({self.academic_year})"
+
+
+class SectionClassTeacherAssignment(BaseModel):
+    """Tracks the faculty member responsible for a class/section in a given academic year."""
+    section       = models.ForeignKey('academics.Section', on_delete=models.CASCADE,
+                        related_name='class_teacher_assignments')
+    teacher       = models.ForeignKey('accounts.User', on_delete=models.CASCADE,
+                        related_name='class_teacher_sections',
+                        limit_choices_to=models.Q(role__in=['Faculty', 'Mentor']))
+    academic_year = models.CharField(max_length=20)
+    assigned_by   = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True,
+                        related_name='class_teacher_assignments_made')
+
+    class Meta:
+        unique_together = ('section', 'academic_year')
+        ordering = ['section__name', '-academic_year']
+
+    def __str__(self):
+        return f"{self.section} -> {self.teacher.email} ({self.academic_year})"
 
 
 # ── SYLLABUS TRACKING ──────────────────────────────────────────────────────────

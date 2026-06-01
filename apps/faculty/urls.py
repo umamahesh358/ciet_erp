@@ -4,6 +4,11 @@ from apps.faculty import views
 # ── Faculty Portal UI URLs ──────────────────────────────────────────────────
 ui_urlpatterns = [
     path('hod/',     views.HODDashboardView.as_view(),    name='hod-dashboard'),
+    path('hod/courses/', views.HODCoursesView.as_view(), name='hod-courses'),
+    path('hod/students/', views.HODStudentsView.as_view(), name='hod-students'),
+    path('hod/faculty/', views.HODFacultyView.as_view(), name='hod-faculty'),
+    path('hod/timetable/', views.HODTimetableView.as_view(), name='hod-timetable'),
+    path('hod/events/', views.HODEventsView.as_view(), name='hod-events'),
     path('mentor/',  views.MentorDashboardView.as_view(), name='mentor-dashboard'),
     path('portal/',  views.FacultyDashboardView.as_view(), name='faculty-dashboard'),
     path('portal/cohorts/', views.FacultyHubCohortsView.as_view(), name='faculty-cohorts'),

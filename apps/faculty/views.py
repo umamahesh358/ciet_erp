@@ -2,6 +2,7 @@ import json
 import csv
 import io
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.views import View
@@ -11,14 +12,15 @@ from django.db.models import Count, Avg, Q, Sum
 from django.http import HttpResponse, JsonResponse
 
 from apps.accounts.models import User
-from apps.academics.models import Department, Subject, Marks, Attendance
+from apps.academics.models import Department, Section, Subject, Marks, Attendance
 from apps.students.models import StudentProfile
 from apps.faculty.models import (
     StudentMentorAssignment, LessonPlan, Timetable, AcademicCalendar,
     TrainingProgram, SyllabusCoverage, Cohort, InstitutionCourse,
+    SectionClassTeacherAssignment, SectionTimetable,
     CourseMaterial, CourseAssessment, StudentCourseScore
 )
-from apps.core.models import Announcement
+from apps.core.models import Announcement, Event
 from apps.notifications.models import Notification, NotificationRecipient
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -36,6 +38,284 @@ class RoleRequiredMixin(LoginRequiredMixin):
         if self.allowed_roles and request.user.role not in self.allowed_roles:
             return redirect('dashboard')
         return super().dispatch(request, *args, **kwargs)
+
+
+def _get_hod_department(user):
+    departments = list(user.departments.all())
+    if departments:
+        return departments[0]
+    return Department.objects.filter(hod=user).first()
+
+
+def _hod_access_context(request):
+    user = request.user
+    dept = _get_hod_department(user)
+    current_year = f"{now().year}-{now().year + 1}"
+    mentors = User.objects.none()
+    teachers = User.objects.none()
+    sections = Section.objects.none()
+    if dept:
+        mentors = User.objects.filter(departments=dept, role='Mentor', is_active=True)
+        teachers = User.objects.filter(departments=dept, role__in=['Faculty', 'Mentor'], is_active=True)
+        sections = Section.objects.filter(department=dept).order_by('name')
+    return {
+        'dept': dept,
+        'current_year': current_year,
+        'mentors': mentors,
+        'teachers': teachers,
+        'sections': sections,
+    }
+
+
+class HODCoursesView(RoleRequiredMixin, View):
+    allowed_roles = ['HOD']
+
+    def get(self, request):
+        ctx = _hod_access_context(request)
+        dept = ctx['dept']
+        if not dept:
+            return render(request, 'HOD/courses.html', {'no_dept': True})
+        subjects = Subject.objects.filter(department=dept).select_related('faculty').order_by('semester', 'code')
+        faculty_list = User.objects.filter(departments=dept, role__in=['Faculty', 'Mentor'], is_active=True).order_by('full_name', 'email')
+        training_programs = TrainingProgram.objects.filter(department=dept, is_deleted=False).order_by('-start_date')
+        return render(request, 'HOD/courses.html', {
+            **ctx,
+            'subjects': subjects,
+            'faculty_list': faculty_list,
+            'training_programs': training_programs,
+        })
+
+    def post(self, request):
+        dept = _get_hod_department(request.user)
+        if not dept:
+            return redirect('hod-dashboard')
+        action = request.POST.get('action')
+        current_year = f"{now().year}-{now().year + 1}"
+        if action == 'save_subject':
+            subject_id = request.POST.get('subject_id')
+            payload = {
+                'name': request.POST.get('name', '').strip(),
+                'code': request.POST.get('code', '').strip(),
+                'semester': request.POST.get('semester') or 1,
+                'credits': request.POST.get('credits') or 3,
+                'type': request.POST.get('type', Subject.SubjectType.THEORY),
+                'faculty_id': request.POST.get('faculty_id') or None,
+            }
+            if payload['name'] and payload['code']:
+                if subject_id:
+                    subject = get_object_or_404(Subject, id=subject_id, department=dept)
+                    for key, value in payload.items():
+                        setattr(subject, key, value)
+                    subject.department = dept
+                    subject.save()
+                else:
+                    Subject.objects.create(department=dept, **payload)
+        elif action == 'assign_course_to_teacher':
+            subject_id = request.POST.get('subject_id')
+            faculty_id = request.POST.get('faculty_id')
+            if subject_id and faculty_id:
+                subject = get_object_or_404(Subject, id=subject_id, department=dept)
+                subject.faculty_id = faculty_id
+                subject.save(update_fields=['faculty', 'updated_at'])
+        elif action == 'upload_lesson_plan':
+            subject_id = request.POST.get('subject_id')
+            acad_year = request.POST.get('academic_year', current_year)
+            f = request.FILES.get('file')
+            if subject_id and f:
+                LessonPlan.objects.create(subject_id=subject_id, department=dept, uploaded_by=request.user, file=f, academic_year=acad_year)
+        return redirect('hod-courses')
+
+
+class HODStudentsView(RoleRequiredMixin, View):
+    allowed_roles = ['HOD']
+
+    def get(self, request):
+        ctx = _hod_access_context(request)
+        dept = ctx['dept']
+        if not dept:
+            return render(request, 'HOD/students.html', {'no_dept': True})
+        students = StudentProfile.objects.filter(department=dept, is_deleted=False).select_related('user', 'section')
+        student_reports = []
+        section_reports = []
+        for section in ctx['sections']:
+            section_students = students.filter(section=section)
+            total = section_students.count()
+            pass_count = section_students.filter(cgpa__gte=5).count()
+            attendance_count = sum(Attendance.objects.filter(student=s).count() for s in section_students)
+            attendance_present = sum(Attendance.objects.filter(student=s, is_present=True).count() for s in section_students)
+            section_reports.append({
+                'section': section,
+                'student_count': total,
+                'pass_pct': round((pass_count / total * 100) if total else 0, 1),
+                'attendance_pct': round((attendance_present / attendance_count * 100) if attendance_count else 0, 1),
+                'avg_cgpa': round(float(section_students.aggregate(avg=Avg('cgpa'))['avg'] or 0), 2),
+            })
+        for student in students:
+            total_att = Attendance.objects.filter(student=student).count()
+            present = Attendance.objects.filter(student=student, is_present=True).count()
+            student_reports.append({
+                'student': student,
+                'pass_status': 'Pass' if float(student.cgpa or 0) >= 5 else 'Fail',
+                'attendance_pct': round((present / total_att * 100) if total_att else 0, 1),
+                'marks_avg': round(float(Marks.objects.filter(student=student).aggregate(avg=Avg('total'))['avg'] or 0), 1),
+            })
+        college_total = students.count()
+        college_pass_pct = round((students.filter(cgpa__gte=5).count() / college_total * 100) if college_total else 0, 1)
+        college_attendance_count = sum(Attendance.objects.filter(student=s).count() for s in students)
+        college_attendance_present = sum(Attendance.objects.filter(student=s, is_present=True).count() for s in students)
+        college_attendance_pct = round((college_attendance_present / college_attendance_count * 100) if college_attendance_count else 0, 1)
+        college_avg_cgpa = round(float(students.aggregate(avg=Avg('cgpa'))['avg'] or 0), 2)
+        college_chart_values = [college_pass_pct, college_attendance_pct, college_avg_cgpa]
+        section_labels = [r['section'].name for r in section_reports]
+        section_pass_values = [r['pass_pct'] for r in section_reports]
+        section_attendance_values = [r['attendance_pct'] for r in section_reports]
+        return render(request, 'HOD/students.html', {
+            **ctx,
+            'students': students,
+            'section_reports': section_reports,
+            'student_reports': student_reports,
+            'college_total': college_total,
+            'college_pass_pct': college_pass_pct,
+            'college_attendance_pct': college_attendance_pct,
+            'college_avg_cgpa': college_avg_cgpa,
+            'college_chart_values': college_chart_values,
+            'section_labels': section_labels,
+            'section_pass_values': section_pass_values,
+            'section_attendance_values': section_attendance_values,
+        })
+
+
+class HODFacultyView(RoleRequiredMixin, View):
+    allowed_roles = ['HOD']
+
+    def get(self, request):
+        ctx = _hod_access_context(request)
+        dept = ctx['dept']
+        if not dept:
+            return render(request, 'HOD/faculty.html', {'no_dept': True})
+        faculty = User.objects.filter(departments=dept, role__in=['Faculty', 'Mentor'], is_active=True).order_by('role', 'full_name', 'email')
+        dept_students = StudentProfile.objects.filter(department=dept, is_deleted=False).select_related('user', 'section').order_by('roll_no')
+        mentor_assignments = StudentMentorAssignment.objects.filter(academic_year=ctx['current_year'], students__department=dept).distinct()
+        class_assignments = SectionClassTeacherAssignment.objects.filter(academic_year=ctx['current_year'], section__department=dept).select_related('section', 'teacher')
+        return render(request, 'HOD/faculty.html', {
+            **ctx,
+            'faculty': faculty,
+            'dept_students': dept_students,
+            'mentor_assignments': mentor_assignments,
+            'class_assignments': class_assignments,
+        })
+
+    def post(self, request):
+        dept = _get_hod_department(request.user)
+        if not dept:
+            return redirect('hod-faculty')
+        action = request.POST.get('action')
+        current_year = f"{now().year}-{now().year + 1}"
+
+        if action == 'assign_mentor_students':
+            mentor_id = request.POST.get('mentor_id')
+            student_ids = request.POST.getlist('student_ids')
+            if mentor_id and student_ids:
+                assignment, _ = StudentMentorAssignment.objects.update_or_create(
+                    mentor_id=mentor_id,
+                    academic_year=current_year,
+                    defaults={'assigned_by': request.user},
+                )
+                assignment.students.set(student_ids)
+                messages.success(request, 'Mentor assignment saved.')
+
+        elif action == 'assign_class_teacher':
+            section_id = request.POST.get('section_id')
+            teacher_id = request.POST.get('teacher_id')
+            academic_year = request.POST.get('academic_year', current_year)
+            if section_id and teacher_id:
+                section = get_object_or_404(Section, id=section_id, department=dept)
+                SectionClassTeacherAssignment.objects.update_or_create(
+                    section=section,
+                    academic_year=academic_year,
+                    defaults={'teacher_id': teacher_id, 'assigned_by': request.user},
+                )
+                messages.success(request, 'Class teacher assignment saved.')
+
+        return redirect('hod-faculty')
+
+
+class HODTimetableView(RoleRequiredMixin, View):
+    allowed_roles = ['HOD']
+
+    def get(self, request):
+        ctx = _hod_access_context(request)
+        dept = ctx['dept']
+        if not dept:
+            return render(request, 'HOD/timetable.html', {'no_dept': True})
+        sem_timetables = Timetable.objects.filter(department=dept, is_deleted=False).order_by('-created_at')
+        class_timetables = SectionTimetable.objects.filter(department=dept, is_deleted=False).select_related('section').order_by('-created_at')
+        calendars = AcademicCalendar.objects.filter(department=dept, is_deleted=False).order_by('-created_at')
+        events = Event.objects.filter(is_deleted=False).order_by('-date')[:8]
+        return render(request, 'HOD/timetable.html', {
+            **ctx,
+            'sem_timetables': sem_timetables,
+            'class_timetables': class_timetables,
+            'calendars': calendars,
+            'events': events,
+        })
+
+    def post(self, request):
+        dept = _get_hod_department(request.user)
+        if not dept:
+            return redirect('hod-dashboard')
+        action = request.POST.get('action')
+        current_year = f"{now().year}-{now().year + 1}"
+        if action == 'upload_sem_timetable':
+            semester = request.POST.get('semester')
+            valid_from = request.POST.get('valid_from')
+            f = request.FILES.get('file')
+            if semester and valid_from and f:
+                Timetable.objects.create(department=dept, uploaded_by=request.user, semester=semester, valid_from=valid_from, file=f, academic_year=current_year)
+        elif action == 'upload_class_timetable':
+            section_id = request.POST.get('section_id')
+            semester = request.POST.get('semester')
+            valid_from = request.POST.get('valid_from')
+            f = request.FILES.get('file')
+            if section_id and semester and valid_from and f:
+                section = get_object_or_404(Section, id=section_id, department=dept)
+                SectionTimetable.objects.create(department=dept, section=section, uploaded_by=request.user, semester=semester, valid_from=valid_from, file=f, academic_year=current_year)
+        elif action == 'upload_calendar':
+            title = request.POST.get('title', '').strip()
+            semester = request.POST.get('semester')
+            f = request.FILES.get('file')
+            if title and semester and f:
+                AcademicCalendar.objects.create(department=dept, uploaded_by=request.user, title=title, academic_year=current_year, semester=semester, file=f)
+        elif action == 'create_event':
+            title = request.POST.get('title', '').strip()
+            description = request.POST.get('description', '').strip()
+            date = request.POST.get('date')
+            location = request.POST.get('location', '').strip()
+            image = request.FILES.get('image')
+            if title and description and date and location:
+                Event.objects.create(title=title, description=description, date=date, location=location, image=image, created_by=request.user)
+        return redirect('hod-timetable')
+
+
+class HODEventsView(RoleRequiredMixin, View):
+    allowed_roles = ['HOD']
+
+    def get(self, request):
+        ctx = _hod_access_context(request)
+        events = Event.objects.filter(is_deleted=False).order_by('-date')
+        return render(request, 'HOD/events.html', {**ctx, 'events': events})
+
+    def post(self, request):
+        action = request.POST.get('action')
+        if action == 'create_event':
+            title = request.POST.get('title', '').strip()
+            description = request.POST.get('description', '').strip()
+            date = request.POST.get('date')
+            location = request.POST.get('location', '').strip()
+            image = request.FILES.get('image')
+            if title and description and date and location:
+                Event.objects.create(title=title, description=description, date=date, location=location, image=image, created_by=request.user)
+        return redirect('hod-events')
 
 
 class FacultyHubTemplateView(RoleRequiredMixin, TemplateView):
@@ -149,25 +429,62 @@ class HODDashboardView(RoleRequiredMixin, View):
     def get(self, request):
         dept = Department.objects.filter(hod=request.user).first()
         if not dept:
-            return render(request, 'faculty/hod_dashboard.html', {'no_dept': True})
+            return render(request, 'HOD/hod_dashboard.html', {'no_dept': True})
 
         # ── Faculty in dept ──
         faculty_list = User.objects.filter(
             departments=dept, role__in=['Faculty', 'Mentor'], is_active=True
-        ).annotate(subject_count=Count('subjects_taught'))
+        ).annotate(subject_count=Count('subjects_taught')).order_by('full_name', 'email')
 
         # ── Mentor list for assignment ──
         mentors = User.objects.filter(departments=dept, role='Mentor', is_active=True)
+        teachers = User.objects.filter(departments=dept, role__in=['Faculty', 'Mentor'], is_active=True)
+        sections = Section.objects.filter(department=dept).order_by('name')
 
         current_year = f"{now().year}-{now().year + 1}"
         direct_assignments = StudentMentorAssignment.objects.filter(
             academic_year=current_year,
             students__department=dept
         ).distinct()
+        class_teacher_assignments = SectionClassTeacherAssignment.objects.filter(
+            academic_year=current_year,
+            section__department=dept
+        ).select_related('section', 'teacher', 'assigned_by').order_by('section__name')
 
         dept_students = StudentProfile.objects.filter(
             department=dept, is_deleted=False
-        ).select_related('user')
+        ).select_related('user', 'section')
+
+        assigned_student_ids = set(
+            StudentMentorAssignment.objects.filter(
+                academic_year=current_year,
+                students__department=dept
+            ).values_list('students__id', flat=True)
+        )
+
+        total_students = dept_students.count()
+        avg_cgpa = dept_students.aggregate(avg=Avg('cgpa'))['avg'] or 0
+        pass_count = dept_students.filter(cgpa__gte=5).count()
+        fail_count = max(total_students - pass_count, 0)
+        mentor_assigned = len(assigned_student_ids)
+        mentor_unassigned = max(total_students - mentor_assigned, 0)
+
+        attendance_rows = []
+        total_attendance_records = 0
+        total_present_records = 0
+        for student in dept_students:
+            total_att = Attendance.objects.filter(student=student).count()
+            present = Attendance.objects.filter(student=student, is_present=True).count()
+            total_attendance_records += total_att
+            total_present_records += present
+            attendance_rows.append({
+                'student': student,
+                'total': total_att,
+                'present': present,
+                'percentage': round((present / total_att * 100) if total_att else 0, 1),
+                'status': 'Pass' if float(student.cgpa or 0) >= 5 else 'Fail',
+            })
+        overall_attendance_pct = round((total_present_records / total_attendance_records * 100) if total_attendance_records else 0, 1)
 
         # ── Dept performance (avg CGPA by batch) ──
         batch_performance = (
@@ -226,25 +543,51 @@ class HODDashboardView(RoleRequiredMixin, View):
         syllabus_pct = round((syllabus_covered / syllabus_total) * 100, 1) if syllabus_total else 0
 
         # ── Principal-forwarded summary (graph) ──
-        total_students = StudentProfile.objects.filter(department=dept, is_deleted=False).count()
-        assigned_count = StudentMentorAssignment.objects.filter(
-            academic_year=current_year, students__department=dept
-        ).values('students__id').distinct().count()
-        unassigned_count = max(total_students - assigned_count, 0)
-        avg_cgpa = (
-            StudentProfile.objects
-            .filter(department=dept, is_deleted=False)
-            .aggregate(avg=Avg('cgpa'))['avg'] or 0
-        )
-        principal_labels = ['Avg CGPA', 'Mentor Assigned', 'Mentor Unassigned', 'Syllabus %']
-        principal_values = [round(float(avg_cgpa), 2), assigned_count, unassigned_count, syllabus_pct]
+        principal_labels = ['Avg CGPA', 'Mentor Assigned', 'Mentor Unassigned', 'Attendance %', 'Pass %']
+        principal_values = [
+            round(float(avg_cgpa), 2),
+            mentor_assigned,
+            mentor_unassigned,
+            overall_attendance_pct,
+            round((pass_count / total_students * 100) if total_students else 0, 1),
+        ]
 
-        return render(request, 'faculty/hod_dashboard.html', {
+        section_reports = []
+        for section in sections:
+            section_students = dept_students.filter(section=section)
+            section_total = section_students.count()
+            section_pass = section_students.filter(cgpa__gte=5).count()
+            section_fail = max(section_total - section_pass, 0)
+            section_att_total = 0
+            section_att_present = 0
+            for student in section_students:
+                total_att = Attendance.objects.filter(student=student).count()
+                present = Attendance.objects.filter(student=student, is_present=True).count()
+                section_att_total += total_att
+                section_att_present += present
+            section_reports.append({
+                'section': section,
+                'student_count': section_total,
+                'pass_count': section_pass,
+                'fail_count': section_fail,
+                'avg_cgpa': round(float(section_students.aggregate(avg=Avg('cgpa'))['avg'] or 0), 2),
+                'attendance_pct': round((section_att_present / section_att_total * 100) if section_att_total else 0, 1),
+                'class_teacher': next((a.teacher for a in class_teacher_assignments if a.section_id == section.id), None),
+            })
+
+        subject_rows = list(Subject.objects.filter(department=dept).select_related('faculty').order_by('semester', 'code'))
+
+        return render(request, 'HOD/hod_dashboard.html', {
             'dept':               dept,
             'faculty_list':       faculty_list,
             'mentors':            mentors,
+            'teachers':           teachers,
+            'sections':           sections,
+            'class_teacher_assignments': class_teacher_assignments,
             'direct_assignments': direct_assignments,
             'dept_students':      dept_students,
+            'student_reports':    attendance_rows,
+            'section_reports':    section_reports,
             'current_year':       current_year,
             'lesson_plans':       lesson_plans,
             'timetables':         timetables,
@@ -253,11 +596,18 @@ class HODDashboardView(RoleRequiredMixin, View):
             'announcements':      announcements,
             'announcement_categories': Announcement.Category.choices,
             'syllabus_summary':   list(syllabus_summary),
-            'subjects':           dept_subjects,
-            'perf_labels':        json.dumps(perf_labels),
-            'perf_values':        json.dumps(perf_values),
-            'principal_labels':   json.dumps(principal_labels),
-            'principal_values':   json.dumps(principal_values),
+            'subjects':           subject_rows,
+            'total_students':     total_students,
+            'avg_cgpa':           round(float(avg_cgpa), 2),
+            'pass_count':         pass_count,
+            'fail_count':         fail_count,
+            'mentor_assigned':    mentor_assigned,
+            'mentor_unassigned':  mentor_unassigned,
+            'attendance_pct':     overall_attendance_pct,
+            'perf_labels':        perf_labels,
+            'perf_values':        perf_values,
+            'principal_labels':   principal_labels,
+            'principal_values':   principal_values,
         })
 
     def post(self, request):
@@ -277,6 +627,41 @@ class HODDashboardView(RoleRequiredMixin, View):
                     defaults={'assigned_by': request.user}
                 )
                 assignment.students.set(student_ids)
+                messages.success(request, 'Mentor assignment saved.')
+
+        elif action == 'assign_class_teacher':
+            section_id = request.POST.get('section_id')
+            teacher_id = request.POST.get('teacher_id')
+            academic_year = request.POST.get('academic_year', current_year)
+            if section_id and teacher_id:
+                section = get_object_or_404(Section, id=section_id, department=dept)
+                SectionClassTeacherAssignment.objects.update_or_create(
+                    section=section,
+                    academic_year=academic_year,
+                    defaults={'teacher_id': teacher_id, 'assigned_by': request.user}
+                )
+                messages.success(request, 'Class teacher assignment saved.')
+
+        elif action == 'save_subject':
+            subject_id = request.POST.get('subject_id')
+            payload = {
+                'name': request.POST.get('name', '').strip(),
+                'code': request.POST.get('code', '').strip(),
+                'semester': request.POST.get('semester') or 1,
+                'credits': request.POST.get('credits') or 3,
+                'type': request.POST.get('type', Subject.SubjectType.THEORY),
+                'faculty_id': request.POST.get('faculty_id') or None,
+            }
+            if payload['name'] and payload['code']:
+                if subject_id:
+                    subject = get_object_or_404(Subject, id=subject_id, department=dept)
+                    for key, value in payload.items():
+                        setattr(subject, key, value)
+                    subject.department = dept
+                    subject.save()
+                else:
+                    Subject.objects.create(department=dept, **payload)
+                messages.success(request, 'Curriculum updated.')
 
         elif action == 'upload_lesson_plan':
             subject_id = request.POST.get('subject_id')
@@ -327,6 +712,7 @@ class HODDashboardView(RoleRequiredMixin, View):
                     created_by=request.user,
                     is_active=is_active,
                 )
+                messages.success(request, 'Training session saved.')
 
         elif action == 'update_training':
             training_id = request.POST.get('training_id')
@@ -349,6 +735,7 @@ class HODDashboardView(RoleRequiredMixin, View):
                         'title', 'description', 'start_date', 'end_date',
                         'venue', 'is_active', 'updated_at'
                     ])
+                    messages.success(request, 'Training session updated.')
 
         elif action == 'create_announcement':
             title = request.POST.get('title', '').strip()
@@ -364,6 +751,7 @@ class HODDashboardView(RoleRequiredMixin, View):
                     link=link,
                     is_active=is_active,
                 )
+                messages.success(request, 'Announcement published.')
 
         return redirect('hod-dashboard')
 

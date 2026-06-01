@@ -1,0 +1,149 @@
+{% extends 'HOD/base_hod.html' %}
+{% load static %}
+
+{% block portal_tab_title %}HOD Faculty{% endblock %}
+{% block portal_title %}Faculty & Mentor Assignments{% endblock %}
+
+{% block portal_content %}
+{% if no_dept %}
+<div class="card p-4 text-center">
+  <div class="empty-state">
+    <div class="empty-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+    <div class="empty-title">Department Not Mapped</div>
+    <div class="empty-desc">Your account is not mapped to a department yet. Please contact the system administrator.</div>
+  </div>
+</div>
+{% else %}
+
+<!-- ═══ HEADER ═══ -->
+<div class="flex-between">
+  <div>
+    <h2 class="section-title">Department Staff & Roles</h2>
+    <p class="section-sub">Assign students to mentors and view active faculty roles.</p>
+  </div>
+  <a class="btn-outline" href="{% url 'hod-dashboard' %}">
+    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+  </a>
+</div>
+
+<!-- ═══ OVERVIEW CARDS ═══ -->
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card p-3 text-center">
+      <div class="card-label">FACULTY COUNT</div>
+      <div class="fs-2 fw-bold mt-2" style="color:var(--primary);">{{ faculty|length }}</div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card p-3 text-center">
+      <div class="card-label">MENTOR GROUPS</div>
+      <div class="fs-2 fw-bold mt-2 text-success">{{ mentor_assignments|length }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FACULTY DIRECTORY TABLE ═══ -->
+<div class="card p-4 mb-4">
+  <h5 class="fw-bold mb-1">Faculty & Mentors Directory</h5>
+  <p class="text-muted text-sm mb-3">All teachers currently mapped to this branch/department.</p>
+  
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--border); font-size:12px; color:var(--muted);">
+          <th>NAME</th>
+          <th>DESIGNATED ROLE</th>
+          <th>EMAIL</th>
+          <th>COURSES TAUGHT</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for teacher in faculty %}
+        <tr style="border-bottom: 1px solid var(--border); font-size:13px;">
+          <td class="fw-bold">{{ teacher.full_name|default:teacher.email }}</td>
+          <td>
+            {% if teacher.role == 'Mentor' %}
+              <span class="tag tag-green">Mentor</span>
+            {% else %}
+              <span class="tag tag-blue">Faculty</span>
+            {% endif %}
+          </td>
+          <td class="text-muted">{{ teacher.email }}</td>
+          <td><span class="tag tag-cyan">{{ teacher.subject_count }} Subjects</span></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-muted py-3 text-center">No faculty registered.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ ASSIGNMENT FORMS & LISTS ═══ -->
+<div class="row">
+  <!-- MENTOR ASSIGNMENT SECTION -->
+  <div class="col-12">
+    <div class="card p-4">
+      <h5 class="fw-bold mb-1">Assign Mentors</h5>
+      <p class="text-muted text-sm mb-4">Select a mentor and map them to their mentored students group.</p>
+      
+      <div class="row g-4">
+        <!-- Assignment Form -->
+        <div class="col-lg-6" style="border-right: 1px solid var(--border); padding-right: 24px;">
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="assign_mentor_students">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label text-sm fw-bold">Mentor</label>
+                <select class="form-select text-sm" name="mentor_id" required>
+                  <option value="">Select Mentor</option>
+                  {% for mentor in mentors %}
+                  <option value="{{ mentor.id }}">{{ mentor.full_name|default:mentor.email }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label text-sm fw-bold">Students Group</label>
+                <div class="border rounded p-2" style="max-height:220px; overflow-y:auto; background:#f8fafc;">
+                  {% for student in dept_students %}
+                    <label class="form-check d-flex gap-2 align-items-start mb-2 text-sm" style="cursor:pointer;">
+                      <input class="form-check-input mt-1" type="checkbox" name="student_ids" value="{{ student.id }}">
+                      <span>{{ student.user.full_name|default:student.user.email }} · <strong>{{ student.roll_no }}</strong></span>
+                    </label>
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="col-12 mt-4">
+                <button type="submit" class="btn-primary w-100 justify-content-center">Save Mentor Assignment</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Current Assignments List -->
+        <div class="col-lg-6" style="padding-left: 24px;">
+          <h6 class="fw-bold mb-3"><i class="bi bi-people-fill text-success me-2"></i>Active Mentor Assignments</h6>
+          <div class="pt-2" style="max-height: 380px; overflow-y: auto;">
+            {% for assignment in mentor_assignments %}
+            <div class="border-bottom pb-2 mb-2 last-child-mb-0">
+              <div class="fw-bold text-sm" style="color:var(--primary);">{{ assignment.mentor.full_name|default:assignment.mentor.email }}</div>
+              <div class="smaller text-muted" style="font-size:11.5px;">Academic Year: {{ assignment.academic_year }} · <strong>{{ assignment.students.count }} students</strong></div>
+            </div>
+            {% empty %}
+            <p class="text-muted text-sm mb-0">No active mentor mappings.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}

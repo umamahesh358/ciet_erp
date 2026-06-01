@@ -72,8 +72,23 @@
                     <i class="bi bi-award"></i> Certifications
                 </a>
                 {% elif request.user.role == 'HOD' %}
-                <a href="{% url 'dashboard' %}" class="sidebar-nav-item active">
+                <a href="{% url 'dashboard' %}" class="sidebar-nav-item {% if request.path == '/' or request.path == '/dashboard/' or request.path == '/dashboard' %}active{% endif %}">
                     <i class="bi bi-shield-lock"></i> HOD Command Center
+                </a>
+                <a href="{% url 'hod-courses' %}" class="sidebar-nav-item {% if 'hod/courses' in request.path %}active{% endif %}">
+                    <i class="bi bi-journal-bookmark"></i> Courses
+                </a>
+                <a href="{% url 'hod-students' %}" class="sidebar-nav-item {% if 'hod/students' in request.path %}active{% endif %}">
+                    <i class="bi bi-people"></i> Students
+                </a>
+                <a href="{% url 'hod-faculty' %}" class="sidebar-nav-item {% if 'hod/faculty' in request.path %}active{% endif %}">
+                    <i class="bi bi-person-badge"></i> Faculty
+                </a>
+                <a href="{% url 'hod-timetable' %}" class="sidebar-nav-item {% if 'hod/timetable' in request.path %}active{% endif %}">
+                    <i class="bi bi-calendar-week"></i> Timetable
+                </a>
+                <a href="{% url 'hod-events' %}" class="sidebar-nav-item {% if 'hod/events' in request.path %}active{% endif %}">
+                    <i class="bi bi-calendar-event"></i> Events
                 </a>
                 {% elif request.user.role == 'Mentor' %}
                 <a href="{% url 'dashboard' %}" class="sidebar-nav-item active">
