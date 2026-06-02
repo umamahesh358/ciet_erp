@@ -54,8 +54,6 @@ urlpatterns = [
     path('parent/', include('apps.parents.urls')),
     # Notifications
     path('notifications/', include('apps.notifications.urls')),
-    # Direct role messaging
-    path('messages/', include('apps.messaging.urls')),
     # Backwards-compat redirects for stale browser cache
     path('api/v1/students/portal/', RedirectView.as_view(url='/student/portal/', permanent=False)),
     path('student-portal/', RedirectView.as_view(url='/student/portal/', permanent=False)),
