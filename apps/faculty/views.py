@@ -1,4 +1,3 @@
-import json
 import csv
 import io
 from django.shortcuts import render, redirect, get_object_or_404
@@ -11,7 +10,7 @@ from django.db.models import Count, Avg, Q, Sum
 from django.http import HttpResponse, JsonResponse
 
 from apps.accounts.models import User
-from apps.academics.models import Department, Subject, Marks, Attendance
+from apps.academics.models import Department, Section, Subject, Marks, Attendance
 from apps.students.models import StudentProfile
 from apps.faculty.models import (
     StudentMentorAssignment, LessonPlan, Timetable, AcademicCalendar,
@@ -112,7 +111,140 @@ class FacultyHubTemplateView(RoleRequiredMixin, TemplateView):
         unread_count = max(0, total_relevant - read_count)
         
         context['hod_unread_count'] = unread_count
+        context['faculty_hub_data'] = build_faculty_hub_data(user)
         return context
+
+
+def _student_year_from_batch(batch):
+    try:
+        start_year = int(str(batch).split('-')[0])
+        return min(max(now().year - start_year + 1, 1), 4)
+    except (TypeError, ValueError):
+        return 1
+
+
+def _user_departments(user):
+    departments = list(user.departments.all())
+    if user.role == 'HOD' and not departments:
+        hod_dept = Department.objects.filter(hod=user).first()
+        if hod_dept:
+            departments = [hod_dept]
+    return departments
+
+
+def build_faculty_hub_data(user):
+    """Backend replacement for the old faculty-hub/js/data.js demo arrays."""
+    departments_qs = Department.objects.filter(id__in=[d.id for d in _user_departments(user)])
+    if not departments_qs.exists() and user.role in ['HOD', 'Mentor', 'Faculty']:
+        departments_qs = user.departments.all()
+
+    sections_qs = Section.objects.filter(department__in=departments_qs).select_related('department')
+    students_qs = StudentProfile.objects.filter(
+        department__in=departments_qs,
+        is_deleted=False
+    ).select_related('user', 'department', 'section')
+    cohorts_qs = Cohort.objects.filter(
+        department__in=departments_qs,
+        is_deleted=False
+    )
+    subjects_qs = Subject.objects.filter(department__in=departments_qs)
+    institution_courses_qs = InstitutionCourse.objects.filter(
+        Q(created_by=user) | Q(created_by__is_superuser=True) | Q(cohorts__department__in=departments_qs),
+        is_deleted=False,
+    ).distinct()
+
+    departments = [
+        {'id': str(dept.id), 'name': dept.name, 'code': dept.code}
+        for dept in departments_qs
+    ]
+    sections = [
+        {
+            'id': str(section.id),
+            'name': section.name,
+            'departmentId': str(section.department_id),
+            'year': 1,
+        }
+        for section in sections_qs
+    ]
+    cohorts = [
+        {
+            'id': str(cohort.id),
+            'name': cohort.name,
+            'departmentId': str(cohort.department_id) if cohort.department_id else '',
+            'sectionIds': [],
+            'year': _student_year_from_batch(cohort.batch),
+            'status': 'active' if cohort.is_active else 'closed',
+            'students_count': cohort.students.count(),
+        }
+        for cohort in cohorts_qs
+    ]
+    courses = [
+        {
+            'id': str(subject.id),
+            'name': subject.name,
+            'departmentId': str(subject.department_id),
+            'sectionIds': [],
+            'cohortIds': [],
+            'year': max(min(int((subject.semester + 1) / 2), 4), 1),
+            'published': True,
+            'status': 'active',
+        }
+        for subject in subjects_qs
+    ]
+    institution_courses = [
+        {
+            'id': str(course.id),
+            'name': course.name,
+            'category': course.get_category_display(),
+            'sectionIds': [],
+            'cohortIds': [str(cohort.id) for cohort in course.cohorts.all()],
+            'year': 1,
+            'published': course.is_published_to_profile,
+            'status': 'active',
+        }
+        for course in institution_courses_qs
+    ]
+    students = []
+    for student in students_qs:
+        cohort = student.cohorts.first()
+        avg_marks = Marks.objects.filter(student=student).aggregate(avg=Avg('total'))['avg'] or 0
+        students.append({
+            'id': str(student.id),
+            'name': student.user.full_name or student.user.email,
+            'regNo': student.roll_no,
+            'rollNumber': student.roll_no,
+            'sectionId': str(student.section_id) if student.section_id else '',
+            'cohortId': str(cohort.id) if cohort else '',
+            'departmentId': str(student.department_id),
+            'year': _student_year_from_batch(student.batch),
+            'marks': round(float(avg_marks), 1),
+            'courseCompletion': {},
+        })
+
+    dept_filter = Q(target_department__isnull=True)
+    if departments_qs.exists():
+        dept_filter |= Q(target_department__in=departments_qs)
+    hod_updates = [
+        {
+            'id': str(notification.id),
+            'title': notification.title,
+            'content': notification.message,
+            'date': notification.created_at.date().isoformat(),
+            'departmentId': str(notification.target_department_id) if notification.target_department_id else '',
+            'priority': 'high' if notification.is_global else 'medium',
+        }
+        for notification in Notification.objects.filter(dept_filter).order_by('-created_at')[:20]
+    ]
+
+    return {
+        'departments': departments,
+        'sections': sections,
+        'cohorts': cohorts,
+        'courses': courses,
+        'institutionCourses': institution_courses,
+        'students': students,
+        'hodUpdates': hod_updates,
+    }
 
 
 class FacultyHubCohortsView(FacultyHubTemplateView):
@@ -254,10 +386,10 @@ class HODDashboardView(RoleRequiredMixin, View):
             'announcement_categories': Announcement.Category.choices,
             'syllabus_summary':   list(syllabus_summary),
             'subjects':           dept_subjects,
-            'perf_labels':        json.dumps(perf_labels),
-            'perf_values':        json.dumps(perf_values),
-            'principal_labels':   json.dumps(principal_labels),
-            'principal_values':   json.dumps(principal_values),
+            'perf_labels':        perf_labels,
+            'perf_values':        perf_values,
+            'principal_labels':   principal_labels,
+            'principal_values':   principal_values,
         })
 
     def post(self, request):
@@ -396,6 +528,15 @@ class MentorDashboardView(RoleRequiredMixin, View):
                 'att_pct':    att_pct,
                 'cgpa':       s.cgpa,
             })
+        mentor_chart_data = [
+            {
+                'name': row['student'].user.full_name or row['student'].roll_no,
+                'roll_no': row['student'].roll_no,
+                'cgpa': float(row['cgpa'] or 0),
+                'avg_marks': float(row['avg_marks'] or 0),
+            }
+            for row in student_stats
+        ]
 
         # ── Subjects mentor can upload marks for ──
         subjects = Subject.objects.filter(
@@ -413,6 +554,7 @@ class MentorDashboardView(RoleRequiredMixin, View):
             'assignments':    [],
             'inst_courses':   inst_courses,
             'current_year':   current_year,
+            'mentor_chart_data': mentor_chart_data,
         })
 
     def post(self, request):
@@ -533,10 +675,12 @@ class FacultyDashboardView(RoleRequiredMixin, View):
         for subj in my_subjects:
             avg = Marks.objects.filter(subject=subj).aggregate(avg=Avg('total'))['avg']
             count = Marks.objects.filter(subject=subj).count()
+            coverage = syllabus_by_subject.get(subj.id, {})
             subject_performance.append({
                 'subject': subj,
                 'avg': round(float(avg), 1) if avg else 0,
                 'count': count,
+                'coverage_pct': coverage.get('pct', 0),
             })
 
         # ── Chart data ──
@@ -568,9 +712,10 @@ class FacultyDashboardView(RoleRequiredMixin, View):
             'subject_performance': subject_performance,
             'dept_students':      dept_students,
             'departments':        departments,
-            'perf_labels':        json.dumps(perf_labels),
-            'perf_values':        json.dumps(perf_values),
+            'perf_labels':        perf_labels,
+            'perf_values':        perf_values,
             'hod_unread_count':   unread_count,
+            'faculty_hub_data':   build_faculty_hub_data(user),
         })
 
     def post(self, request):

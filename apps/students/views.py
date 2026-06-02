@@ -286,6 +286,52 @@ class StudentPortalView(LoginRequiredMixin, View):
             'education': profile.education.count(),
             'cgpa': profile.cgpa or 0,
         }
+        social_links = [
+            ('LinkedIn', profile.linkedin_url),
+            ('GitHub', profile.github_url),
+            ('LeetCode', profile.leetcode_url),
+            ('HackerRank', profile.hackerrank_url),
+            ('CodeChef', profile.codechef_url),
+            ('Codeforces', profile.codeforces_url),
+        ]
+        filled_social_links = [(label, url) for label, url in social_links if url]
+        profile_checks = [
+            bool(profile.photo),
+            bool(profile.resume),
+            bool(profile.personal_email or profile.user.email),
+            bool(profile.personal_phone or profile.user.phone),
+            bool(filled_social_links),
+            bool(portfolio_stats['education']),
+            bool(portfolio_stats['projects']),
+            bool(portfolio_stats['certifications']),
+        ]
+        profile_completion = round((sum(profile_checks) / len(profile_checks)) * 100)
+        verified_counts = {
+            'certifications': profile.certifications.filter(is_verified=True).count(),
+            'projects': profile.projects.filter(is_verified=True).count(),
+            'courses': profile.courses.filter(is_verified=True).count(),
+            'research': profile.research.filter(is_verified=True).count(),
+            'results': profile.semester_results.filter(is_verified=True).count(),
+        }
+        dashboard_counts = {
+            **portfolio_stats,
+            'courses': profile.courses.count(),
+            'research': profile.research.count(),
+            'events': profile.events.count(),
+            'cohorts': cohorts.count(),
+            'subjects': len(subject_stats),
+            'verified_total': sum(verified_counts.values()),
+            'social_links': len(filled_social_links),
+        }
+        latest_records = {
+            'education': profile.education.order_by('-year_of_passing', '-created_at').first(),
+            'project': profile.projects.order_by('-created_at').first(),
+            'certification': profile.certifications.order_by('-created_at').first(),
+            'internship': profile.internships.order_by('-created_at').first(),
+            'event': profile.events.order_by('-event_date', '-created_at').first(),
+            'course': profile.courses.order_by('-created_at').first(),
+            'research': profile.research.order_by('-created_at').first(),
+        }
 
         return render(request, 'student_portal/dashboard.html', {
             'profile': profile,
@@ -293,6 +339,11 @@ class StudentPortalView(LoginRequiredMixin, View):
             'activity_posts': activity_posts,
             'cohorts': cohorts,
             'portfolio_stats': portfolio_stats,
+            'dashboard_counts': dashboard_counts,
+            'verified_counts': verified_counts,
+            'profile_completion': profile_completion,
+            'filled_social_links': filled_social_links,
+            'latest_records': latest_records,
         })
 
 

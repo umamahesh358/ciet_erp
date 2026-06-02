@@ -6,156 +6,149 @@
 {% block portal_title_display %}Overview{% endblock %}
 
 {% block portal_content %}
-<div style="margin-bottom:24px;">
-  <h1 class="section-title">Welcome back, {{ profile.user.full_name }}!</h1>
-  <p class="section-sub">{{ profile.department.name|default:"B.Tech CSE" }} · {{ profile.roll_no }} · Batch {{ profile.batch }}</p>
-</div>
-
-<!-- Stats Row -->
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-bottom:28px;">
-  <div class="card" style="padding:20px;display:flex;align-items:center;gap:14px;">
-    <div style="width:44px;height:44px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;justify-content:center;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-    </div>
-    <div>
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Projects</div>
-      <div style="font-size:22px;font-weight:800;color:var(--text);">{{ portfolio_stats.projects }}</div>
-    </div>
+<aside class="portal-welcome-toast" aria-live="polite">
+  <div>
+    <span>Welcome back</span>
+    <strong>{{ profile.user.full_name|default:"Student" }}</strong>
+    <small>{{ profile.department.code|default:profile.department.name }} · {{ profile.roll_no }}</small>
   </div>
-  <div class="card" style="padding:20px;display:flex;align-items:center;gap:14px;">
-    <div style="width:44px;height:44px;background:#f0fdf4;border-radius:10px;display:flex;align-items:center;justify-content:center;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-    </div>
-    <div>
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Certifications</div>
-      <div style="font-size:22px;font-weight:800;color:var(--text);">{{ portfolio_stats.certifications }}</div>
-    </div>
-  </div>
-  <div class="card" style="padding:20px;display:flex;align-items:center;gap:14px;">
-    <div style="width:44px;height:44px;background:#fefce8;border-radius:10px;display:flex;align-items:center;justify-content:center;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-    </div>
-    <div>
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">CGPA</div>
-      <div style="font-size:22px;font-weight:800;color:var(--text);">{{ profile.cgpa|default:"—" }}</div>
-    </div>
-  </div>
-  <div class="card" style="padding:20px;display:flex;align-items:center;gap:14px;">
-    <div style="width:44px;height:44px;background:#eff6ff;border-radius:10px;display:flex;align-items:center;justify-content:center;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-    </div>
-    <div>
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Internships</div>
-      <div style="font-size:22px;font-weight:800;color:var(--text);">{{ portfolio_stats.internships }}</div>
-    </div>
-  </div>
-</div>
-
-<!-- Quick Nav Grid -->
-<div class="card" style="margin-bottom:28px;">
-  <div class="card-header-custom">
-    <h2 style="font-size:14px;font-weight:700;">Quick Access</h2>
-  </div>
-  <div class="card-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding:16px;">
-
-    <a href="{% url 'student-certifications' %}" style="text-decoration:none;padding:14px;background:var(--bg);border-radius:10px;border:1px solid var(--border);display:block;">
-      <div style="font-size:11px;font-weight:700;color:#16a34a;margin-bottom:4px;">CERTIFICATIONS</div>
-      <div style="font-size:13px;font-weight:600;color:var(--text);">{{ portfolio_stats.certifications }} Added</div>
-    </a>
-    <a href="{% url 'student-courses' %}" style="text-decoration:none;padding:14px;background:var(--bg);border-radius:10px;border:1px solid var(--border);display:block;">
-      <div style="font-size:11px;font-weight:700;color:var(--primary);margin-bottom:4px;">COURSES</div>
-      <div style="font-size:13px;font-weight:600;color:var(--text);">Semester Catalogue</div>
-    </a>
-    <a href="{% url 'student-education' %}" style="text-decoration:none;padding:14px;background:var(--bg);border-radius:10px;border:1px solid var(--border);display:block;">
-      <div style="font-size:11px;font-weight:700;color:#6366f1;margin-bottom:4px;">EDUCATION</div>
-      <div style="font-size:13px;font-weight:600;color:var(--text);">{{ portfolio_stats.education }} Records</div>
-    </a>
-    <a href="{% url 'student-events' %}" style="text-decoration:none;padding:14px;background:var(--bg);border-radius:10px;border:1px solid var(--border);display:block;">
-      <div style="font-size:11px;font-weight:700;color:#d97706;margin-bottom:4px;">EVENTS</div>
-      <div style="font-size:13px;font-weight:600;color:var(--text);">Campus Activity</div>
-    </a>
-    <a href="{% url 'student-internships' %}" style="text-decoration:none;padding:14px;background:var(--bg);border-radius:10px;border:1px solid var(--border);display:block;">
-      <div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:4px;">INTERNSHIPS</div>
-      <div style="font-size:13px;font-weight:600;color:var(--text);">{{ portfolio_stats.internships }} Added</div>
-    </a>
-    <a href="{% url 'student-research' %}" style="text-decoration:none;padding:14px;background:var(--bg);border-radius:10px;border:1px solid var(--border);display:block;">
-      <div style="font-size:11px;font-weight:700;color:#0891b2;margin-bottom:4px;">RESEARCH</div>
-      <div style="font-size:13px;font-weight:600;color:var(--text);">Papers & Publications</div>
-    </a>
-    <a href="{% url 'student-academics' %}" style="text-decoration:none;padding:14px;background:var(--bg);border-radius:10px;border:1px solid var(--border);display:block;">
-      <div style="font-size:11px;font-weight:700;color:#dc2626;margin-bottom:4px;">RESULTS</div>
-      <div style="font-size:13px;font-weight:600;color:var(--text);">Semester Marks</div>
-    </a>
-    <a href="{% url 'student-projects' %}" style="text-decoration:none;padding:14px;background:var(--bg);border-radius:10px;border:1px solid var(--border);display:block;">
-      <div style="font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:4px;">PROJECTS</div>
-      <div style="font-size:13px;font-weight:600;color:var(--text);">{{ portfolio_stats.projects }} Deployed</div>
-    </a>
-  </div>
-</div>
-
-<!-- Cohorts -->
-<div class="card" id="cohorts" style="margin-bottom:28px;">
-  <div class="card-header-custom">
-    <h2 style="font-size:14px;font-weight:700;">Your Cohorts</h2>
-  </div>
-  <div class="card-body">
-    {% if cohorts %}
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;padding:16px;">
-      {% for cohort in cohorts %}
-      <div style="padding:18px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">
-          {{ cohort.get_cohort_type_display|default:"Cohort" }}
-        </div>
-        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">{{ cohort.name }}</div>
-        <div style="font-size:12px;color:var(--muted);">
-          {{ cohort.department.name }}{% if cohort.batch %} · {{ cohort.batch }}{% endif %}
-        </div>
-        {% if cohort.description %}
-        <div style="font-size:12px;color:#475569;margin-top:6px;line-height:1.4;">{{ cohort.description|truncatewords:15 }}</div>
-        {% endif %}
-      </div>
-      {% endfor %}
-    </div>
+  <div class="portal-welcome-avatar">
+    {% if profile.photo %}
+    <img src="{{ profile.photo.url }}" alt="">
     {% else %}
-    <div style="padding:32px;text-align:center;color:var(--muted);font-size:13px;">No cohorts assigned yet.</div>
+    {{ profile.user.full_name|first|upper }}
     {% endif %}
   </div>
+</aside>
+
+<!-- Quick Nav Grid -->
+<div class="card portal-panel portal-quick-panel motion-rise delay-1">
+  <div class="card-header-custom">
+    <h2 class="portal-panel-title">Quick Access</h2>
+  </div>
+  <div class="card-body portal-quick-grid">
+
+    <a href="{% url 'student-certifications' %}" class="portal-quick-card">
+      <div class="portal-quick-label">CERTIFICATIONS</div>
+      <div class="portal-quick-value">{{ portfolio_stats.certifications }} Added</div>
+    </a>
+    <a href="{% url 'student-courses' %}" class="portal-quick-card">
+      <div class="portal-quick-label">COURSES</div>
+      <div class="portal-quick-value">Semester Catalogue</div>
+    </a>
+    <a href="{% url 'student-education' %}" class="portal-quick-card">
+      <div class="portal-quick-label">EDUCATION</div>
+      <div class="portal-quick-value">{{ portfolio_stats.education }} Records</div>
+    </a>
+    <a href="{% url 'student-events' %}" class="portal-quick-card">
+      <div class="portal-quick-label">EVENTS</div>
+      <div class="portal-quick-value">Campus Activity</div>
+    </a>
+    <a href="{% url 'student-internships' %}" class="portal-quick-card">
+      <div class="portal-quick-label">INTERNSHIPS</div>
+      <div class="portal-quick-value">{{ portfolio_stats.internships }} Added</div>
+    </a>
+    <a href="{% url 'student-research' %}" class="portal-quick-card">
+      <div class="portal-quick-label">RESEARCH</div>
+      <div class="portal-quick-value">Papers & Publications</div>
+    </a>
+    <a href="{% url 'student-academics' %}" class="portal-quick-card">
+      <div class="portal-quick-label">RESULTS</div>
+      <div class="portal-quick-value">Semester Marks</div>
+    </a>
+    <a href="{% url 'student-projects' %}" class="portal-quick-card">
+      <div class="portal-quick-label">PROJECTS</div>
+      <div class="portal-quick-value">{{ portfolio_stats.projects }} Deployed</div>
+    </a>
+  </div>
 </div>
 
-<!-- Marks Summary -->
-<div class="card">
-  <div class="card-header-custom">
-    <h2 style="font-size:14px;font-weight:700;">Latest Marks (Published by Exam Cell)</h2>
-    <a href="{% url 'student-academics' %}" style="font-size:12px;font-weight:600;color:var(--primary);text-decoration:none;">Full Transcript →</a>
-  </div>
-  {% if subject_stats %}
-  <div style="overflow-x:auto;">
-    <table style="width:100%;border-collapse:collapse;">
-      <thead>
-        <tr style="background:#f8fafc;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
-          <th style="padding:12px 20px;text-align:left;">Course</th>
-          <th style="padding:12px 20px;text-align:center;">Semester</th>
-          <th style="padding:12px 20px;text-align:center;">Internal</th>
-          <th style="padding:12px 20px;text-align:center;">External</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for sid, stat in subject_stats.items %}
-        <tr style="border-top:1px solid var(--border);">
-          <td style="padding:12px 20px;">
-            <div style="font-size:13px;font-weight:600;color:var(--text);">{{ stat.subject_name }}</div>
-            <div style="font-size:11px;color:var(--muted);">{{ stat.subject_code }}</div>
-          </td>
-          <td style="padding:12px 20px;text-align:center;"><span class="tag">Sem {{ stat.semester }}</span></td>
-          <td style="padding:12px 20px;text-align:center;font-size:13px;font-weight:700;color:var(--text);">{{ stat.internal }}</td>
-          <td style="padding:12px 20px;text-align:center;font-size:13px;font-weight:700;color:var(--text);">{{ stat.external }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% else %}
-  <div style="padding:32px;text-align:center;color:var(--muted);font-size:13px;">No marks published yet.</div>
-  {% endif %}
+<div class="portal-overview-layout portal-overview-layout-wide motion-rise delay-2">
+  <section class="card portal-panel">
+    <div class="card-header-custom">
+      <h2 class="portal-panel-title">View</h2>
+      <span class="portal-mini-pill">{{ profile_completion }}% Ready</span>
+    </div>
+    <div class="portal-recruiter-grid">
+      <div class="portal-recruiter-card">
+        <span>Identity</span>
+        <strong>{{ profile.user.full_name|default:"Student" }}</strong>
+        <small>{{ profile.roll_no }} · {{ profile.department.code|default:profile.department.name }}{% if profile.section %} · {{ profile.section.name }}{% endif %}</small>
+      </div>
+      <div class="portal-recruiter-card">
+        <span>Proof of Work</span>
+        <strong>{{ portfolio_stats.projects }} Projects</strong>
+        <small>{{ portfolio_stats.certifications }} certifications · {{ dashboard_counts.research }} research items</small>
+      </div>
+      <div class="portal-recruiter-card">
+        <span>Experience Signal</span>
+        <strong>{{ portfolio_stats.internships }} Internships</strong>
+        <small>{{ dashboard_counts.events }} events · {{ dashboard_counts.courses }} courses</small>
+      </div>
+      <div class="portal-recruiter-card">
+        <span>Academic Signal</span>
+        <strong>CGPA {{ profile.cgpa|default:"-" }}</strong>
+        <small>{{ dashboard_counts.subjects }} subjects · Batch {{ profile.batch }}</small>
+      </div>
+      <div class="portal-recruiter-card">
+        <span>Verification</span>
+        <strong>{{ dashboard_counts.verified_total }} Verified</strong>
+        <small>{{ verified_counts.certifications }} certs · {{ verified_counts.projects }} projects · {{ verified_counts.results }} results</small>
+      </div>
+      <div class="portal-recruiter-card">
+        <span>Reachability</span>
+        <strong>{% if profile.resume %}Resume Ready{% else %}Resume Pending{% endif %}</strong>
+        <small>{{ dashboard_counts.social_links }} social links · {% if profile.personal_phone or profile.user.phone %}phone added{% else %}phone pending{% endif %}</small>
+      </div>
+    </div>
+  </section>
+
+  <section class="card portal-panel portal-activity-panel">
+    <div class="card-header-custom">
+      <h2 class="portal-panel-title">Recent Activity</h2>
+    </div>
+    <div class="portal-activity-list">
+      {% if activity_posts %}
+      {% for item in activity_posts|slice:":5" %}
+      <div class="portal-activity-item">
+        <div class="portal-activity-kind">{{ item.kind }}</div>
+        <div class="portal-activity-title">{{ item.title }}</div>
+        <div class="portal-activity-sub">{{ item.subtitle|default:"Updated profile record" }}</div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="portal-empty">No recent portfolio activity yet.</div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<div class="portal-overview-layout motion-rise delay-3">
+  <section class="card portal-panel portal-health-panel">
+    <div class="card-header-custom">
+      <h2 class="portal-panel-title">Academic Summary</h2>
+      <a href="{% url 'student-academics' %}" class="portal-panel-link">View Marks &rarr;</a>
+    </div>
+    <div class="portal-health-grid portal-academic-simple">
+      <div><span>{{ profile.cgpa|default:"-" }}</span><small>CGPA</small></div>
+      <div><span>{{ profile.batch }}</span><small>Batch</small></div>
+      <div><span>{{ profile.department.code|default:profile.department.name|default:"-" }}</span><small>Branch</small></div>
+    </div>
+  </section>
+
+  <section class="card portal-panel portal-health-panel">
+    <div class="card-header-custom">
+      <h2 class="portal-panel-title">Portfolio Health</h2>
+      <a href="{% url 'student-profile-edit' %}" class="portal-panel-link">Update Profile &rarr;</a>
+    </div>
+    <div class="portal-health-grid">
+      <div><span>{{ dashboard_counts.verified_total }}</span><small>Verified Items</small></div>
+      <div><span>{{ dashboard_counts.social_links }}</span><small>Social Links</small></div>
+      <div><span>{{ dashboard_counts.courses }}</span><small>Courses</small></div>
+      <div><span>{{ dashboard_counts.events }}</span><small>Events</small></div>
+      <div><span>{{ dashboard_counts.research }}</span><small>Research</small></div>
+      <div><span>{{ dashboard_counts.subjects }}</span><small>Subjects</small></div>
+    </div>
+  </section>
 </div>
 {% endblock %}

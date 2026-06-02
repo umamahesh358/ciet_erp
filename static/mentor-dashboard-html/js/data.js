@@ -1,34 +1,10 @@
 // ============================================================
-// data.js — mirrors src/data/mockData.ts
+// data.js — backend adapter. Demo records were removed.
 // ============================================================
 
-const students = [
-  { id: "1", name: "Aarav Sharma",  rollNumber: "CS2101", department: "CSE", section: "A", year: "Year I", cgpa: 8.9, attendance: 92, avgMarks: 85, trend: "stable",
-    subjects: [{ code: "CS301", name: "Data Structures", internal: 42, external: 78, grade: "A" }, { code: "CS302", name: "Algorithms", internal: 40, external: 82, grade: "A" }] },
-  { id: "2", name: "Priya Patel",   rollNumber: "CS2102", department: "CSE", section: "A", year: "Year II", cgpa: 5.2, attendance: 68, avgMarks: 48, trend: "declining",
-    subjects: [{ code: "CS301", name: "Data Structures", internal: 22, external: 45, grade: "D" }, { code: "CS302", name: "Algorithms", internal: 25, external: 40, grade: "D" }] },
-  { id: "3", name: "Rohan Gupta",   rollNumber: "CS2103", department: "CSE", section: "B", year: "Year II", cgpa: 7.1, attendance: 78, avgMarks: 68, trend: "improving",
-    subjects: [{ code: "CS301", name: "Data Structures", internal: 35, external: 65, grade: "B" }, { code: "CS302", name: "Algorithms", internal: 38, external: 70, grade: "B" }] },
-  { id: "4", name: "Sneha Reddy",   rollNumber: "EC2101", department: "ECE", section: "A", year: "Year III", cgpa: 9.3, attendance: 96, avgMarks: 91, trend: "stable",
-    subjects: [{ code: "EC301", name: "Signals", internal: 45, external: 90, grade: "A+" }, { code: "EC302", name: "Circuits", internal: 44, external: 88, grade: "A" }] },
-  { id: "5", name: "Vikram Singh",  rollNumber: "CS2104", department: "CSE", section: "B", year: "Year I", cgpa: 4.8, attendance: 55, avgMarks: 38, trend: "declining",
-    subjects: [{ code: "CS301", name: "Data Structures", internal: 18, external: 35, grade: "F" }, { code: "CS302", name: "Algorithms", internal: 20, external: 30, grade: "F" }] },
-  { id: "6", name: "Ananya Iyer",   rollNumber: "CS2105", department: "CSE", section: "A", year: "Year III", cgpa: 7.8, attendance: 85, avgMarks: 74, trend: "improving",
-    subjects: [{ code: "CS301", name: "Data Structures", internal: 38, external: 72, grade: "B+" }, { code: "CS302", name: "Algorithms", internal: 36, external: 68, grade: "B" }] },
-  { id: "7", name: "Karthik Nair",  rollNumber: "EC2102", department: "ECE", section: "B", year: "Year II", cgpa: 6.5, attendance: 72, avgMarks: 60, trend: "stable",
-    subjects: [{ code: "EC301", name: "Signals", internal: 30, external: 58, grade: "C" }, { code: "EC302", name: "Circuits", internal: 32, external: 62, grade: "C+" }] },
-  { id: "8", name: "Meera Joshi",   rollNumber: "CS2106", department: "CSE", section: "A", year: "Year I", cgpa: 8.4, attendance: 90, avgMarks: 82, trend: "improving",
-    subjects: [{ code: "CS301", name: "Data Structures", internal: 40, external: 80, grade: "A" }, { code: "CS302", name: "Algorithms", internal: 42, external: 76, grade: "A" }] },
-];
+const students = Array.isArray(window.MENTOR_STUDENTS) ? window.MENTOR_STUDENTS : [];
 
-const initialMessages = [
-  { id: "m1", studentId: "1", sender: "mentor",  text: "Hi Aarav, your performance is excellent! Keep it up.", timestamp: new Date(2026,3,4,10,30), status: "seen" },
-  { id: "m2", studentId: "1", sender: "student", text: "Thank you sir! I'll continue working hard.", timestamp: new Date(2026,3,4,10,35), status: "seen" },
-  { id: "m3", studentId: "2", sender: "mentor",  text: "Priya, your attendance and CGPA need improvement. Can we discuss?", timestamp: new Date(2026,3,3,14,0), status: "seen" },
-  { id: "m4", studentId: "2", sender: "student", text: "Yes sir, I've been having some issues. Can we meet tomorrow?", timestamp: new Date(2026,3,3,14,10), status: "seen" },
-  { id: "m5", studentId: "5", sender: "mentor",  text: "Vikram, I'm concerned about your attendance (55%). Please be regular.", timestamp: new Date(2026,3,2,9,0), status: "sent" },
-  { id: "m6", studentId: "3", sender: "student", text: "Sir, I've started attending extra classes. Hoping to improve!", timestamp: new Date(2026,3,4,16,0), status: "seen" },
-];
+const initialMessages = Array.isArray(window.MENTOR_MESSAGES) ? window.MENTOR_MESSAGES : [];
 
 const suggestionTemplates = {
   "Academic Advice": [
@@ -82,9 +58,10 @@ function getUnreadCount(studentId, messages) {
 // ---- Build assigned student rows (mirrors mentorMetrics.ts buildAssignedRows) ----
 function buildAssignedRows(students) {
   return students.map(student => {
-    const externalMarks = student.subjects.length === 0
+    const subjects = Array.isArray(student.subjects) ? student.subjects : [];
+    const externalMarks = subjects.length === 0
       ? 0
-      : parseFloat((student.subjects.reduce((acc, s) => acc + s.external, 0) / student.subjects.length).toFixed(1));
+      : parseFloat((subjects.reduce((acc, s) => acc + s.external, 0) / subjects.length).toFixed(1));
     return {
       studentId: student.id,
       rollNo: student.rollNumber,
@@ -133,8 +110,9 @@ const KEYS = {
 // ---- Build default subjects from mock data ----
 function buildDefaultSubjects() {
   const byCode = new Map();
-  students.forEach(student => {
-    student.subjects.forEach(subject => {
+students.forEach(student => {
+    const subjects = Array.isArray(student.subjects) ? student.subjects : [];
+    subjects.forEach(subject => {
       const code = subject.code.trim().toUpperCase();
       if (!code || byCode.has(code)) return;
       byCode.set(code, {

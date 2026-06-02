@@ -1,0 +1,343 @@
+/* Shared CIET theme for non-home pages.
+   Mirrors the student portal palette, rounded UI, and subtle motion. */
+
+:root {
+  --site-red: #970006;
+  --site-burgundy: #852b43;
+  --site-mist: #f2f2f2;
+  --site-gray: #929290;
+  --site-black: #0b0b0b;
+  --site-espresso: #47301f;
+  --site-brown: #80613f;
+  --site-taupe: #b2947b;
+  --site-cocoa: #2d1308;
+  --site-pale: #d8dbd5;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) {
+  min-height: 100vh;
+  color: var(--site-black);
+  background:
+    radial-gradient(ellipse at 16% 8%, rgba(242, 242, 242, 0.78), transparent 34%),
+    radial-gradient(ellipse at 88% 14%, rgba(178, 148, 123, 0.22), transparent 36%),
+    radial-gradient(ellipse at 15% 82%, rgba(133, 43, 67, 0.12), transparent 38%),
+    radial-gradient(ellipse at 76% 88%, rgba(71, 48, 31, 0.12), transparent 34%),
+    linear-gradient(135deg, rgba(216, 219, 213, 0.98), rgba(242, 242, 242, 0.96) 44%, rgba(178, 148, 123, 0.30)),
+    linear-gradient(45deg, rgba(151, 0, 6, 0.055), rgba(45, 19, 8, 0.10)) !important;
+  background-size: 125% 125%, 145% 145%, 135% 135%, 150% 150%, 180% 180%, 140% 140% !important;
+  animation: cietSiteBackdrop 28s ease-in-out infinite alternate;
+  overflow-x: hidden;
+}
+
+body.ciet-site-theme:not(.student-portal-shell)::before,
+body.ciet-site-theme:not(.student-portal-shell)::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+body.ciet-site-theme:not(.student-portal-shell)::before {
+  background:
+    linear-gradient(112deg, transparent 0 40%, rgba(242, 242, 242, 0.34) 47%, transparent 56%),
+    repeating-linear-gradient(90deg, rgba(71, 48, 31, 0.032) 0 1px, transparent 1px 116px),
+    repeating-linear-gradient(0deg, rgba(71, 48, 31, 0.026) 0 1px, transparent 1px 116px);
+  background-size: 100% 100%, 116px 116px, 116px 116px;
+  mask-image: radial-gradient(circle at 50% 35%, var(--site-black), transparent 72%);
+  animation: cietSiteMesh 34s linear infinite;
+}
+
+body.ciet-site-theme:not(.student-portal-shell)::after {
+  background:
+    radial-gradient(circle at 12% 25%, rgba(151, 0, 6, 0.12), transparent 16%),
+    radial-gradient(circle at 88% 32%, rgba(128, 97, 63, 0.16), transparent 18%),
+    radial-gradient(circle at 50% 88%, rgba(178, 148, 123, 0.16), transparent 18%);
+  filter: blur(12px);
+  opacity: .78;
+  animation: cietSiteFloat 22s ease-in-out infinite alternate;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) #vanta-bg {
+  display: none !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .glass-panel,
+body.ciet-site-theme:not(.student-portal-shell) .auth-card,
+body.ciet-site-theme:not(.student-portal-shell) .card,
+body.ciet-site-theme:not(.student-portal-shell) .card-linkedin,
+body.ciet-site-theme:not(.student-portal-shell) .stat-card,
+body.ciet-site-theme:not(.student-portal-shell) .dept-analytics-card,
+body.ciet-site-theme:not(.student-portal-shell) .profile-overview-card,
+body.ciet-site-theme:not(.student-portal-shell) .sidebar,
+body.ciet-site-theme:not(.student-portal-shell) .top-navbar,
+body.ciet-site-theme:not(.student-portal-shell) .page-content,
+body.ciet-site-theme:not(.student-portal-shell) #container,
+body.ciet-site-theme:not(.student-portal-shell) #content,
+body.ciet-site-theme:not(.student-portal-shell) #content-main,
+body.ciet-site-theme:not(.student-portal-shell) .module,
+body.ciet-site-theme:not(.student-portal-shell) .modal-content,
+body.ciet-site-theme:not(.student-portal-shell) .dropdown-menu,
+body.ciet-site-theme:not(.student-portal-shell) .alert,
+body.ciet-site-theme:not(.student-portal-shell) .table,
+body.ciet-site-theme:not(.student-portal-shell) .form-control,
+body.ciet-site-theme:not(.student-portal-shell) .form-select,
+body.ciet-site-theme:not(.student-portal-shell) .input-glass,
+body.ciet-site-theme:not(.student-portal-shell) .role-card,
+body.ciet-site-theme:not(.student-portal-shell) .sidebar-nav-item,
+body.ciet-site-theme:not(.student-portal-shell) .nav-link,
+body.ciet-site-theme:not(.student-portal-shell) .nav-action-btn,
+body.ciet-site-theme:not(.student-portal-shell) .profile-trigger,
+body.ciet-site-theme:not(.student-portal-shell) .profile-avatar,
+body.ciet-site-theme:not(.student-portal-shell) .btn,
+body.ciet-site-theme:not(.student-portal-shell) .btn-ciet,
+body.ciet-site-theme:not(.student-portal-shell) .btn-li {
+  border-radius: 24px !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .glass-panel,
+body.ciet-site-theme:not(.student-portal-shell) .auth-card,
+body.ciet-site-theme:not(.student-portal-shell) .card,
+body.ciet-site-theme:not(.student-portal-shell) .card-linkedin,
+body.ciet-site-theme:not(.student-portal-shell) .stat-card,
+body.ciet-site-theme:not(.student-portal-shell) .dept-analytics-card,
+body.ciet-site-theme:not(.student-portal-shell) .profile-overview-card,
+body.ciet-site-theme:not(.student-portal-shell) .top-navbar,
+body.ciet-site-theme:not(.student-portal-shell) .sidebar,
+body.ciet-site-theme:not(.student-portal-shell) #container,
+body.ciet-site-theme:not(.student-portal-shell) #content,
+body.ciet-site-theme:not(.student-portal-shell) #content-main,
+body.ciet-site-theme:not(.student-portal-shell) .module,
+body.ciet-site-theme:not(.student-portal-shell) .modal-content,
+body.ciet-site-theme:not(.student-portal-shell) .dropdown-menu,
+body.ciet-site-theme:not(.student-portal-shell) .main-content-area > div,
+body.ciet-site-theme:not(.student-portal-shell) .table {
+  background: rgba(242, 242, 242, 0.82) !important;
+  border: 1px solid rgba(71, 48, 31, 0.22) !important;
+  box-shadow: 0 14px 38px rgba(45, 19, 8, 0.12) !important;
+  backdrop-filter: blur(16px);
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .auth-card {
+  animation: cietSiteRise .75s ease both;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .role-card,
+body.ciet-site-theme:not(.student-portal-shell) .sidebar-nav-item,
+body.ciet-site-theme:not(.student-portal-shell) .nav-link,
+body.ciet-site-theme:not(.student-portal-shell) .card,
+body.ciet-site-theme:not(.student-portal-shell) .card-linkedin,
+body.ciet-site-theme:not(.student-portal-shell) .stat-card,
+body.ciet-site-theme:not(.student-portal-shell) .dept-analytics-card,
+body.ciet-site-theme:not(.student-portal-shell) .glass-panel,
+body.ciet-site-theme:not(.student-portal-shell) .btn,
+body.ciet-site-theme:not(.student-portal-shell) .btn-ciet,
+body.ciet-site-theme:not(.student-portal-shell) .btn-li {
+  transition: transform .28s ease, border-color .28s ease, background .28s ease, color .28s ease, box-shadow .28s ease;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .role-card:hover,
+body.ciet-site-theme:not(.student-portal-shell) .sidebar-nav-item:hover,
+body.ciet-site-theme:not(.student-portal-shell) .nav-link:hover,
+body.ciet-site-theme:not(.student-portal-shell) .card:hover,
+body.ciet-site-theme:not(.student-portal-shell) .card-linkedin:hover,
+body.ciet-site-theme:not(.student-portal-shell) .stat-card:hover,
+body.ciet-site-theme:not(.student-portal-shell) .dept-analytics-card:hover,
+body.ciet-site-theme:not(.student-portal-shell) .glass-panel:hover {
+  transform: translateY(-3px);
+  border-color: rgba(151, 0, 6, 0.34) !important;
+  box-shadow: 0 18px 48px rgba(45, 19, 8, 0.18) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .btn:hover,
+body.ciet-site-theme:not(.student-portal-shell) .btn-ciet:hover,
+body.ciet-site-theme:not(.student-portal-shell) .btn-li:hover {
+  transform: translateY(-2px);
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .btn-primary,
+body.ciet-site-theme:not(.student-portal-shell) .btn-ciet-primary,
+body.ciet-site-theme:not(.student-portal-shell) .btn-li-primary,
+body.ciet-site-theme:not(.student-portal-shell) .nav-link.active,
+body.ciet-site-theme:not(.student-portal-shell) .role-card.active {
+  background: var(--site-red) !important;
+  border-color: var(--site-red) !important;
+  color: var(--site-mist) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .btn-outline-primary,
+body.ciet-site-theme:not(.student-portal-shell) .btn-li-outline,
+body.ciet-site-theme:not(.student-portal-shell) .btn-outline-secondary {
+  background: rgba(242, 242, 242, 0.72) !important;
+  border-color: rgba(71, 48, 31, 0.24) !important;
+  color: var(--site-espresso) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .role-card.active i,
+body.ciet-site-theme:not(.student-portal-shell) .role-card.active span {
+  color: var(--site-mist) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .text-primary,
+body.ciet-site-theme:not(.student-portal-shell) .text-maroon,
+body.ciet-site-theme:not(.student-portal-shell) a:not(.btn):not(.nav-item) {
+  color: var(--site-burgundy) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .form-control,
+body.ciet-site-theme:not(.student-portal-shell) .form-select,
+body.ciet-site-theme:not(.student-portal-shell) .search-wrap input,
+body.ciet-site-theme:not(.student-portal-shell) .input-glass {
+  background: rgba(216, 219, 213, 0.58) !important;
+  border: 1px solid rgba(71, 48, 31, 0.22) !important;
+  color: var(--site-black) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .form-control:focus,
+body.ciet-site-theme:not(.student-portal-shell) .form-select:focus,
+body.ciet-site-theme:not(.student-portal-shell) .search-wrap:focus-within,
+body.ciet-site-theme:not(.student-portal-shell) .input-glass:focus {
+  border-color: var(--site-red) !important;
+  box-shadow: 0 0 0 4px rgba(151, 0, 6, 0.10) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .table th {
+  color: var(--site-burgundy) !important;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .table td,
+body.ciet-site-theme:not(.student-portal-shell) .table th {
+  border-color: rgba(71, 48, 31, 0.18) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .sidebar {
+  background: rgba(45, 19, 8, 0.92) !important;
+  border-right: 1px solid rgba(178, 148, 123, 0.35) !important;
+  box-shadow: 16px 0 48px rgba(45, 19, 8, 0.20) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .sidebar .nav-link,
+body.ciet-site-theme:not(.student-portal-shell) .sidebar-nav-item {
+  color: var(--site-pale) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .sidebar .nav-link:hover,
+body.ciet-site-theme:not(.student-portal-shell) .sidebar-nav-item:hover {
+  background: rgba(178, 148, 123, 0.18) !important;
+  color: var(--site-mist) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .nav-section-label,
+body.ciet-site-theme:not(.student-portal-shell) .sidebar-section-title {
+  color: var(--site-taupe) !important;
+  letter-spacing: .10em;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .top-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(242, 242, 242, 0.84) !important;
+  border-bottom: 1px solid rgba(71, 48, 31, 0.18) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .page-content,
+body.ciet-site-theme:not(.student-portal-shell) .main-content-area {
+  background: transparent !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .stat-icon,
+body.ciet-site-theme:not(.student-portal-shell) .dept-code-badge,
+body.ciet-site-theme:not(.student-portal-shell) .profile-avatar,
+body.ciet-site-theme:not(.student-portal-shell) .rounded-circle.bg-primary,
+body.ciet-site-theme:not(.student-portal-shell) [style*="background:#a71a3e"],
+body.ciet-site-theme:not(.student-portal-shell) [style*="background: #a71a3e"] {
+  background: rgba(151, 0, 6, 0.13) !important;
+  color: var(--site-red) !important;
+  border: 1px solid rgba(151, 0, 6, 0.18) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .badge,
+body.ciet-site-theme:not(.student-portal-shell) .tag {
+  border-radius: 999px !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .badge.bg-success,
+body.ciet-site-theme:not(.student-portal-shell) .bg-success,
+body.ciet-site-theme:not(.student-portal-shell) .text-success {
+  background-color: rgba(128, 97, 63, 0.16) !important;
+  color: var(--site-espresso) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .bg-primary {
+  background-color: var(--site-red) !important;
+  color: var(--site-mist) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .text-primary {
+  color: var(--site-burgundy) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) canvas {
+  filter: saturate(.82) sepia(.10);
+}
+
+body.ciet-site-theme:not(.student-portal-shell) #header {
+  background: rgba(45, 19, 8, 0.94) !important;
+  color: var(--site-mist) !important;
+  border-bottom: 1px solid rgba(178, 148, 123, 0.42) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) #branding h1,
+body.ciet-site-theme:not(.student-portal-shell) #branding h1 a,
+body.ciet-site-theme:not(.student-portal-shell) #user-tools,
+body.ciet-site-theme:not(.student-portal-shell) #user-tools a {
+  color: var(--site-mist) !important;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .ciet-theme-reveal {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition: none;
+}
+
+body.ciet-site-theme:not(.student-portal-shell) .ciet-theme-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+@keyframes cietSiteBackdrop {
+  from { background-position: 0% 48%, 100% 46%, 18% 78%, 82% 86%, 0% 50%, 100% 50%; }
+  to { background-position: 100% 52%, 0% 54%, 42% 88%, 58% 76%, 100% 50%, 0% 50%; }
+}
+
+@keyframes cietSiteMesh {
+  from { transform: translate3d(-34px, -18px, 0); }
+  to { transform: translate3d(34px, 18px, 0); }
+}
+
+@keyframes cietSiteFloat {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(28px, -24px, 0) scale(1.05); }
+  to { transform: translate3d(-18px, 28px, 0) scale(1.02); }
+}
+
+@keyframes cietSiteRise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.ciet-site-theme:not(.student-portal-shell),
+  body.ciet-site-theme:not(.student-portal-shell)::before,
+  body.ciet-site-theme:not(.student-portal-shell)::after,
+  body.ciet-site-theme:not(.student-portal-shell) * {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}

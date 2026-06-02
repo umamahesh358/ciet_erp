@@ -384,9 +384,9 @@ def download_sample_csv(request):
 
     if upload_type == 'students':
         writer.writerow(['full_name', 'email', 'phone', 'roll_no', 'batch', 'department_code', 'section', 'password'])
-        writer.writerow(['Ravi Kumar', 'ravi@ciet.edu.in', '9876543210', '22B01A0501', '2022-2026', 'CSE', 'A', 'Welcome@123'])
-        writer.writerow(['Priya Sharma', 'priya@ciet.edu.in', '9876543211', '22B01A0502', '2022-2026', 'CSE', 'B', 'Welcome@123'])
-        writer.writerow(['Kiran Reddy', 'kiran@ciet.edu.in', '9876543212', '22B01A0301', '2022-2026', 'ECE', 'A', 'Welcome@123'])
+        writer.writerow(['Ravi Kumar', 'ravi@ciet.edu.in', '9876543210', '22B01A0501', '2022-2026', 'CSE', 'A', '22B01A0501'])
+        writer.writerow(['Priya Sharma', 'priya@ciet.edu.in', '9876543211', '22B01A0502', '2022-2026', 'CSE', 'B', '22B01A0502'])
+        writer.writerow(['Kiran Reddy', 'kiran@ciet.edu.in', '9876543212', '22B01A0301', '2022-2026', 'ECE', 'A', '22B01A0301'])
     elif upload_type == 'semester_results':
         writer.writerow(['roll_no', 'semester', 'exam_name', 'subject_code', 'subject_name', 'score', 'max_score', 'grade'])
         writer.writerow(['22B01A0501', '4', 'Semester Exam', 'CS401', 'Compiler Design', '78', '100', 'A'])

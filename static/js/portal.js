@@ -6,24 +6,6 @@
 'use strict';
 
 /* ─────────────────────────────────────
-   SIDEBAR TOGGLE (Mobile)
-───────────────────────────────────── */
-function initSidebar() {
-  const hamburger = document.getElementById('hamburger');
-  const sidebar   = document.querySelector('.sidebar');
-  const overlay   = document.getElementById('sidebar-overlay');
-  if (!hamburger) return;
-  hamburger.addEventListener('click', () => {
-    sidebar.classList.toggle('open');
-    if (overlay) overlay.classList.toggle('active');
-  });
-  if (overlay) overlay.addEventListener('click', () => {
-    sidebar.classList.remove('open');
-    overlay.classList.remove('active');
-  });
-}
-
-/* ─────────────────────────────────────
    TAB SWITCHING
 ───────────────────────────────────── */
 function initTabs() {
@@ -1036,7 +1018,6 @@ function initMidTermDropdown() {
 ───────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   injectDrawerStyles();
-  initSidebar();
   initTabs();
   initFlipCards();
   setActiveNav();

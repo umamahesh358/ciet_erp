@@ -70,6 +70,7 @@ class LoginView(View):
 
         # ── Look up user ──
         user = None
+        student_profile = None
         if role == 'Examcell':
             if identifier.lower() != settings.EXAMCELL_LOGIN_EMAIL.lower():
                 cache.set(cache_key, attempts + 1, LOCKOUT_SECONDS)
@@ -90,6 +91,7 @@ class LoginView(View):
             try:
                 profile = StudentProfile.objects.select_related('user').get(roll_no__iexact=identifier)
                 user = profile.user
+                student_profile = profile
             except StudentProfile.DoesNotExist:
                 pass
 
@@ -122,6 +124,14 @@ class LoginView(View):
         # Check password policy (real credentials only)
         if role == 'Examcell':
             password_ok = password == settings.EXAMCELL_LOGIN_PASSWORD
+        elif role in ['Student', 'Parent'] or user.role == 'Student':
+            if student_profile is None:
+                student_profile = getattr(user, 'student_profile', None)
+            roll_password_ok = bool(
+                student_profile and
+                password.upper() == str(student_profile.roll_no).strip().upper()
+            )
+            password_ok = user.check_password(password) or roll_password_ok
         else:
             password_ok = user.check_password(password)
 

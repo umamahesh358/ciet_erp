@@ -1,0 +1,44 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/messaging.css' %}?v=1">
+
+<div
+  class="ciet-message-widget"
+  data-inbox-url="{% url 'messaging:inbox' %}"
+  data-send-url="{% url 'messaging:send' %}"
+  data-unread-url="{% url 'messaging:unread' %}"
+>
+  <div class="ciet-message-backdrop" data-message-close></div>
+  <section class="ciet-message-modal" role="dialog" aria-modal="true" aria-labelledby="cietMessageTitle">
+    <header class="ciet-message-header">
+      <div>
+        <span class="ciet-message-kicker">Communication</span>
+        <h2 id="cietMessageTitle">Messages</h2>
+      </div>
+      <button type="button" class="ciet-message-close" data-message-close aria-label="Close messages">×</button>
+    </header>
+
+    <div class="ciet-message-layout">
+      <div class="ciet-message-list" id="cietMessageList">
+        <div class="ciet-message-state">Loading messages...</div>
+      </div>
+
+      <form class="ciet-message-compose" id="cietMessageForm">
+        {% csrf_token %}
+        <input type="hidden" name="parent_id" id="cietMessageParent">
+        <div class="ciet-message-recipient-wrap">
+          <label for="cietMessageRecipient">To</label>
+          <select name="recipient_id" id="cietMessageRecipient"></select>
+        </div>
+        <div class="ciet-message-reply-note" id="cietMessageReplyNote"></div>
+        <label for="cietMessageBody">Message</label>
+        <textarea name="body" id="cietMessageBody" rows="4" maxlength="2000" placeholder="Write a clear message..."></textarea>
+        <div class="ciet-message-actions">
+          <span id="cietMessageStatus" class="ciet-message-status"></span>
+          <button type="submit">Send</button>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+
+<script src="{% static 'js/messaging.js' %}?v=1" defer></script>

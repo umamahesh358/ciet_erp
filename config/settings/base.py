@@ -77,9 +77,9 @@ APPEND_SLASH = True
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
+    'config.mongodb_apps.MongoAdminConfig',
+    'config.mongodb_apps.MongoAuthConfig',
+    'config.mongodb_apps.MongoContentTypesConfig',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
@@ -98,6 +98,7 @@ INSTALLED_APPS = [
     'apps.students',
     'apps.parents',
     'apps.notifications',
+    'apps.messaging',
     'apps.audit',
 ]
 
@@ -113,6 +114,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
     'apps.core.middleware.RoleMiddleware',
+    'apps.core.middleware.SiteThemeMiddleware',
+    'apps.core.middleware.DisableRightClickMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -128,6 +131,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'apps.notifications.context_processors.notification_context',
+                'apps.messaging.context_processors.messaging_context',
             ],
         },
     },
