@@ -1,0 +1,142 @@
+{% extends 'faculty/Mentor-Dashboard/mentor_base.html' %}
+{% load static %}
+
+{% block portal_tab_title %}Mentor Home{% endblock %}
+
+{% block mentor_content %}
+<div style="display:flex;flex-direction:column;gap:22px;">
+  <!-- Mentor welcome toast (appears once per session) -->
+  <div id="mentor-welcome-toast" style="display:none;position:fixed;right:18px;top:80px;z-index:1100;max-width:340px;border-radius:14px;padding:12px 14px;background:linear-gradient(180deg,#970006,#6d0004);color:#fff;box-shadow:0 12px 40px rgba(0,0,0,0.2);">
+    <div style="display:flex;gap:12px;align-items:center;">
+      <div id="mentor-welcome-avatar" style="width:48px;height:48px;border-radius:50%;background:#fff;color:#970006;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;overflow:hidden"></div>
+      <div style="flex:1;">
+        <div id="mentor-welcome-title" style="font-weight:800;font-size:14px;">Welcome back, Mentor</div>
+        <div id="mentor-welcome-sub" style="font-size:13px;opacity:0.95;margin-top:4px;">Quick summary and shortcuts are ready.</div>
+      </div>
+      <button id="mentor-welcome-close" aria-label="Close" style="background:transparent;border:none;color:rgba(255,255,255,0.9);font-size:18px;cursor:pointer">✕</button>
+    </div>
+  </div>
+  <section style="display:flex;flex-direction:column;gap:14px;">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;align-items:flex-start;">
+      <div>
+        <h1 style="font-size:28px;font-weight:800;color:var(--palette-black);margin-bottom:8px;">Mentor Dashboard</h1>
+        <p style="color:var(--palette-espresso);max-width:720px;line-height:1.6;">A clean mentor dashboard styled with the same burgundy student portal palette. Monitor your home summary, active cohorts, assigned students, and course progress from one place.</p>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        <a href="{% url 'mentor-dashboard' %}" class="btn-primary">Refresh data</a>
+        <a href="{% url 'mentor-profile' %}" class="btn-ghost">Mentor profile</a>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+      <article class="card portal-panel" style="padding:22px;">
+        <div class="card-label">Assigned Students</div>
+        <div id="home-assigned-students" style="margin-top:12px;font-size:32px;font-weight:800;color:var(--palette-red);">72</div>
+        <p style="margin-top:8px;color:var(--palette-espresso);font-size:13px;">Students actively mentored across your cohorts.</p>
+      </article>
+      <article class="card portal-panel" style="padding:22px;">
+        <div class="card-label">Active Courses</div>
+        <div id="home-active-courses" style="margin-top:12px;font-size:32px;font-weight:800;color:var(--palette-red);">8</div>
+        <p style="margin-top:8px;color:var(--palette-espresso);font-size:13px;">Courses currently running under your guidance.</p>
+      </article>
+      <article class="card portal-panel" style="padding:22px;">
+        <div class="card-label">Cohorts</div>
+        <div id="home-cohorts" style="margin-top:12px;font-size:32px;font-weight:800;color:var(--palette-red);">4</div>
+        <p style="margin-top:8px;color:var(--palette-espresso);font-size:13px;">Groups receiving mentorship support this semester.</p>
+      </article>
+      <article class="card portal-panel" style="padding:22px;">
+        <div class="card-label">Attendance uploads</div>
+        <div id="home-attendance-uploads" style="margin-top:12px;font-size:32px;font-weight:800;color:var(--palette-red);">21</div>
+        <p style="margin-top:8px;color:var(--palette-espresso);font-size:13px;">Attendance sheets uploaded this month.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="card portal-panel" style="padding:20px;">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px;">
+      <div>
+        <h2 class="portal-panel-title">Mentor Action Center</h2>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        <a href="{% url 'mentor-dashboard' %}" class="btn-primary">Home Dashboard</a>
+        <a href="{% url 'mentor-profile' %}" class="btn-ghost">Mentor Profile</a>
+        <a href="{% url 'mentor-students' %}" class="btn-ghost">Assigned Students</a>
+        <a href="{% url 'mentor-courses' %}" class="btn-ghost">Courses</a>
+        <a href="{% url 'mentor-assign-marks' %}" class="btn-ghost">Assign Marks</a>
+        <a href="{% url 'mentor-upload-attendance' %}" class="btn-ghost">Upload Attendance</a>
+        <a href="{% url 'mentor-cohorts' %}" class="btn-ghost">Cohorts</a>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;">
+      <div class="card" style="padding:18px;background:rgba(242,242,242,0.88);border:1px solid var(--border);border-radius:18px;">
+        <div class="card-label">Onboarding</div>
+        <strong style="display:block;margin-top:10px;color:var(--palette-black);">12 students need profile review.</strong>
+      </div>
+      <div class="card" style="padding:18px;background:rgba(242,242,242,0.88);border:1px solid var(--border);border-radius:18px;">
+        <div class="card-label">Attendance</div>
+        <strong style="display:block;margin-top:10px;color:var(--palette-black);">Upload attendance for 2 cohorts today.</strong>
+      </div>
+      <div class="card" style="padding:18px;background:rgba(242,242,242,0.88);border:1px solid var(--border);border-radius:18px;">
+        <div class="card-label">Marks</div>
+        <strong style="display:block;margin-top:10px;color:var(--palette-black);">5 assignment sheets are pending grading.</strong>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Populate home dashboard counts and user-chip from mentorProfile in localStorage
+  (function(){
+    try{
+      const raw = localStorage.getItem('mentorProfile');
+      if(!raw) return;
+      const p = JSON.parse(raw);
+
+      // update counts if present
+      if(p.assigned_students != null) document.getElementById('home-assigned-students').textContent = p.assigned_students;
+      if(p.active_courses != null) document.getElementById('home-active-courses').textContent = p.active_courses;
+      if(p.cohorts != null) document.getElementById('home-cohorts').textContent = p.cohorts;
+      if(p.attendance_uploads != null) document.getElementById('home-attendance-uploads').textContent = p.attendance_uploads;
+    }catch(e){ console.error('Failed to apply mentorProfile to home dashboard', e); }
+  })();
+  // Show a welcome toast once per session when mentor visits home
+  (function(){
+    try{
+      if(sessionStorage.getItem('mentor_welcome_shown')) return;
+      const toast = document.getElementById('mentor-welcome-toast');
+      if(!toast) return;
+      const raw = localStorage.getItem('mentorProfile');
+      let name = '{{ request.user.full_name|default:request.user.email }}';
+      let bio = 'Your mentor hub is ready.';
+      let initials = '';
+      let picture = '';
+      if(raw){
+        const p = JSON.parse(raw);
+        if(p.name) name = p.name;
+        if(p.bio) bio = p.bio;
+        initials = (p.name||'').trim().split(/\s+/).map(n=>n[0]).slice(0,2).join('').toUpperCase();
+        picture = p.picture || '';
+      }
+      const avatar = document.getElementById('mentor-welcome-avatar');
+      const title = document.getElementById('mentor-welcome-title');
+      const sub = document.getElementById('mentor-welcome-sub');
+      title.textContent = `Welcome back, ${name.split(' ')[0] || 'Mentor'}`;
+      sub.textContent = bio.slice(0,70);
+      if(picture){ avatar.innerHTML = `<img src="${picture}" style="width:100%;height:100%;object-fit:cover;">`; avatar.style.background = 'transparent'; }
+      else { avatar.textContent = initials || name.slice(0,2).toUpperCase(); avatar.style.background = '#fff'; avatar.style.color = '#970006'; }
+
+      // show
+      toast.style.display = 'block';
+      // auto-hide after 6 seconds
+      const autoHide = setTimeout(()=>{ toast.style.display='none'; sessionStorage.setItem('mentor_welcome_shown','1'); }, 6000);
+
+      document.getElementById('mentor-welcome-close').addEventListener('click', function(){
+        clearTimeout(autoHide);
+        toast.style.display = 'none';
+        sessionStorage.setItem('mentor_welcome_shown','1');
+      });
+    }catch(e){ console.error(e); }
+  })();
+</script>

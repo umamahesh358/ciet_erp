@@ -32,8 +32,52 @@
       </div>
       <span class="tag tag-green" style="align-self:flex-start;"><span class="status-dot"></span>Active</span>
     </div>
-    <div style="padding-top:12px;border-top:1px dashed var(--border);margin-top:auto;">
+    <div style="padding-top:12px;border-top:1px dashed var(--border);">
       <p class="cohort-desc" style="font-size:14px;color:#475569;line-height:1.6;margin:0;">{{ cohort.description|default:"No description provided." }}</p>
+    </div>
+
+    <!-- Assigned Grade Section -->
+    <div id="cohort-grade-section-{{ cohort.id }}" style="display:none; padding:14px; border-radius:10px; background: rgba(175, 12, 62, 0.05); border: 1.5px dashed rgba(175, 12, 62, 0.2); margin-top: 8px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <span style="font-size:11px; font-weight:700; color:#AF0C3E; text-transform:uppercase; letter-spacing:0.05em;">Your Grade</span>
+          <span style="font-size:12px; color:var(--muted);">Evaluated by Mentor</span>
+        </div>
+        <div style="text-align:right;">
+          <span id="cohort-grade-badge-{{ cohort.id }}" class="tag tag-primary" style="font-size:16px; font-weight:800; padding:6px 12px; background:#AF0C3E; color:#fff; border-radius:8px;">-</span>
+          <div id="cohort-points-badge-{{ cohort.id }}" style="font-size:13px; font-weight:700; color:var(--text); margin-top:4px;">- / 10.0</div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="cohort-grade-pending-{{ cohort.id }}" style="margin-top: 8px; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.02); border: 1px solid var(--border); font-size: 12px; color: var(--muted); text-align: center;">
+      ⏳ Grading pending from mentor
+    </div>
+
+    <!-- Materials & Reference Links Section -->
+    <div style="border-top:1px solid var(--border); padding-top:12px; margin-top:auto;">
+      <button class="btn-ghost" style="width:100%; font-size:12px; padding:6px; display:flex; justify-content:space-between; align-items:center; border: 1px solid var(--border); border-radius: 8px;" data-bs-toggle="collapse" data-bs-target="#studentCohortDetails-{{ cohort.id }}">
+        <span>📚 Study Materials & Resources</span>
+        <span>▼</span>
+      </button>
+      
+      <div class="collapse" id="studentCohortDetails-{{ cohort.id }}" style="margin-top:8px;">
+        <!-- Materials List -->
+        <div style="margin-bottom:10px; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
+          <div style="font-size:11px; font-weight:700; color:var(--muted); margin-bottom:4px; text-transform:uppercase; letter-spacing: 0.05em;">Files</div>
+          <div id="student-materials-list-{{ cohort.id }}" style="display:flex; flex-direction:column; gap:6px;">
+            <span style="font-size:11px; color:var(--muted); font-style:italic;">No files uploaded.</span>
+          </div>
+        </div>
+        
+        <!-- Links List -->
+        <div>
+          <div style="font-size:11px; font-weight:700; color:var(--muted); margin-bottom:4px; text-transform:uppercase; letter-spacing: 0.05em;">Links</div>
+          <div id="student-links-list-{{ cohort.id }}" style="display:flex; flex-direction:column; gap:6px;">
+            <span style="font-size:11px; color:var(--muted); font-style:italic;">No reference links.</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   {% endfor %}
@@ -45,4 +89,73 @@
 </div>
 {% endif %}
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const studentProfileId = "{{ profile.id }}";
+
+  function loadStudentCohortData(cohortId) {
+    // 1. Load grade
+    const grades = JSON.parse(localStorage.getItem('cohort_grades_' + cohortId) || '{}');
+    const studentGrade = grades[studentProfileId];
+    
+    const gradeSection = document.getElementById('cohort-grade-section-' + cohortId);
+    const gradePending = document.getElementById('cohort-grade-pending-' + cohortId);
+    
+    if (studentGrade) {
+      if (gradeSection) gradeSection.style.display = 'block';
+      if (gradePending) gradePending.style.display = 'none';
+      
+      const gradeBadge = document.getElementById('cohort-grade-badge-' + cohortId);
+      const pointsBadge = document.getElementById('cohort-points-badge-' + cohortId);
+      
+      if (gradeBadge) gradeBadge.textContent = studentGrade.grade;
+      if (pointsBadge) pointsBadge.textContent = studentGrade.points + ' / 10.0';
+    } else {
+      if (gradeSection) gradeSection.style.display = 'none';
+      if (gradePending) gradePending.style.display = 'block';
+    }
+
+    // 2. Load materials
+    const matsList = document.getElementById('student-materials-list-' + cohortId);
+    if (matsList) {
+      const mats = JSON.parse(localStorage.getItem('cohort_materials_' + cohortId) || '[]');
+      if (mats.length > 0) {
+        matsList.innerHTML = mats.map(mat => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:rgba(0,0,0,0.03);border-radius:6px;font-size:11px;">
+            <span style="font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;">📄 ${mat.title}</span>
+            <a href="${mat.fileData}" target="_blank" download="${mat.fileName || 'file'}" class="btn-ghost" style="font-size:9px;padding:2px 6px;text-decoration:none;line-height:1.2;">Download</a>
+          </div>
+        `).join('');
+      } else {
+        matsList.innerHTML = '<span style="font-size:11px;color:var(--muted);font-style:italic;">No files uploaded.</span>';
+      }
+    }
+
+    // 3. Load links
+    const linksList = document.getElementById('student-links-list-' + cohortId);
+    if (linksList) {
+      const links = JSON.parse(localStorage.getItem('cohort_links_' + cohortId) || '[]');
+      if (links.length > 0) {
+        linksList.innerHTML = links.map(link => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:rgba(0,0,0,0.03);border-radius:6px;font-size:11px;">
+            <span style="font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;">🔗 ${link.title}</span>
+            <a href="${link.url}" target="_blank" class="btn-ghost" style="font-size:9px;padding:2px 6px;text-decoration:none;line-height:1.2;">Visit</a>
+          </div>
+        `).join('');
+      } else {
+        linksList.innerHTML = '<span style="font-size:11px;color:var(--muted);font-style:italic;">No reference links.</span>';
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Loop through all cohort detail elements to trigger data load
+    document.querySelectorAll('[id^="studentCohortDetails-"]').forEach(el => {
+      const cohortId = el.id.split('-').pop();
+      loadStudentCohortData(cohortId);
+    });
+  });
+</script>
 {% endblock %}

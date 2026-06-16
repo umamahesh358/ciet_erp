@@ -1,0 +1,251 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block portal_tab_title %}Faculty Portal{% endblock %} | CIET</title>
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Bootstrap for modal and form support -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- CIET Portal Custom CSS (Burgundy/Red theme) -->
+  <link href="{% static 'css/portal.css' %}?v=5" rel="stylesheet">
+  
+  <style>
+    /* Styling overrides for faculty specific UI elements in portal style */
+    .modal-backdrop { z-index: 1040; }
+    .modal { z-index: 1050; }
+    .drawer-overlay { z-index: 1060; }
+    .drawer { z-index: 1070; }
+    
+    /* Auto-select styling */
+    .student-select-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      max-height: 250px;
+      overflow-y: auto;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.5);
+    }
+    .student-select-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      transition: background 0.2s;
+    }
+    .student-select-card:hover {
+      background: var(--primary-light);
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="student-portal-shell">
+<div class="portal-ambient portal-ambient-one" aria-hidden="true"></div>
+<div class="portal-ambient portal-ambient-two" aria-hidden="true"></div>
+<div class="portal-ambient portal-ambient-three" aria-hidden="true"></div>
+<div class="portal-ambient portal-ambient-four" aria-hidden="true"></div>
+<div class="portal-ambient portal-ambient-five" aria-hidden="true"></div>
+
+<div class="app-wrapper">
+
+  {% block bottom_navigation %}
+  <!-- ═══ BOTTOM NAVIGATION ═══ -->
+  <nav class="bottom-nav" aria-label="Faculty portal navigation">
+    <div class="bottom-nav-scroll">
+      <a class="nav-item {% if request.resolver_match.url_name == 'faculty-dashboard' %}active{% endif %}"
+         href="{% url 'faculty-dashboard' %}" data-label="Home" title="Overview" aria-label="Overview">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Overview
+      </a>
+      <a class="nav-item {% if request.resolver_match.url_name == 'faculty-cohorts' %}active{% endif %}"
+         href="{% url 'faculty-cohorts' %}" data-label="Cohorts" title="Cohorts" aria-label="Cohorts">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Cohorts
+      </a>
+      <a class="nav-item {% if request.resolver_match.url_name == 'faculty-explore-students' %}active{% endif %}"
+         href="{% url 'faculty-explore-students' %}" data-label="Explore" title="Explore Students" aria-label="Explore Students">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Explore
+      </a>
+      <a class="nav-item {% if request.resolver_match.url_name == 'faculty-courses' %}active{% endif %}"
+         href="{% url 'faculty-courses' %}" data-label="Courses" title="Courses" aria-label="Courses">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        Courses
+      </a>
+      <a class="nav-item {% if request.resolver_match.url_name == 'faculty-hod-updates' %}active{% endif %}"
+         href="{% url 'faculty-hod-updates' %}" data-label="Updates" title="HOD Updates" aria-label="HOD Updates">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        Updates
+        {% if hod_unread_count > 0 %}
+        <span class="nav-badge">{{ hod_unread_count }}</span>
+        {% endif %}
+      </a>
+      <a class="nav-item" href="#" data-label="Chat" title="Chat" aria-label="Chat" data-message-open>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        Chat
+      </a>
+      <a class="nav-item {% if request.resolver_match.url_name == 'faculty-settings' %}active{% endif %}"
+         href="{% url 'faculty-settings' %}" data-label="Profile" title="Profile Settings" aria-label="Profile Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        Profile
+      </a>
+      <a class="nav-item danger" href="{% url 'logout' %}" data-label="Exit" title="Sign Out" aria-label="Sign Out">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Exit
+      </a>
+    </div>
+  </nav>
+  {% endblock %}
+
+  <!-- ═══ MAIN AREA ═══ -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <a href="{% block portal_home_url %}{% url 'faculty-dashboard' %}{% endblock %}" class="portal-brand" aria-label="{% block portal_brand_label %}Faculty Portal home{% endblock %}">
+          <img src="{% static 'images/ciet_logo.svg' %}" alt="CIET" class="portal-brand-logo" onerror="this.src='/static/faculty-hub/images/image.png'">
+          <span style="margin-left: 10px; font-weight: 700; font-size: 14px; color: var(--text);">{% block portal_brand_name %}Faculty Portal{% endblock %}</span>
+        </a>
+      </div>
+      <div class="topbar-right">
+        <a href="{% block portal_user_chip_href %}{% url 'faculty-settings' %}{% endblock %}" class="user-chip" style="text-decoration:none;">
+          <div class="user-chip-info">
+            <div class="name js-profile-name">{{ request.user.full_name|default:request.user.email }}</div>
+            <div class="role js-profile-designation">{{ request.user.role }}</div>
+          </div>
+          <div class="avatar js-profile-avatar">
+            {{ request.user.full_name|default:request.user.email|first|upper }}
+          </div>
+        </a>
+      </div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <main class="main-content">
+      <!-- Django Messages -->
+      {% if messages %}
+      <div style="margin-bottom:16px;">
+        {% for message in messages %}
+        <div class="portal-message {% if message.tags == 'error' %}portal-message-error{% elif message.tags == 'success' %}portal-message-success{% endif %}">
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% block portal_content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+{% include 'messaging/widget.html' %}
+
+<!-- Bootstrap JS (for modals) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Sync profile details from localStorage (Persists edit settings frontend-only) -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const savedProfile = localStorage.getItem('facultyProfile');
+    if (savedProfile) {
+      try {
+        const profile = JSON.parse(savedProfile);
+        
+        // Update topbar User Name & Designation
+        if (profile.name) {
+          document.querySelectorAll('.js-profile-name').forEach(el => el.textContent = profile.name);
+        }
+        if (profile.designation) {
+          document.querySelectorAll('.js-profile-designation').forEach(el => el.textContent = profile.designation);
+        }
+        
+        // Update topbar Avatar image or initials
+        if (profile.name || profile.picture) {
+          document.querySelectorAll('.js-profile-avatar').forEach(el => {
+            if (profile.picture) {
+              el.innerHTML = `<img src="${profile.picture}" class="portal-avatar-img" alt="Profile">`;
+              el.style.background = 'transparent';
+            } else {
+              const initials = profile.name.trim().split(/\s+/).map(n => n[0]).slice(0,2).join('').toUpperCase();
+              el.textContent = initials || 'FA';
+            }
+          });
+        }
+      } catch (e) {
+        console.error('Failed to parse cached faculty profile', e);
+      }
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if (!window.location.pathname.includes('/mentor')) return;
+    const savedProfile = localStorage.getItem('mentorProfile');
+    if (!savedProfile) return;
+    try {
+      const profile = JSON.parse(savedProfile);
+      if (profile.name) {
+        document.querySelectorAll('.js-profile-name').forEach(el => el.textContent = profile.name);
+      }
+      if (profile.designation) {
+        document.querySelectorAll('.js-profile-designation').forEach(el => el.textContent = profile.designation);
+      }
+      if (profile.name || profile.picture) {
+        document.querySelectorAll('.js-profile-avatar').forEach(el => {
+          if (profile.picture) {
+            el.innerHTML = `<img src="${profile.picture}" class="portal-avatar-img" alt="Profile">`;
+            el.style.background = 'transparent';
+          } else {
+            const initials = (profile.name||'').trim().split(/\s+/).map(n => n[0]).slice(0,2).join('').toUpperCase();
+            el.textContent = initials || el.textContent;
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Failed to parse cached mentor profile', e);
+    }
+  });
+</script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

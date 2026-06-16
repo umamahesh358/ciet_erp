@@ -1,0 +1,628 @@
+{% extends 'faculty/Mentor-Dashboard/mentor_base.html' %}
+{% load static %}
+
+{% block portal_tab_title %}Assigned Students{% endblock %}
+
+{% block extra_head %}
+<style>
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+  .status-excellent {
+    background-color: #ecfdf5;
+    color: #047857;
+  }
+  .status-excellent::before {
+    content: "•";
+    color: #10b981;
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+  .status-great {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+  }
+  .status-great::before {
+    content: "•";
+    color: #3b82f6;
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+  .status-average {
+    background-color: #fffbeb;
+    color: #b45309;
+  }
+  .status-average::before {
+    content: "•";
+    color: #f59e0b;
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+  .status-poor {
+    background-color: #fef2f2;
+    color: #b91c1c;
+  }
+  .status-poor::before {
+    content: "•";
+    color: #ef4444;
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+  .filter-input-pill {
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0;
+    height: 38px;
+    font-size: 0.88rem;
+    background-color: #ffffff;
+    transition: all 0.2s;
+  }
+  .filter-input-pill:focus {
+    border-color: #970006;
+    box-shadow: 0 0 0 3px rgba(151,0,6,0.08);
+  }
+</style>
+{% endblock %}
+
+{% block mentor_content %}
+<div style="display:flex;flex-direction:column;gap:24px;">
+  <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;align-items:center;">
+    <div>
+      <h1 style="font-size:28px;font-weight:800;color:var(--palette-black);margin-bottom:8px;">Assigned Students</h1>
+      <p style="color:var(--palette-espresso);max-width:680px;line-height:1.6;">Search the students in your mentorship list, review cohort assignments, and access student details quickly.</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+    </div>
+  </div>
+
+  <div class="card portal-panel" style="padding:24px;overflow-x:auto;">
+    <!-- Filters Panel -->
+    <div class="filter-panel d-flex flex-column gap-3 mb-4 p-3 rounded" style="background: rgba(245, 247, 250, 0.65); border: 1px solid var(--border); border-radius: 14px;">
+      <div>
+        <button class="btn btn-sm btn-light border d-flex align-items-center gap-2" style="border-radius: 12px; font-weight: 600; color: #334155; background: #ffffff;" type="button" onclick="toggleFilterControls()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.24 2.013L10.89 21.03a.75.75 0 0 1-1.14-.644v-4.99a2.25 2.25 0 0 0-.659-1.59l-5.432-5.432A2.25 2.25 0 0 1 3 6.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z"/>
+          </svg>
+          Filters
+        </button>
+      </div>
+
+      <div id="filterControls" style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="max-width: 360px; position: relative;">
+          <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; display: flex; align-items: center;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.637 10.637Z"/>
+            </svg>
+          </span>
+          <input id="filterSearch" type="text" class="form-control filter-input-pill" placeholder="Search name or roll no" 
+            style="padding-left: 36px;" oninput="applyAllFilters()">
+        </div>
+
+        <div>
+          <select id="filterClass" class="form-select filter-input-pill" style="max-width: 100%; color: #334155;" onchange="applyAllFilters()">
+            <option value="">All Branches</option>
+          </select>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <label class="d-inline-flex align-items-center gap-2 px-3 py-2 border bg-white filter-input-pill" style="cursor: pointer; user-select: none; font-weight: 600; color: #1e293b;">
+            <input type="checkbox" id="filterPoor" onchange="applyAllFilters()" style="cursor: pointer; accent-color: #970006;">
+            Show only Poor students
+          </label>
+
+          <input type="number" id="filterCgpaMin" step="0.1" min="0" max="10" placeholder="CGPA min" class="form-control text-center filter-input-pill" 
+            style="width: 100px;" oninput="applyAllFilters()">
+          <input type="number" id="filterCgpaMax" step="0.1" min="0" max="10" placeholder="CGPA max" class="form-control text-center filter-input-pill" 
+            style="width: 100px;" oninput="applyAllFilters()">
+          <input type="number" id="filterMidMin" step="1" min="0" max="100" placeholder="Mid min" class="form-control text-center filter-input-pill" 
+            style="width: 95px;" oninput="applyAllFilters()">
+          <input type="number" id="filterMidMax" step="1" min="0" max="100" placeholder="Mid max" class="form-control text-center filter-input-pill" 
+            style="width: 95px;" oninput="applyAllFilters()">
+          <input type="number" id="filterAttMin" step="1" min="0" max="100" placeholder="Att min" class="form-control text-center filter-input-pill" 
+            style="width: 95px;" oninput="applyAllFilters()">
+          <input type="number" id="filterAttMax" step="1" min="0" max="100" placeholder="Att max" class="form-control text-center filter-input-pill" 
+            style="width: 95px;" oninput="applyAllFilters()">
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-2">
+          <div id="filterSummaryText" style="font-size: 0.88rem; color: #475569; font-weight: 600;">
+            Showing 0 of 0 students
+          </div>
+          <button class="btn btn-sm btn-light border fw-semibold filter-input-pill" style="padding: 0 16px; background: #ffffff;" onclick="resetAllFilters()">
+            Reset Filters
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    
+    <table class="table align-middle" style="min-width:1200px;">
+      <thead>
+        <tr>
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">Roll No</th>
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">Name</th>
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">Branch</th>
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">Final CGPA</th>
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">Student Status</th>
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">Avg Mid Marks</th>
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">External Marks</th>
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">Attendance</th>
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">View Profile Link</th>
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">Assign Mid Marks (Link)</th>
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">Chat</th>
+        </tr>
+      </thead>
+      <tbody id="assigned-students-tbody">
+        <!-- Rows will be populated dynamically -->
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ faculty_hub_data|json_script:"faculty-hub-data-json" }}
+<script>
+  // Load initial students from serialized data
+  const facultyHubData = JSON.parse(document.getElementById('faculty-hub-data-json').textContent || '{}');
+  window.MENTOR_STUDENTS = facultyHubData.students || [];
+  const students = window.MENTOR_STUDENTS;
+
+  const initialMessages = Array.isArray(window.MENTOR_MESSAGES) ? window.MENTOR_MESSAGES : [];
+
+  const suggestionTemplates = {
+    "Academic Advice": [
+      "Focus on understanding core concepts rather than memorizing.",
+      "I recommend attending extra tutorial sessions for weak subjects.",
+      "Let's set up a study plan for the upcoming semester.",
+    ],
+    "Attendance Warning": [
+      "Your attendance needs immediate improvement. Please be regular.",
+      "You're at risk of being detained due to low attendance.",
+      "Please prioritize attending classes regularly.",
+    ],
+    "Motivation": [
+      "Excellent work! Keep it up!",
+      "Great progress! You're improving steadily.",
+      "I see real potential in you. Let's aim higher!",
+    ],
+    "Exam Preparation": [
+      "Start revising from today. Focus on previous year papers.",
+      "Make a timetable and allocate time for each subject.",
+      "Don't hesitate to ask doubts. I'm here to help.",
+    ],
+  };
+
+  function getStudentStatus(student) {
+    if (student.cgpa < 6 || student.attendance < 65) return "needs-attention";
+    if (student.cgpa < 7 || student.attendance < 75) return "watch-list";
+    return "on-track";
+  }
+
+  function getSmartSuggestions(student) {
+    const s = [];
+    if (student.cgpa < 6) s.push("Let's work together to improve your academic performance.");
+    if (student.attendance < 75) s.push("Your attendance needs improvement. Please be regular.");
+    if (student.cgpa >= 8) s.push("Excellent work! Keep it up!");
+    if (student.trend === "improving") s.push("Great progress! You're improving steadily.");
+    if (student.trend === "declining") s.push("I've noticed a dip in your performance. Let's discuss how to get back on track.");
+    return s;
+  }
+
+  function getStudentSuggest(student) {
+    const suggestions = getSmartSuggestions(student);
+    return suggestions.length > 0 ? suggestions[0] : 'on_track';
+  }
+
+  function getUnreadCount(studentId, messages) {
+    return messages.filter(m => m.studentId === studentId && m.sender === "student" && m.status !== "seen").length;
+  }
+
+  function buildAssignedRows(students) {
+    return students.map(student => {
+      const subjects = Array.isArray(student.subjects) ? student.subjects : [];
+      const externalMarks = subjects.length === 0
+        ? 0
+        : parseFloat((subjects.reduce((acc, s) => acc + s.external, 0) / subjects.length).toFixed(1));
+      return {
+        studentId: student.id,
+        rollNo: student.rollNumber,
+        name: student.name,
+        className: `${student.department} ${student.section}`,
+        cgpa: student.cgpa,
+        finalCgpa: student.cgpa,
+        avgMidMarks: student.avgMarks,
+        externalMarks,
+        attendance: student.attendance,
+      };
+    });
+  }
+
+  function getStudentCgpaStatus(cgpa) {
+    if (cgpa < 6)   return { label: "Poor",      badgeClass: "badge badge-poor",      dotClass: "dot dot-red" };
+    if (cgpa < 7)   return { label: "Average",   badgeClass: "badge badge-average",   dotClass: "dot dot-amber" };
+    if (cgpa < 8.5) return { label: "Great",     badgeClass: "badge badge-great",     dotClass: "dot dot-blue" };
+    return               { label: "Excellent",  badgeClass: "badge badge-excellent",  dotClass: "dot dot-emerald" };
+  }
+
+  function avatarClass(name) {
+    return "avatar-" + (name[0] || "A").toUpperCase();
+  }
+
+  function formatTime(date) {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  const KEYS = {
+    SUBJECTS         : "mentor-dashboard-universal-subjects",
+    MID1             : "mentor-dashboard-student-mid1-marks",
+    MID2             : "mentor-dashboard-student-mid2-marks",
+    INTERNALS        : "mentor-dashboard-student-internals-marks",
+    EXTERNAL         : "mentor-dashboard-student-external-marks",
+    FINAL_CGPA       : "mentor-dashboard-student-final-cgpa",
+    CURRENT_SEM_CGPA : "mentor-dashboard-student-current-sem-cgpa",
+    ATTENDANCE       : "mentor-dashboard-student-attendance-by-subject",
+    TOTAL_CLASSES    : "mentor-dashboard-total-classes-by-subject",
+  };
+
+  function buildDefaultSubjects() {
+    const byCode = new Map();
+    students.forEach(student => {
+      const subjects = Array.isArray(student.subjects) ? student.subjects : [];
+      subjects.forEach(subject => {
+        const code = subject.code.trim().toUpperCase();
+        if (!code || byCode.has(code)) return;
+        byCode.set(code, {
+          id: code, code, name: subject.name.trim(), shortName: code,
+          syllabusFileName: "", syllabusFileType: "", syllabusFileSize: 0,
+          syllabusFileDataUrl: "", subjectType: "regular",
+        });
+      });
+    });
+    return Array.from(byCode.values());
+  }
+
+  function readStoredSubjects() {
+    const raw = localStorage.getItem(KEYS.SUBJECTS);
+    if (!raw) return buildDefaultSubjects();
+    try {
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed) || parsed.length === 0) return buildDefaultSubjects();
+      return parsed;
+    } catch { return buildDefaultSubjects(); }
+  }
+
+  function saveSubjects(subjects) {
+    localStorage.setItem(KEYS.SUBJECTS, JSON.stringify(subjects));
+  }
+
+  function readStoredMarks(key, defaultType = "internal") {
+    const raw = localStorage.getItem(key);
+    if (!raw) return buildDefaultMarks(defaultType);
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return buildDefaultMarks(defaultType);
+      return parsed;
+    } catch { return buildDefaultMarks(defaultType); }
+  }
+
+  function buildDefaultMarks(type = "internal") {
+    const map = {};
+    students.forEach(s => {
+      const bySubject = {};
+      s.subjects.forEach(sub => {
+        bySubject[sub.code.trim().toUpperCase()] = String(type === "internal" ? sub.internal : sub.external);
+      });
+      map[s.id] = bySubject;
+    });
+    return map;
+  }
+
+  function readStoredCurrentSemCgpa() {
+    const raw = localStorage.getItem(KEYS.CURRENT_SEM_CGPA);
+    if (!raw) return Object.fromEntries(students.map(s => [s.id, ""]));
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return Object.fromEntries(students.map(s => [s.id, ""]));
+      return parsed;
+    } catch { return Object.fromEntries(students.map(s => [s.id, ""])); }
+  }
+
+  function readStoredAttendance() {
+    const raw = localStorage.getItem(KEYS.ATTENDANCE);
+    if (!raw) return buildDefaultAttendance();
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return buildDefaultAttendance();
+      return parsed;
+    } catch { return buildDefaultAttendance(); }
+  }
+  function buildDefaultAttendance() {
+    const map = {};
+    students.forEach(s => {
+      const bySubject = {};
+      s.subjects.forEach(sub => { bySubject[sub.code.trim().toUpperCase()] = ""; });
+      map[s.id] = bySubject;
+    });
+    return map;
+  }
+  function readStoredTotalClasses() {
+    const raw = localStorage.getItem(KEYS.TOTAL_CLASSES);
+    if (!raw) {
+      const def = {};
+      buildDefaultSubjects().forEach(sub => { def[sub.id] = ""; });
+      return def;
+    }
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") {
+        const def = {};
+        buildDefaultSubjects().forEach(sub => { def[sub.id] = ""; });
+        return def;
+      }
+      return parsed;
+    } catch {
+      const def = {};
+      buildDefaultSubjects().forEach(sub => { def[sub.id] = ""; });
+      return def;
+    }
+  }
+
+  function sanitizeMarks(val) {
+    if (val === "") return "";
+    const n = Number(val);
+    if (!isFinite(n)) return "";
+    return String(Math.max(0, Math.min(100, n)));
+  }
+  function sanitizeCgpa(val) {
+    if (val === "") return "";
+    const n = Number(val);
+    if (!isFinite(n)) return "";
+    return String(Number(Math.max(0, Math.min(10, n)).toFixed(2)));
+  }
+  function sanitizeCount(val) {
+    if (val === "") return "";
+    const n = Number(val);
+    if (!isFinite(n)) return "";
+    return String(Math.max(0, Math.min(999, Math.floor(n))));
+  }
+  function calcAverage(marksBySubject, subjects) {
+    const valid = subjects.map(s => Number(marksBySubject[s.id] ?? "")).filter(v => isFinite(v) && v >= 0 && v <= 100);
+    if (!valid.length) return "0.0";
+    return (valid.reduce((a, b) => a + b, 0) / valid.length).toFixed(1);
+  }
+  function calcFinalCgpa(cgpa, semVal) {
+    const n = Number(semVal);
+    return isFinite(n) ? (cgpa + n / 2).toFixed(2) : cgpa.toFixed(2);
+  }
+
+  function formatFileSize(bytes) {
+    if (!isFinite(bytes) || bytes <= 0) return "-";
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  (function(){
+    try{
+      const tbody = document.getElementById('assigned-students-tbody');
+      if(!tbody) return;
+
+      // Map cohort and department lists for helper lookups
+      const cohortMap = {};
+      (facultyHubData.cohorts || []).forEach(c => {
+        cohortMap[c.id] = c.name;
+      });
+      const deptMap = {};
+      (facultyHubData.departments || []).forEach(d => {
+        deptMap[d.id] = d.code || d.name;
+      });
+
+      // Always load assigned list from backend data directly
+      const assigned_list = students.map(s => {
+        const classVal = s.cohortIds && s.cohortIds.length 
+          ? s.cohortIds.map(cid => cohortMap[cid] || cid).join(', ') 
+          : (cohortMap[s.cohortId] || 'CSE A');
+        return {
+          studentId: s.id,
+          userId: s.userId,
+          roll: s.rollNumber || s.regNo,
+          name: s.name,
+          cohort: classVal,
+          course: deptMap[s.departmentId] || 'CSE',
+          status: 'Active',
+          cgpa: s.cgpa || 8.0,
+          finalCgpa: s.cgpa || 8.0,
+          avgMidMarks: s.marks || 75.0,
+          externalMarks: s.external_marks || 70.0,
+          attendance: s.attendance || 85
+        };
+      });
+
+      function populateClassDropdown() {
+        const select = document.getElementById('filterClass');
+        if (!select) return;
+        select.innerHTML = '<option value="">All Branches</option>';
+        
+        const classes = new Set();
+        (assigned_list || []).forEach(s => {
+          if (s.cohort) classes.add(s.cohort);
+        });
+        
+        Array.from(classes).sort().forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c;
+          opt.textContent = c;
+          select.appendChild(opt);
+        });
+      }
+
+      function renderFilteredRows(filteredList) {
+        tbody.innerHTML = '';
+        if (filteredList.length) {
+          filteredList.forEach((s, idx) => {
+            const cgpa = parseFloat(s.cgpa) || 0;
+            const finalCgpa = parseFloat(s.finalCgpa || s.cgpa) || 0;
+            const att = parseFloat(s.attendance) || 0;
+            
+            let statusLabel = 'Excellent';
+            let statusClass = 'status-excellent';
+            
+            if (cgpa < 6 || att < 65) {
+              statusLabel = 'Poor';
+              statusClass = 'status-poor';
+            } else if (cgpa < 7 || att < 75) {
+              statusLabel = 'Average';
+              statusClass = 'status-average';
+            } else if (cgpa < 8.5) {
+              statusLabel = 'Great';
+              statusClass = 'status-great';
+            }
+            
+            let attHtml = `<span style="font-weight: 500;">${att}%</span>`;
+            if (att < 75) {
+              attHtml += `
+                <span class="badge" style="background-color: #ffedd5; color: #c2410c; font-size: 0.75rem; padding: 4px 8px; border-radius: 8px; margin-left: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                  <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566z"/>
+                    <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
+                  </svg>
+                  Caution
+                </span>`;
+            }
+
+            const viewLink = `/student/detail/${s.studentId || ''}/`;
+            const assignLink = `/faculty-portal/mentor/assign-marks/`;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td style="font-weight: 500; color: var(--palette-black);">${s.roll || '—'}</td>
+              <td style="font-weight: 600; color: var(--palette-black);">${s.name || '—'}</td>
+              <td>${s.cohort || '—'}</td>
+              <td style="font-weight: 600; color: var(--palette-black);">${finalCgpa.toFixed(1)}</td>
+              <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+              <td>${parseFloat(s.avgMidMarks || s.midMarks || 0).toFixed(0)}</td>
+              <td>${parseFloat(s.externalMarks || 0).toFixed(1)}</td>
+              <td>${attHtml}</td>
+              <td><a href="${viewLink}" class="fw-semibold" style="color: #970006; text-decoration: none;">View Profile</a></td>
+              <td>
+                <a href="${assignLink}" class="fw-semibold" style="color: #970006; text-decoration: none;">Assign Mid Marks</a>
+              </td>
+              <td>
+                <button onclick="openChatWithStudent('${s.userId || ''}', '${s.name || ''}')" class="btn btn-sm text-white" style="background-color: #970006; border-radius: 8px; font-weight: 600; padding: 4px 12px; display: inline-flex; align-items: center; gap: 6px; border: none; transition: background-color 0.2s;">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 0 1-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z"/>
+                  </svg>
+                  Chat
+                </button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        } else {
+          tbody.innerHTML = '<tr><td colspan="11" style="padding:24px;text-align:center;color:var(--palette-espresso);font-weight: 500;">No assigned students match the filters.</td></tr>';
+        }
+      }
+
+      function applyAllFilters() {
+        const q = document.getElementById('filterSearch').value.trim().toLowerCase();
+        const selectedClass = document.getElementById('filterClass').value;
+        const showOnlyPoor = document.getElementById('filterPoor').checked;
+        const cgpaMin = parseFloat(document.getElementById('filterCgpaMin').value) || 0;
+        const cgpaMax = parseFloat(document.getElementById('filterCgpaMax').value) || 10;
+        const midMin = parseFloat(document.getElementById('filterMidMin').value) || 0;
+        const midMax = parseFloat(document.getElementById('filterMidMax').value) || 100;
+        const attMin = parseFloat(document.getElementById('filterAttMin').value) || 0;
+        const attMax = parseFloat(document.getElementById('filterAttMax').value) || 100;
+
+        const list = assigned_list || [];
+        const filtered = list.filter(s => {
+          const matchesSearch = !q || 
+            (s.name || '').toLowerCase().includes(q) || 
+            (s.roll || '').toLowerCase().includes(q);
+          
+          const matchesClass = !selectedClass || s.cohort === selectedClass;
+
+          const sCgpa = parseFloat(s.cgpa) || 0;
+          const sAtt = parseFloat(s.attendance) || 0;
+          
+          const matchesPoor = !showOnlyPoor || (sCgpa < 6.0 || sAtt < 75);
+
+          const matchesCgpa = sCgpa >= cgpaMin && sCgpa <= cgpaMax;
+
+          const sMid = parseFloat(s.avgMidMarks || s.midMarks) || 0;
+          const matchesMid = sMid >= midMin && sMid <= midMax;
+
+          const matchesAtt = sAtt >= attMin && sAtt <= attMax;
+
+          return matchesSearch && matchesClass && matchesPoor && matchesCgpa && matchesMid && matchesAtt;
+        });
+
+
+        renderFilteredRows(filtered);
+        
+        const total = list.length;
+        const count = filtered.length;
+        document.getElementById('filterSummaryText').textContent = `Showing ${count} of ${total} students`;
+      }
+
+      function resetAllFilters() {
+        document.getElementById('filterSearch').value = '';
+        document.getElementById('filterClass').value = '';
+        document.getElementById('filterPoor').checked = false;
+        document.getElementById('filterCgpaMin').value = '';
+        document.getElementById('filterCgpaMax').value = '';
+        document.getElementById('filterMidMin').value = '';
+        document.getElementById('filterMidMax').value = '';
+        document.getElementById('filterAttMin').value = '';
+        document.getElementById('filterAttMax').value = '';
+        applyAllFilters();
+      }
+
+      function toggleFilterControls() {
+        const controls = document.getElementById('filterControls');
+        if (controls.style.display === 'none') {
+          controls.style.display = 'flex';
+        } else {
+          controls.style.display = 'none';
+        }
+      }
+
+      // Expose filtering functions globally for inline HTML event handlers
+      window.applyAllFilters = applyAllFilters;
+      window.resetAllFilters = resetAllFilters;
+      window.toggleFilterControls = toggleFilterControls;
+
+      // Open chat modal with a specific student user ID
+      window.openChatWithStudent = function(userId, userName) {
+        if (!userId) {
+          alert('No user account linked to this student.');
+          return;
+        }
+        const widget = document.querySelector('.ciet-message-widget');
+        if (!widget) {
+          console.error('Messaging widget not found.');
+          return;
+        }
+        widget.classList.add('is-open');
+        if (typeof window.cietLoadInbox === 'function') {
+          window.cietLoadInbox(userId);
+        }
+      };
+
+      // Populate unique classes list
+      populateClassDropdown();
+
+      // Initial filter render
+      applyAllFilters();
+
+    }catch(e){ console.error(e); }
+  })();
+</script>
+{% endblock %}

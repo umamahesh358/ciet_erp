@@ -1,0 +1,11 @@
+{
+  "include": ["."],
+  "pythonPlatform": "Windows",
+  "venvPath": ".",
+  "venv": ".venv",
+  "extraPaths": [
+    "."
+  ],
+  "reportMissingModuleSource": "none",
+  "reportMissingImports": "none"
+}

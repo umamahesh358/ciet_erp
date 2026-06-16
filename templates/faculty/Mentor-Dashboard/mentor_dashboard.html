@@ -1,0 +1,561 @@
+{% extends 'faculty/Mentor-Dashboard/mentor_base.html' %}
+{% load static %}
+
+{% block portal_tab_title %}Mentor Dashboard{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* Hero Banner */
+  .hero-banner {
+    background: linear-gradient(135deg, #970006 0%, #4a0003 100%);
+    border-radius: 16px;
+    padding: 32px;
+    color: #ffffff;
+    box-shadow: 0 10px 30px rgba(151, 0, 6, 0.15);
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .hero-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -5%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  /* KPI Cards */
+  .kpi-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+  }
+
+  .kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e1;
+  }
+
+  .kpi-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    margin-bottom: 16px;
+  }
+
+  .bg-burgundy-light {
+    background-color: rgba(151, 0, 6, 0.08);
+    color: #970006;
+  }
+
+  .bg-blue-light {
+    background-color: rgba(30, 144, 255, 0.08);
+    color: #1e90ff;
+  }
+
+  .bg-emerald-light {
+    background-color: rgba(16, 185, 129, 0.08);
+    color: #10b981;
+  }
+
+  .bg-amber-light {
+    background-color: rgba(245, 158, 11, 0.08);
+    color: #f59e0b;
+  }
+
+  /* Quick operational links */
+  .quick-link-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    color: #334155;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .quick-link-item:hover {
+    background: #f8fafc;
+    border-color: #970006;
+    color: #970006;
+    transform: translateX(4px);
+  }
+
+  .quick-link-item svg {
+    color: #64748b;
+    transition: color 0.2s;
+  }
+
+  .quick-link-item:hover svg {
+    color: #970006;
+  }
+
+  /* Timeline item */
+  .activity-item {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px !important;
+    transition: all 0.2s;
+  }
+
+  .activity-item:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+  }
+
+  /* Table row highlights */
+  .attention-row {
+    transition: all 0.2s;
+  }
+
+  .attention-row:hover {
+    background-color: #fdf2f2;
+  }
+</style>
+{% endblock %}
+
+{% block mentor_content %}
+<div style="display:flex;flex-direction:column;gap:24px;">
+
+  <!-- Hero Banner -->
+  <div class="hero-banner">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <span class="badge bg-white text-dark mb-3"
+          style="font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">Mentor Portal
+          Active</span>
+        <h1 class="display-6 fw-bold mb-2" style="font-weight: 900 !important;">Welcome back, <span
+            id="mentor-welcome-name">{{ request.user.full_name|default:"Mentor" }}</span></h1>
+        <p class="mb-0 opacity-90 leading-relaxed" id="mentor-subtext" style="font-size: 1.05rem;">Your mentor hub
+          combines student performance, cohort summaries, attendance uploads, and grading tools in the same polished
+          student portal theme.</p>
+      </div>
+      <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+        <span class="text-white-50 d-block fs-7 mb-2" style="font-weight: 500;">Academic Year: {{ current_year }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Metrics Grid -->
+  <div class="row g-3">
+    <!-- Total Students -->
+    <div class="col-md-6 col-lg-3">
+      <div class="kpi-card">
+        <div>
+          <div class="kpi-icon-wrapper bg-burgundy-light">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path
+                d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8Zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022ZM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+          </div>
+          <div class="card-label"
+            style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
+            Students Mentored</div>
+          <div style="font-size: 34px; font-weight: 800; color: #1e293b; margin: 4px 0;" id="kpi-students-count">{{
+            student_stats|length }}</div>
+        </div>
+        <div style="font-size: 13px; color: #64748b; margin-top: 8px;">Mentees currently assigned</div>
+      </div>
+    </div>
+
+    <!-- Average CGPA -->
+    <div class="col-md-6 col-lg-3">
+      <div class="kpi-card">
+        <div>
+          <div class="kpi-icon-wrapper bg-blue-light">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path
+                d="M8 8.082v5.418c0 .245-.195.443-.437.443A.44.44 0 0 1 7.125 13.5v-5.418c-.846-.118-1.5-.788-1.5-1.582 0-.877.712-1.59 1.59-1.59.879 0 1.59.713 1.59 1.59 0 .794-.654 1.464-1.5 1.582z" />
+              <path fill-rule="evenodd"
+                d="M12.5 16a1.5 1.5 0 0 0 1.5-1.5v-11A1.5 1.5 0 0 0 12.5 2h-9A1.5 1.5 0 0 0 2 3.5v11A1.5 1.5 0 0 0 3.5 16h9zM3 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-11z" />
+            </svg>
+          </div>
+          <div class="card-label"
+            style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
+            Average CGPA</div>
+          <div style="font-size: 34px; font-weight: 800; color: #1e293b; margin: 4px 0;" id="kpi-avg-cgpa">0</div>
+        </div>
+        <div style="font-size: 13px; color: #64748b; margin-top: 8px;">Cohort academic performance</div>
+      </div>
+    </div>
+
+    <!-- Average Attendance -->
+    <div class="col-md-6 col-lg-3">
+      <div class="kpi-card">
+        <div>
+          <div class="kpi-icon-wrapper bg-emerald-light">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+              <path
+                d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
+            </svg>
+          </div>
+          <div class="card-label"
+            style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
+            Avg Attendance</div>
+          <div style="font-size: 34px; font-weight: 800; color: #1e293b; margin: 4px 0;" id="kpi-avg-attendance">0%
+          </div>
+        </div>
+        <div style="font-size: 13px; color: #64748b; margin-top: 8px;">Classes presence percentage</div>
+      </div>
+    </div>
+
+    <!-- Mentees At Risk -->
+    <div class="col-md-6 col-lg-3">
+      <div class="kpi-card" style="border-left: 4px solid #dc3545;">
+        <div>
+          <div class="kpi-icon-wrapper bg-amber-light">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+              <path
+                d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z" />
+            </svg>
+          </div>
+          <div class="card-label"
+            style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
+            Mentees At Risk</div>
+          <div style="font-size: 34px; font-weight: 800; color: #dc3545; margin: 4px 0;" id="kpi-at-risk">0</div>
+        </div>
+        <div style="font-size: 13px; color: #64748b; margin-top: 8px;">CGPA &lt; 6.0 or Att. &lt; 75%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Chart Column -->
+    <div class="col-lg-8">
+      <div class="card portal-panel h-100" style="padding: 24px;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="portal-panel-title mb-0" style="font-size: 18px; font-weight: 800;">Academic & CGPA Progress</h2>
+          <span class="text-muted fs-7">Mentee Overview</span>
+        </div>
+        <div style="position: relative; height: 320px;">
+          <canvas id="menteeChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions Column -->
+    <div class="col-lg-4">
+      <div class="card portal-panel h-100" style="padding: 24px;">
+        <h2 class="portal-panel-title mb-3" style="font-size: 18px; font-weight: 800;">Portal Navigation</h2>
+        <div class="d-flex flex-column gap-2">
+          <a href="{% url 'mentor-students' %}" class="quick-link-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A11.386 11.386 0 0 1 10.027 20c-2.136 0-4.088-.59-5.746-1.614m10.746-3.07a8.59 8.59 0 0 0-4.786-1.57A8.59 8.59 0 0 0 5.43 15.33M15 15.304c.162-.163.3-.35.412-.556A3.49 3.49 0 0 0 16 11.5a3.49 3.49 0 0 0-.588-1.928M15 15.304v-.003c-.02-.164-.055-.325-.102-.482M14.898 14.82A6.5 6.5 0 1 1 2.5 9.5a6.5 6.5 0 0 1 12.398 5.32Z" />
+            </svg>
+            Assigned Students List
+          </a>
+          <a href="{% url 'mentor-upload-attendance' %}" class="quick-link-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+            </svg>
+            Upload Attendance Sheet
+          </a>
+          <a href="{% url 'mentor-assign-marks' %}" class="quick-link-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+            </svg>
+            Assign Mid Term Marks
+          </a>
+          <a href="{% url 'mentor-cohorts' %}" class="quick-link-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
+            </svg> Mentorship Cohorts
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mentees Requiring Immediate Attention -->
+  <section class="card portal-panel" style="padding: 24px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h2 class="portal-panel-title mb-1" style="font-size: 18px; font-weight: 800;">Mentees Requiring Attention</h2>
+        <p class="text-muted mb-0" style="font-size: 13px;">Students identified with low attendance (under 75%) or lower
+          GPA scores (under 6.0).</p>
+      </div>
+      <span class="badge bg-danger-subtle text-danger" style="border-radius: 8px; padding: 6px 12px; font-weight: 700;"
+        id="attention-badge-count">0 Students</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col"
+              style="font-size: 0.8rem; text-transform: uppercase; color: #64748b; font-weight: 700; border-bottom: 2px solid #f1f5f9;">
+              Roll No</th>
+            <th scope="col"
+              style="font-size: 0.8rem; text-transform: uppercase; color: #64748b; font-weight: 700; border-bottom: 2px solid #f1f5f9;">
+              Name</th>
+            <th scope="col"
+              style="font-size: 0.8rem; text-transform: uppercase; color: #64748b; font-weight: 700; border-bottom: 2px solid #f1f5f9;">
+              CGPA</th>
+            <th scope="col"
+              style="font-size: 0.8rem; text-transform: uppercase; color: #64748b; font-weight: 700; border-bottom: 2px solid #f1f5f9;">
+              Attendance</th>
+            <th scope="col"
+              style="font-size: 0.8rem; text-transform: uppercase; color: #64748b; font-weight: 700; border-bottom: 2px solid #f1f5f9; text-align: right;">
+              Action</th>
+          </tr>
+        </thead>
+        <tbody id="attention-students-tbody">
+          <tr id="attention-empty-row">
+            <td colspan="5" style="text-align: center; padding: 32px 20px; color: #64748b; font-weight: 500;">
+              ✨ All mentees are performing well this semester! No immediate actions required.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Recent Mentor Activity -->
+  <section class="card portal-panel" style="padding: 24px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="portal-panel-title mb-0" style="font-size: 18px; font-weight: 800;">Recent Mentor Activities</h2>
+      <span class="badge bg-info-subtle text-info" style="border-radius: 8px; padding: 6px 12px; font-weight: 700;">Live
+        Updates</span>
+    </div>
+    <div class="d-flex flex-column gap-3">
+      <div class="activity-item">
+        <div class="p-2 rounded bg-success-subtle text-success d-flex align-items-center justify-content-center"
+          style="width: 40px; height: 40px; border-radius: 10px !important;">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            <path
+              d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
+          </svg>
+        </div>
+        <div>
+          <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Attendance Records Synced</div>
+          <p style="color: #64748b; font-size: 13px; margin: 4px 0 0 0;">Dynamic CSV parsed and student attendance
+            values successfully applied for this semester.</p>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="p-2 rounded bg-warning-subtle text-warning d-flex align-items-center justify-content-center"
+          style="width: 40px; height: 40px; border-radius: 10px !important;">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+            <path
+              d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z" />
+          </svg>
+        </div>
+        <div>
+          <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Mentee Academic Warning Threshold</div>
+          <p style="color: #64748b; font-size: 13px; margin: 4px 0 0 0;">Warning threshold triggered for students
+            performing under 75% attendance or 6.0 CGPA.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{{ mentor_chart_data|json_script:"mentee-data" }}
+<script>
+  // Load student data directly from Django context data
+  const fallbackData = JSON.parse(document.getElementById('mentee-data').textContent || '[]');
+  let menteeData = fallbackData.map(s => ({
+    name: s.name || '',
+    roll_no: s.roll_no || '',
+    cgpa: parseFloat(s.cgpa) || 0,
+    avg_marks: parseFloat(s.avg_marks || s.marks) || 0,
+    attendance: s.attendance !== undefined ? parseInt(s.attendance) : 85
+  }));
+
+
+  // Update total students mentored KPI
+  const countEl = document.getElementById('kpi-students-count');
+  if (countEl) countEl.textContent = menteeData.length;
+
+  // Calculate average CGPA
+  const cgpas = menteeData.map(s => s.cgpa).filter(c => c > 0);
+  if (cgpas.length) {
+    const avgCgpa = (cgpas.reduce((a, b) => a + b, 0) / cgpas.length).toFixed(2);
+    const avgCgpaEl = document.getElementById('kpi-avg-cgpa');
+    if (avgCgpaEl) avgCgpaEl.textContent = avgCgpa;
+  }
+
+  // Calculate average attendance
+  const atts = menteeData.map(s => s.attendance);
+  if (atts.length) {
+    const avgAtt = Math.round(atts.reduce((a, b) => a + b, 0) / atts.length);
+    const avgAttEl = document.getElementById('kpi-avg-attendance');
+    if (avgAttEl) avgAttEl.textContent = `${avgAtt}%`;
+  }
+
+  // Populate students requiring attention table
+  const attentionTbody = document.getElementById('attention-students-tbody');
+  const emptyRow = document.getElementById('attention-empty-row');
+  let attentionCount = 0;
+
+  if (attentionTbody && menteeData.length) {
+    let htmlContent = '';
+
+    menteeData.forEach(s => {
+      const cgpa = s.cgpa;
+      const att = s.attendance;
+
+      const isLowCgpa = cgpa < 6.0;
+      const isLowAtt = att < 75;
+
+      if (isLowCgpa || isLowAtt) {
+        attentionCount++;
+
+        const cgpaBadge = isLowCgpa
+          ? `<span class="badge bg-danger-subtle text-danger" style="font-weight: 700; border-radius: 8px; padding: 6px 10px;">⚠️ ${cgpa.toFixed(1)}</span>`
+          : `<span class="badge bg-success-subtle text-success" style="font-weight: 700; border-radius: 8px; padding: 6px 10px;">${cgpa.toFixed(1)}</span>`;
+
+        const attBadge = isLowAtt
+          ? `<span class="badge bg-danger-subtle text-danger" style="font-weight: 700; border-radius: 8px; padding: 6px 10px;">⚠️ ${att}%</span>`
+          : `<span class="badge bg-success-subtle text-success" style="font-weight: 700; border-radius: 8px; padding: 6px 10px;">${att}%</span>`;
+
+        htmlContent += `
+          <tr class="attention-row">
+            <td style="font-weight: 600; color: #1e293b; padding: 12px 8px;">${s.roll_no}</td>
+            <td style="font-weight: 700; color: #1e293b; padding: 12px 8px;">${s.name}</td>
+            <td style="padding: 12px 8px;">${cgpaBadge}</td>
+            <td style="padding: 12px 8px;">${attBadge}</td>
+            <td style="text-align: right; padding: 12px 8px;">
+              <a href="/faculty-portal/mentor/students/?search=${s.roll_no}" class="btn btn-sm btn-outline-danger fw-semibold" style="border-radius: 8px; padding: 6px 16px; font-size: 0.82rem;">
+                Review Profile
+              </a>
+            </td>
+          </tr>
+        `;
+      }
+    });
+
+    if (attentionCount > 0) {
+      attentionTbody.innerHTML = htmlContent;
+      const countBadge = document.getElementById('attention-badge-count');
+      if (countBadge) {
+        countBadge.textContent = `${attentionCount} Student${attentionCount > 1 ? 's' : ''}`;
+        countBadge.className = 'badge bg-danger text-white';
+        countBadge.style.borderRadius = '8px';
+        countBadge.style.padding = '6px 12px';
+      }
+      const kpiAtRisk = document.getElementById('kpi-at-risk');
+      if (kpiAtRisk) {
+        kpiAtRisk.textContent = attentionCount;
+      }
+    }
+  }
+
+  // Render menteeChart using Chart.js
+  const menteeCtx = document.getElementById('menteeChart');
+  if (menteeCtx && menteeData.length) {
+    new Chart(menteeCtx, {
+      type: 'line',
+      data: {
+        labels: menteeData.map(s => (s.name || '').slice(0, 10)),
+        datasets: [
+          {
+            label: 'CGPA',
+            data: menteeData.map(s => s.cgpa || 0),
+            borderColor: '#970006',
+            backgroundColor: 'rgba(151,0,6,0.06)',
+            tension: 0.35,
+            fill: true,
+            borderWidth: 3,
+            pointBackgroundColor: '#970006',
+            pointHoverRadius: 6
+          },
+          {
+            label: 'Avg Marks / 10',
+            data: menteeData.map(s => (s.avg_marks || 0) / 10),
+            borderColor: '#80613f',
+            backgroundColor: 'rgba(128,97,63,0.08)',
+            tension: 0.35,
+            fill: true,
+            borderWidth: 3,
+            pointBackgroundColor: '#80613f',
+            pointHoverRadius: 6
+          }
+        ]
+      },
+      options: {
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { font: { weight: '600' } }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: '#f1f5f9' },
+            ticks: { color: '#64748b', font: { weight: '500' } }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#64748b', font: { weight: '500' } }
+          }
+        }
+      }
+    });
+  }
+
+  // Update dynamic mentor details from profile
+  (function () {
+    try {
+      const raw = localStorage.getItem('mentorProfile');
+      if (!raw) return;
+      const p = JSON.parse(raw);
+      const nameEl = document.getElementById('mentor-welcome-name');
+      const subEl = document.getElementById('mentor-subtext');
+      if (nameEl && p.name) nameEl.textContent = p.name;
+      if (subEl && p.bio) subEl.textContent = p.bio;
+    } catch (e) {
+      console.error('mentor dashboard dynamic update failed', e);
+    }
+  })();
+</script>
+{% endblock %}

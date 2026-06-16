@@ -1,0 +1,15 @@
+{% extends 'faculty/base_portal.html' %}
+{% load static %}
+
+{% block portal_brand_name %}Mentor Portal{% endblock %}
+{% block portal_brand_label %}Mentor Portal home{% endblock %}
+{% block portal_home_url %}{% url 'mentor-dashboard' %}{% endblock %}
+{% block portal_user_chip_href %}{% url 'mentor-profile' %}{% endblock %}
+{% block bottom_navigation %}{% comment %}Mentor pages use their own navigation panel instead of the faculty bottom nav{% endcomment %}{% endblock %}
+
+{% block portal_content %}
+<div style="display:flex;flex-direction:column;gap:24px;min-height:calc(100vh - 120px);">
+  {% block mentor_content %}{% endblock %}
+</div>
+{% include 'faculty/Mentor-Dashboard/mentor_nav.html' %}
+{% endblock %}

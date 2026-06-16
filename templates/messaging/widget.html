@@ -41,4 +41,257 @@
   </section>
 </div>
 
-<script src="{% static 'js/messaging.js' %}?v=1" defer></script>
+<script>
+  (function() {
+    document.addEventListener('DOMContentLoaded', function() {
+      const widget = document.querySelector('.ciet-message-widget');
+      if (!widget) return;
+
+      const backdrop = widget.querySelector('.ciet-message-backdrop');
+      const form = widget.querySelector('#cietMessageForm');
+      const recipientSelect = widget.querySelector('#cietMessageRecipient');
+      const messageList = widget.querySelector('#cietMessageList');
+      const messageBody = widget.querySelector('#cietMessageBody');
+      const parentInput = widget.querySelector('#cietMessageParent');
+      const replyNote = widget.querySelector('#cietMessageReplyNote');
+      const statusSpan = widget.querySelector('#cietMessageStatus');
+
+      const inboxUrl = widget.getAttribute('data-inbox-url');
+      const sendUrl = widget.getAttribute('data-send-url');
+      const unreadUrl = widget.getAttribute('data-unread-url');
+
+      let messagesCache = [];
+      let recipientsCache = [];
+
+      function escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+      }
+
+      function showStatus(text, type) {
+        if (!statusSpan) return;
+        statusSpan.textContent = text;
+        statusSpan.className = `ciet-message-status ${type}`;
+        statusSpan.style.color = type === 'success' ? '#047857' : (type === 'error' ? '#970006' : '#47301f');
+        setTimeout(() => {
+          if (statusSpan.textContent === text) {
+            statusSpan.textContent = '';
+          }
+        }, 4000);
+      }
+
+      function renderMessages() {
+        const R = recipientSelect.value;
+        let filtered = messagesCache;
+        if (R) {
+          filtered = messagesCache.filter(msg => {
+            return (msg.direction === 'sent' && msg.recipient_id === R) ||
+                   (msg.direction === 'received' && msg.sender_id === R);
+          });
+        }
+
+        if (filtered.length === 0) {
+          messageList.innerHTML = `<div class="ciet-message-state">No conversation history yet. Choose a recipient to send a message!</div>`;
+          return;
+        }
+
+        messageList.innerHTML = '';
+        // Order oldest to newest for chronological chat rendering
+        const displayList = [...filtered].reverse();
+
+        displayList.forEach(msg => {
+          const card = document.createElement('div');
+          card.className = `ciet-message-card ${msg.direction === 'sent' ? 'is-sent' : ''}`;
+
+          const meta = document.createElement('div');
+          meta.className = 'ciet-message-meta';
+          meta.innerHTML = `
+            <strong>${escapeHtml(msg.sender)}</strong>
+            <span>${escapeHtml(msg.created_at)}</span>
+          `;
+          card.appendChild(meta);
+
+          const p = document.createElement('p');
+          p.textContent = msg.body;
+          card.appendChild(p);
+
+          if (msg.direction === 'received' && msg.can_reply) {
+            const replyBtn = document.createElement('button');
+            replyBtn.type = 'button';
+            replyBtn.className = 'ciet-message-reply';
+            replyBtn.textContent = 'Reply';
+            replyBtn.onclick = function() {
+              setReplyTo(msg.sender_id, msg.sender, msg.id);
+            };
+            card.appendChild(replyBtn);
+          }
+
+          messageList.appendChild(card);
+        });
+
+        // Auto-scroll to the bottom of the list
+        messageList.scrollTop = messageList.scrollHeight;
+      }
+
+      function setReplyTo(senderId, senderName, messageId) {
+        recipientSelect.value = senderId;
+        parentInput.value = messageId;
+        replyNote.innerHTML = `Replying to <strong>${escapeHtml(senderName)}</strong> <button type="button" style="border:none; background:none; color:#970006; font-weight:800; cursor:pointer;" id="cietClearReplyBtn">×</button>`;
+        replyNote.style.display = 'block';
+
+        const clearBtn = replyNote.querySelector('#cietClearReplyBtn');
+        if (clearBtn) {
+          clearBtn.addEventListener('click', function() {
+            window.clearReply();
+          });
+        }
+
+        renderMessages();
+        messageBody.focus();
+      }
+
+      window.clearReply = function() {
+        parentInput.value = '';
+        replyNote.innerHTML = '';
+        replyNote.style.display = 'none';
+      };
+
+      window.cietLoadInbox = function(targetRecipientId) {
+        messageList.innerHTML = '<div class="ciet-message-state">Loading messages...</div>';
+        
+        fetch(inboxUrl)
+        .then(response => response.json())
+        .then(data => {
+          messagesCache = data.messages || [];
+          recipientsCache = data.recipients || [];
+
+          // Populate recipient options
+          const currentValue = recipientSelect.value;
+          recipientSelect.innerHTML = '<option value="">-- Choose Recipient --</option>';
+          recipientsCache.forEach(rec => {
+            const opt = document.createElement('option');
+            opt.value = rec.id;
+            opt.textContent = rec.name;
+            recipientSelect.appendChild(opt);
+          });
+
+          // Set active recipient
+          if (targetRecipientId) {
+            recipientSelect.value = targetRecipientId;
+          } else if (currentValue && recipientsCache.some(r => r.id === currentValue)) {
+            recipientSelect.value = currentValue;
+          }
+
+          renderMessages();
+          updateUnreadCount();
+        })
+        .catch(err => {
+          console.error(err);
+          messageList.innerHTML = '<div class="ciet-message-state error">Failed to load messages. Please try again.</div>';
+        });
+      };
+
+      recipientSelect.addEventListener('change', function() {
+        window.clearReply();
+        renderMessages();
+      });
+
+      // Bind opening triggers
+      document.querySelectorAll('[data-message-open]').forEach(el => {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          widget.classList.add('is-open');
+          window.cietLoadInbox();
+        });
+      });
+
+      // Bind closing triggers
+      widget.querySelectorAll('[data-message-close]').forEach(el => {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          widget.classList.remove('is-open');
+        });
+      });
+
+      // Handle message submission
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const recipientId = recipientSelect.value;
+        const body = messageBody.value.trim();
+
+        if (!recipientId) {
+          showStatus('Please select a recipient.', 'error');
+          return;
+        }
+        if (!body) {
+          showStatus('Please write a message body.', 'error');
+          return;
+        }
+
+        showStatus('Sending...', 'info');
+        const formData = new FormData(form);
+
+        fetch(sendUrl, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.error || 'Failed to send'); });
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.ok) {
+            showStatus('Message sent!', 'success');
+            messageBody.value = '';
+            window.clearReply();
+            window.cietLoadInbox(recipientId);
+          } else {
+            showStatus(data.error || 'Failed to send.', 'error');
+          }
+        })
+        .catch(err => {
+          showStatus(err.message || 'Error sending message.', 'error');
+        });
+      });
+
+      // Unread count tracking and navigation bar badge updates
+      function updateUnreadCount() {
+        fetch(unreadUrl)
+        .then(r => r.json())
+        .then(data => {
+          const count = data.unread_count || 0;
+          document.querySelectorAll('[data-message-open]').forEach(el => {
+            let badge = el.querySelector('.ciet-message-badge');
+            if (count > 0) {
+              if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'ciet-message-badge';
+                el.appendChild(badge);
+              }
+              badge.textContent = count;
+            } else if (badge) {
+              badge.remove();
+            }
+          });
+        })
+        .catch(err => console.error('Error updating unread count:', err));
+      }
+
+      // Initial check & interval polling (every 30s)
+      updateUnreadCount();
+      setInterval(updateUnreadCount, 30000);
+    });
+  })();
+</script>

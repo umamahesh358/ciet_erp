@@ -1,0 +1,243 @@
+{% extends 'faculty/Mentor-Dashboard/mentor_base.html' %}
+{% load static %}
+
+{% block portal_tab_title %}Mentor Profile{% endblock %}
+
+{% block extra_head %}
+<style>
+  .profile-container {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 28px;
+    align-items: start;
+    margin-top: 12px;
+  }
+
+  .profile-card {
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+  }
+
+  .form-card {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+  }
+
+  .df-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px
+  }
+
+  .df-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.06em
+  }
+
+  .df-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #e6e9ef;
+    border-radius: 20px;
+    font-size: 13.5px
+  }
+
+  .df-input:focus {
+    border-color: #AF0C3E;
+    box-shadow: 0 0 0 3px rgba(175, 12, 62, .06)
+  }
+
+  .avatar-upload-label {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer
+  }
+
+  @media (max-width:900px) {
+    .profile-container {
+      grid-template-columns: 1fr
+    }
+  }
+</style>
+{% endblock %}
+
+{% block mentor_content %}
+<div style="margin-bottom:18px;">
+  <h1 class="section-title">Mentor Profile</h1>
+  <p class="section-sub">Review and edit your mentor profile.</p>
+</div>
+
+<form id="mentorProfileForm" class="profile-container">
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    <div class="profile-card">
+      <div style="position:relative;width:120px;height:120px;margin:0 auto 16px;">
+        <div id="mentor-avatar-wrapper"
+          style="width:120px;height:120px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid var(--border);box-shadow:0 8px 24px rgba(0,0,0,0.05);">
+          <span id="mentor-avatar-initials" style="font-size:42px;font-weight:800;color:var(--primary);">MJ</span>
+        </div>
+        <label class="avatar-upload-label" title="Change photo">
+          📷<input type="file" id="mentor-profile-photo-input" style="display:none;" accept="image/*">
+        </label>
+      </div>
+
+      <div style="font-size:18px;font-weight:800;color:var(--text);" class="js-profile-name">
+        {{ request.user.full_name|default:request.user.email }}
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;" class="js-profile-designation">
+        {{ request.user.role }}
+      </div>
+
+      <div
+        style="font-size:12.5px;color:var(--muted);margin-top:16px;padding-top:16px;border-top:1px dashed var(--border);font-style:italic;line-height:1.5;text-align:center;width:100%;"
+        id="mentor-avatar-bio">
+        No bio added yet.
+      </div>
+    </div>
+
+    <div class="form-card" style="padding:16px;">
+      <div style="text-align:left;">
+        <div class="card-label">Contact</div>
+        <p style="margin-top:8px;font-weight:700;color:var(--text);" id="mentor-contact-email">{{ request.user.email }}
+        </p>
+        <p style="font-size:13px;color:var(--muted);" id="mentor-contact-phone">—</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div class="form-card">
+      <h2
+        style="font-size:15px;font-weight:800;margin-bottom:16px;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:12px;">
+        Professional Details</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+        <div class="df-group" style="grid-column:span 2;">
+          <label class="df-label">Full Name</label>
+          <input type="text" id="mentor-name" class="df-input" required placeholder="Full Name">
+        </div>
+
+        <div class="df-group">
+          <label class="df-label">Designation</label>
+          <input type="text" id="mentor-designation" class="df-input" placeholder="e.g. Senior Faculty">
+        </div>
+
+        <div class="df-group">
+          <label class="df-label">Department</label>
+          <input type="text" id="mentor-department" class="df-input" placeholder="e.g. Computer Science">
+        </div>
+
+        <div class="df-group">
+          <label class="df-label">Experience (Years)</label>
+          <input type="text" id="mentor-experience" class="df-input" placeholder="e.g. 12 Years">
+        </div>
+
+        <div class="df-group" style="grid-column:span 2;">
+          <label class="df-label">Bio / Notes</label>
+          <textarea id="mentor-bio" class="df-input" rows="4"
+            placeholder="Describe your mentoring focus, areas of expertise..."></textarea>
+        </div>
+
+        <!-- Assigned Students manager removed per request -->
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <button type="submit" class="btn-primary" style="padding:12px 28px;border-radius:24px;">Save Changes</button>
+      <a href="{% url 'mentor-dashboard' %}" class="btn-ghost" style="padding:12px 28px;border-radius:24px;">Cancel</a>
+    </div>
+  </div>
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const key = 'mentorProfile';
+    const defaults = {
+      name: "{{ request.user.full_name|default:request.user.email }}",
+      email: "{{ request.user.email }}",
+      designation: "{{ request.user.role }}",
+      department: 'Computer Science & Engineering',
+      experience: '10 Years',
+      bio: '',
+      phone: '',
+      picture: ''
+    };
+
+    let profile = defaults;
+    try { const s = localStorage.getItem(key); if (s) profile = Object.assign({}, defaults, JSON.parse(s)); } catch (e) { console.error(e); }
+
+    // (No longer mirroring to facultyProfile to avoid overwriting faculty header)
+
+    // populate
+    document.getElementById('mentor-name').value = profile.name || '';
+    document.getElementById('mentor-designation').value = profile.designation || '';
+    document.getElementById('mentor-department').value = profile.department || '';
+    document.getElementById('mentor-experience').value = profile.experience || '';
+    document.getElementById('mentor-bio').value = profile.bio || '';
+    document.getElementById('mentor-contact-phone').textContent = profile.phone || '—';
+
+
+    function updatePreview() {
+      const wrap = document.getElementById('mentor-avatar-wrapper');
+      if (profile.picture) { wrap.innerHTML = `<img src="${profile.picture}" style="width:100%;height:100%;object-fit:cover;">`; }
+      else { const initials = (profile.name || '').trim().split(/\s+/).map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'MJ'; wrap.innerHTML = `<span id="mentor-avatar-initials" style="font-size:42px;font-weight:800;color:var(--primary);">${initials}</span>`; }
+      const bioEl = document.getElementById('mentor-avatar-bio'); if (bioEl) bioEl.textContent = profile.bio || 'No bio added yet.';
+      // Update topbar user-chip if present on the page
+      try {
+        document.querySelectorAll('.js-profile-name').forEach(el => { if (profile.name) el.textContent = profile.name; });
+        document.querySelectorAll('.js-profile-designation').forEach(el => { if (profile.designation) el.textContent = profile.designation; });
+        document.querySelectorAll('.js-profile-avatar').forEach(el => {
+          if (profile.picture) {
+            el.innerHTML = `<img src="${profile.picture}" class="portal-avatar-img" alt="Profile">`;
+            el.style.background = 'transparent';
+          } else if (profile.name) {
+            const initials = (profile.name || '').trim().split(/\s+/).map(n => n[0]).slice(0, 2).join('').toUpperCase();
+            el.textContent = initials || el.textContent;
+          }
+        });
+      } catch (e) { /* ignore if topbar not present */ }
+    }
+    updatePreview();
+
+    // Assigned students manager removed from DOM; related JS cleaned up.
+
+    document.getElementById('mentor-profile-photo-input').addEventListener('change', function (e) {
+      const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = function (evt) { profile.picture = evt.target.result; updatePreview(); }; r.readAsDataURL(f);
+    });
+
+    document.getElementById('mentorProfileForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      profile.name = document.getElementById('mentor-name').value;
+      profile.designation = document.getElementById('mentor-designation').value;
+      profile.department = document.getElementById('mentor-department').value;
+      profile.experience = document.getElementById('mentor-experience').value;
+      profile.bio = document.getElementById('mentor-bio').value;
+      localStorage.setItem(key, JSON.stringify(profile));
+      alert('Mentor profile saved locally.');
+      updatePreview();
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,624 @@
+{% extends 'faculty/Mentor-Dashboard/mentor_base.html' %}
+{% load static %}
+
+{% block portal_tab_title %}Assign Marks{% endblock %}
+
+{% block mentor_content %}
+<div class="d-flex flex-column gap-4">
+  <div class="d-flex flex-wrap justify-content-between gap-3 align-items-center">
+    <div>
+      <h1 style="font-size:28px;font-weight:800;color:var(--palette-black);margin-bottom:8px;">Assign Marks</h1>
+      <p style="color:var(--palette-espresso);max-width:720px;line-height:1.6;">This mentor grading dashboard manages
+        semester marks entirely in the browser. It supports Mid-1, Mid-2, Internal, External and Final CGPA calculations
+        without backend changes.</p>
+    </div>
+
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="card portal-panel p-4 h-100">
+        <div class="text-uppercase text-muted mb-2" style="font-size:11px;letter-spacing:.12em;">Total students</div>
+        <h2 id="summaryTotal" class="mb-0">0</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card portal-panel p-4 h-100">
+        <div class="text-uppercase text-muted mb-2" style="font-size:11px;letter-spacing:.12em;">Pending review</div>
+        <h2 id="summaryPending" class="mb-0">0</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card portal-panel p-4 h-100">
+        <div class="text-uppercase text-muted mb-2" style="font-size:11px;letter-spacing:.12em;">Last saved</div>
+        <div id="summaryLastSaved" class="fw-semibold">Never</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card portal-panel p-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+      <div class="d-flex flex-wrap gap-3 align-items-center">
+        <div>
+          <label class="form-label text-muted" style="font-size:12px;">Semester</label>
+          <select id="semesterSelect" class="form-select form-select-sm" onchange="changeSemester(this.value)"></select>
+        </div>
+        <div>
+          <label class="form-label text-muted" style="font-size:12px;">Mark type</label>
+          <div class="btn-group" role="group" aria-label="Mark type tabs">
+            <button class="btn btn-outline-dark btn-sm mark-tab-button active" type="button" data-tab="mid1"
+              onclick="switchTab('mid1')">Mid-1</button>
+            <button class="btn btn-outline-dark btn-sm mark-tab-button" type="button" data-tab="mid2"
+              onclick="switchTab('mid2')">Mid-2</button>
+            <button class="btn btn-outline-dark btn-sm mark-tab-button" type="button" data-tab="internal"
+              onclick="switchTab('internal')">Internal</button>
+            <button class="btn btn-outline-dark btn-sm mark-tab-button" type="button" data-tab="external"
+              onclick="switchTab('external')">External</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tabContent"></div>
+  </div>
+</div>
+
+{{ faculty_hub_data|json_script:"faculty-hub-data-json" }}
+
+<script>
+  const gradeStorageKey = 'mentorAssignMarksWorkbook';
+  const markConfig = {
+    mid1: { label: 'Mid-1 Marks', max: 25 },
+    mid2: { label: 'Mid-2 Marks', max: 25 },
+    internal: { label: 'Internal Marks', max: 30 },
+    external: { label: 'External Marks', max: 70 }
+  };
+  const facultyHubData = JSON.parse(document.getElementById('faculty-hub-data-json').textContent || '{}');
+  const defaultStudents = (facultyHubData.students || []).map(s => ({
+    id: s.id,
+    student: s.name,
+    roll: s.rollNumber || s.regNo || '',
+    cohort: s.cohortId || '',
+    course: ""
+  }));
+  const defaultSubjects = (facultyHubData.courses || []).map(c => c.name);
+
+
+  let state = {
+    semester: '1',
+    activeTab: 'mid1',
+    subjects: [...defaultSubjects],
+    selectedRow: null,
+    records: {}
+  };
+
+  function loadWorkbook() {
+    const saved = localStorage.getItem(gradeStorageKey);
+    if (saved) {
+      try {
+        state = JSON.parse(saved);
+      } catch {
+        state = { ...state, records: {} };
+      }
+    }
+    if (!state.semester) state.semester = '1';
+    if (!state.activeTab) state.activeTab = 'mid1';
+    if (!state.subjects || state.subjects.length === 0) state.subjects = [...defaultSubjects];
+    if (!state.records) state.records = {};
+    ensureSemesterData(state.semester);
+    renderPage();
+  }
+
+  function saveWorkbook() {
+    localStorage.setItem(gradeStorageKey, JSON.stringify(state));
+  }
+
+  function ensureSemesterData(semester) {
+    if (!state.records[semester]) {
+      state.records[semester] = {
+        subjects: [...state.subjects],
+        students: [...defaultStudents],
+        internalLabs: [],
+        externalSubjects: [],
+        data: { mid1: {}, mid2: {}, internal: {}, external: {}, final: {} },
+        locks: { mid1: {}, mid2: {}, internal: {}, external: {} },
+
+      };
+    }
+    const record = state.records[semester];
+    record.subjects = [...defaultSubjects];
+    record.internalLabs = [];
+    record.externalSubjects = [];
+    record.students = [...defaultStudents];
+    if (!record.data) record.data = { mid1: {}, mid2: {}, internal: {}, external: {}, final: {} };
+    if (!record.data.final) record.data.final = {};
+    if (!record.locks) record.locks = { mid1: {}, mid2: {}, internal: {}, external: {} };
+
+    record.students.forEach(student => {
+      if (!record.data.mid1[student.id]) record.data.mid1[student.id] = {};
+      if (!record.data.mid2[student.id]) record.data.mid2[student.id] = {};
+      if (!record.data.external[student.id]) record.data.external[student.id] = {};
+      if (!record.data.internal[student.id]) record.data.internal[student.id] = {};
+      if (!record.data.final[student.id]) record.data.final[student.id] = { cgpa: '', sgpa: '', final: '0.00' };
+
+      record.subjects.forEach(subject => {
+        if (record.data.mid1[student.id][subject] === undefined) record.data.mid1[student.id][subject] = '';
+        if (record.data.mid2[student.id][subject] === undefined) record.data.mid2[student.id][subject] = '';
+      });
+
+      record.internalLabs.forEach(lab => {
+        if (record.data.internal[student.id][lab.id] === undefined) record.data.internal[student.id][lab.id] = '';
+      });
+
+      record.externalSubjects.forEach(sub => {
+        if (record.data.external[student.id][sub.id] === undefined) record.data.external[student.id][sub.id] = '';
+      });
+    });
+
+    for (const cat of Object.keys(record.locks)) {
+      record.students.forEach(student => {
+        record.locks[cat][student.id] = false; // Always force false to allow re-entry
+      });
+    }
+  }
+
+  function renderPage() {
+    renderHeader();
+    renderTabs();
+    renderTable();
+    updateSummary();
+  }
+
+  function renderHeader() {
+    const semesterSelect = document.getElementById('semesterSelect');
+    if (!semesterSelect) return;
+    semesterSelect.innerHTML = Array.from({ length: 8 }, (_, index) => {
+      const value = String(index + 1);
+      return `<option value="${value}" ${value === state.semester ? 'selected' : ''}>Semester ${value}</option>`;
+    }).join('');
+  }
+
+  function renderTabs() {
+    document.querySelectorAll('.mark-tab-button').forEach(button => {
+      button.classList.toggle('active', button.dataset.tab === state.activeTab);
+    });
+    const tabTitle = document.getElementById('tabTitle');
+    const tabDescription = document.getElementById('tabDescription');
+    if (tabTitle) tabTitle.textContent = markConfig[state.activeTab].label;
+    if (tabDescription) tabDescription.textContent = `Enter ${markConfig[state.activeTab].label.toLowerCase()} out of ${markConfig[state.activeTab].max}.`;
+    document.getElementById('tabContent').style.display = 'block';
+  }
+
+  function renderTable() {
+    const content = document.getElementById('tabContent');
+    const record = state.records[state.semester];
+    if (!content) return;
+
+    let activeSubjects;
+    if (state.activeTab === 'internal') {
+      activeSubjects = record.internalLabs;
+    } else if (state.activeTab === 'external') {
+      activeSubjects = record.externalSubjects;
+    } else {
+      activeSubjects = record.subjects;
+    }
+
+    const subjectHeaders = activeSubjects.map(subject => {
+      if (state.activeTab === 'internal' || state.activeTab === 'external') {
+        return `<th>${subject.name}${subject.code ? ` <small>(${subject.code})</small>` : ''}</th>`;
+      }
+      const removable = subject.toLowerCase().includes('lab');
+      return `<th>${subject}${removable ? `<button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="removeSubject('${subject.replace(/'/g, "\\'")}');event.stopPropagation()">×</button>` : ''}</th>`;
+    }).join('');
+
+    const rows = record.students.map(student => {
+      const rowClass = state.selectedRow === student.id ? 'table-primary' : '';
+      const cells = activeSubjects.map(subject => {
+        let value;
+        if (state.activeTab === 'internal') {
+          value = record.data.internal[student.id][subject.id] || '';
+        } else if (state.activeTab === 'external') {
+          value = record.data.external[student.id][subject.id] || '';
+        } else {
+          value = record.data[state.activeTab][student.id][subject] || '';
+        }
+
+        const max = markConfig[state.activeTab].max;
+        const invalid = value !== '' && (Number(value) < 0 || Number(value) > max);
+
+        let oninput;
+        if (state.activeTab === 'internal') {
+          oninput = `updateInternalMark(${student.id}, ${subject.id}, this.value, this)`;
+        } else if (state.activeTab === 'external') {
+          oninput = `updateExternalMark(${student.id}, ${subject.id}, this.value, this)`;
+        } else {
+          oninput = `updateEntryMarks(${student.id}, '${subject.replace(/'/g, "\\'")}', this.value, this)`;
+        }
+
+        return `<td class="text-center" onclick="event.stopPropagation()"><input type="number" min="0" max="${max}" class="form-control form-control-sm ${invalid ? 'is-invalid' : ''}" value="${value}" oninput="${oninput}"></td>`;
+      }).join('');
+      const avg = computeRowAverage(student.id);
+      return `
+        <tr id="row-${student.id}" class="${rowClass}" onclick="toggleStudentRow(${student.id})" style="cursor:pointer;">
+          <td class="fw-semibold">${student.roll}</td>
+          <td>${student.student}</td>
+          ${cells}
+          <td id="avg-${student.id}" class="fw-semibold text-end">${avg}</td>
+        </tr>`;
+    }).join('');
+
+    const bodyContent = activeSubjects.length === 0
+      ? `<tr><td colspan="100" class="text-center text-muted py-4">${state.activeTab === 'internal' ? 'No lab subjects added yet.' : (state.activeTab === 'external' ? 'No external subjects added yet.' : 'No subject columns available for this tab.')}</td></tr>`
+      : rows;
+
+    content.innerHTML = `
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
+        <div>
+          <span class="text-small text-muted">Semester ${state.semester}</span>
+          <h5 id="tabTitle" class="mb-1"></h5>
+          <div id="tabDescription" class="text-muted" style="font-size:0.95rem;"></div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+          <button class="btn btn-sm btn-danger d-flex align-items-center gap-2" style="background-color: #970006 !important; border-color: #970006 !important; color: #ffffff !important;" onclick="saveTabGrades()">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11 2H9v3h2z"/>
+              <path d="M1.5 0A1.5 1.5 0 0 0 0 1.5v13A1.5 1.5 0 0 0 1.5 16h13a1.5 1.5 0 0 0 1.5-1.5V2.914a1.5 1.5 0 0 0-.44-1.06L14.14.44A1.5 1.5 0 0 0 13.086 0zM10 6a2 2 0 0 1-2-2V1h3v3a2 2 0 0 1-2 2M1 1.5A.5.5 0 0 1 1.5 1h5v3A3 3 0 0 0 9.5 7h3v7.5a.5.5 0 0 1-.5.5H1.5a.5.5 0 0 1-.5-.5z"/>
+            </svg>
+            Save
+          </button>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Roll No</th>
+              <th>Assigned Student</th>
+              ${subjectHeaders}
+              <th class="text-end" style="min-width:100px;">Avg %</th>
+            </tr>
+          </thead>
+          <tbody id="gradeTableBody">${bodyContent}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+
+
+  function computeRowAverage(studentId) {
+    const record = state.records[state.semester];
+    if (state.activeTab === 'internal') {
+      const marks = record.internalLabs.map(lab => Number(record.data.internal[studentId][lab.id]) || 0);
+      const max = markConfig.internal.max * record.internalLabs.length;
+      const total = marks.reduce((sum, m) => sum + m, 0);
+      return max > 0 ? `${((total / max) * 100).toFixed(1)}%` : '0%';
+    }
+    if (state.activeTab === 'external') {
+      const marks = record.externalSubjects.map(sub => Number(record.data.external[studentId][sub.id]) || 0);
+      const max = markConfig.external.max * record.externalSubjects.length;
+      const total = marks.reduce((sum, m) => sum + m, 0);
+      return max > 0 ? `${((total / max) * 100).toFixed(1)}%` : '0%';
+    }
+    const marks = record.subjects.map(subject => Number(record.data[state.activeTab][studentId][subject]) || 0);
+    const max = markConfig[state.activeTab].max * record.subjects.length;
+    const total = marks.reduce((sum, m) => sum + m, 0);
+    return max > 0 ? `${((total / max) * 100).toFixed(1)}%` : '0%';
+  }
+
+  function updateEntryMarks(studentId, subject, value, inputEl) {
+    const record = state.records[state.semester];
+    const max = markConfig[state.activeTab].max;
+    let mark = value === '' ? '' : Number(value);
+    if (mark !== '' && (mark < 0 || mark > max)) {
+      mark = Math.max(0, Math.min(max, mark));
+      if (inputEl) inputEl.value = mark;
+    }
+    record.data[state.activeTab][studentId][subject] = mark === '' ? '' : mark;
+    saveWorkbook();
+
+    const avgCell = document.getElementById(`avg-${studentId}`);
+    if (avgCell) {
+      avgCell.textContent = computeRowAverage(studentId);
+    }
+
+    if (inputEl) {
+      const invalid = mark !== '' && (mark < 0 || mark > max);
+      inputEl.classList.toggle('is-invalid', invalid);
+    }
+    updateSummary();
+  }
+
+  function updateInternalMark(studentId, labId, value, inputEl) {
+    const record = state.records[state.semester];
+    const max = markConfig.internal.max;
+    let mark = value === '' ? '' : Number(value);
+    if (mark !== '' && (mark < 0 || mark > max)) {
+      mark = Math.max(0, Math.min(max, mark));
+      if (inputEl) inputEl.value = mark;
+    }
+    record.data.internal[studentId][labId] = mark === '' ? '' : mark;
+    saveWorkbook();
+
+    const avgCell = document.getElementById(`avg-${studentId}`);
+    if (avgCell) {
+      avgCell.textContent = computeRowAverage(studentId);
+    }
+
+    if (inputEl) {
+      const invalid = mark !== '' && (mark < 0 || mark > max);
+      inputEl.classList.toggle('is-invalid', invalid);
+    }
+    updateSummary();
+  }
+
+  function updateExternalMark(studentId, subId, value, inputEl) {
+    const record = state.records[state.semester];
+    const max = markConfig.external.max;
+    let mark = value === '' ? '' : Number(value);
+    if (mark !== '' && (mark < 0 || mark > max)) {
+      mark = Math.max(0, Math.min(max, mark));
+      if (inputEl) inputEl.value = mark;
+    }
+    record.data.external[studentId][subId] = mark === '' ? '' : mark;
+    saveWorkbook();
+
+    const avgCell = document.getElementById(`avg-${studentId}`);
+    if (avgCell) {
+      avgCell.textContent = computeRowAverage(studentId);
+    }
+
+    if (inputEl) {
+      const invalid = mark !== '' && (mark < 0 || mark > max);
+      inputEl.classList.toggle('is-invalid', invalid);
+    }
+    updateSummary();
+  }
+
+  function toggleStudentRow(studentId) {
+    state.selectedRow = state.selectedRow === studentId ? null : studentId;
+
+    document.querySelectorAll('#gradeTableBody tr').forEach(row => {
+      row.classList.remove('table-primary');
+    });
+    if (state.selectedRow !== null) {
+      const selectedRow = document.getElementById(`row-${studentId}`);
+      if (selectedRow) {
+        selectedRow.classList.add('table-primary');
+      }
+    }
+  }
+
+  function toggleLock(studentId) {
+    const record = state.records[state.semester];
+    record.locks[state.activeTab][studentId] = !record.locks[state.activeTab][studentId];
+    saveWorkbook();
+    renderTable();
+    updateSummary();
+  }
+
+  function addLabSubject() {
+    const nameInput = document.getElementById('newLabName');
+    const codeInput = document.getElementById('newLabCode');
+    if (!nameInput) return;
+    const name = nameInput.value.trim();
+    const code = codeInput?.value.trim() || '';
+    if (!name) {
+      alert('Enter a lab subject name.');
+      return;
+    }
+    const record = state.records[state.semester];
+    if (record.internalLabs.some(lab => lab.name.toLowerCase() === name.toLowerCase())) {
+      alert('Lab subject already exists.');
+      return;
+    }
+    const id = Date.now();
+    record.internalLabs.push({ id, name, code });
+    record.students.forEach(student => {
+      record.data.internal[student.id][id] = '';
+    });
+
+    // Auto-add to external subjects also
+    if (!record.externalSubjects.some(sub => sub.name.toLowerCase() === name.toLowerCase())) {
+      record.externalSubjects.push({ id, name, code });
+      record.students.forEach(student => {
+        record.data.external[student.id][id] = '';
+      });
+    }
+
+    nameInput.value = '';
+    if (codeInput) codeInput.value = '';
+    saveWorkbook();
+    renderTable();
+  }
+
+  function removeInternalLabSubject(labId) {
+    const record = state.records[state.semester];
+    const index = record.internalLabs.findIndex(lab => lab.id === labId);
+    if (index < 0) return;
+    const lab = record.internalLabs[index];
+    if (!confirm(`Remove lab subject '${lab.name}' from this semester? This will clear saved internal and external marks for that lab.`)) return;
+    record.internalLabs.splice(index, 1);
+    record.students.forEach(student => {
+      delete record.data.internal[student.id][labId];
+    });
+
+    // Auto-remove from external subjects also
+    const extIndex = record.externalSubjects.findIndex(sub => sub.id === labId || sub.name.toLowerCase() === lab.name.toLowerCase());
+    if (extIndex >= 0) {
+      const extSub = record.externalSubjects[extIndex];
+      record.externalSubjects.splice(extIndex, 1);
+      record.students.forEach(student => {
+        delete record.data.external[student.id][extSub.id];
+      });
+    }
+
+    saveWorkbook();
+    renderTable();
+  }
+
+  function removeSubject(subject) {
+    const record = state.records[state.semester];
+    const index = record.subjects.indexOf(subject);
+    if (index < 0) return;
+    if (!confirm(`Remove subject '${subject}' from this semester? This will clear saved marks for that subject.`)) return;
+    record.subjects.splice(index, 1);
+    record.students.forEach(student => {
+      for (const cat of Object.keys(record.data)) {
+        delete record.data[cat][student.id][subject];
+      }
+    });
+    saveWorkbook();
+    renderTable();
+  }
+
+  function addExternalSubject() {
+    const nameInput = document.getElementById('newExtName');
+    const codeInput = document.getElementById('newExtCode');
+    if (!nameInput) return;
+    const name = nameInput.value.trim();
+    const code = codeInput?.value.trim() || '';
+    if (!name) {
+      alert('Enter an external subject name.');
+      return;
+    }
+    const record = state.records[state.semester];
+    if (record.externalSubjects.some(sub => sub.name.toLowerCase() === name.toLowerCase())) {
+      alert('External subject already exists.');
+      return;
+    }
+    const id = Date.now();
+    record.externalSubjects.push({ id, name, code });
+    record.students.forEach(student => {
+      record.data.external[student.id][id] = '';
+    });
+
+    // Auto-add to internal subjects also
+    if (!record.internalLabs.some(lab => lab.name.toLowerCase() === name.toLowerCase())) {
+      record.internalLabs.push({ id, name, code });
+      record.students.forEach(student => {
+        record.data.internal[student.id][id] = '';
+      });
+    }
+
+    nameInput.value = '';
+    if (codeInput) codeInput.value = '';
+    saveWorkbook();
+    renderTable();
+  }
+
+  function removeExternalSubject(subId) {
+    const record = state.records[state.semester];
+    const index = record.externalSubjects.findIndex(sub => sub.id === subId);
+    if (index < 0) return;
+    const sub = record.externalSubjects[index];
+    if (!confirm(`Remove external subject '${sub.name}' from this semester? This will clear saved internal and external marks for that subject.`)) return;
+    record.externalSubjects.splice(index, 1);
+    record.students.forEach(student => {
+      delete record.data.external[student.id][subId];
+    });
+
+    // Auto-remove from internal subjects also
+    const intIndex = record.internalLabs.findIndex(lab => lab.id === subId || lab.name.toLowerCase() === sub.name.toLowerCase());
+    if (intIndex >= 0) {
+      const intLab = record.internalLabs[intIndex];
+      record.internalLabs.splice(intIndex, 1);
+      record.students.forEach(student => {
+        delete record.data.internal[student.id][intLab.id];
+      });
+    }
+
+    saveWorkbook();
+    renderTable();
+  }
+
+  function promptAddStudent() {
+    const name = prompt('Student name:');
+    if (!name) return;
+    const roll = prompt('Roll number:');
+    if (!roll) return;
+    const cohort = 'AI Cohort';
+    const course = prompt('Course name:') || 'Unknown Course';
+    const record = state.records[state.semester];
+    const id = Date.now();
+    record.students.push({ id, student: name.trim(), roll: roll.trim(), cohort, course: course.trim() });
+    for (const cat of Object.keys(record.data)) {
+      if (cat === 'final') continue;
+      record.data[cat][id] = {};
+      record.subjects.forEach(subject => {
+        if (cat === 'internal' || cat === 'external') return;
+        record.data[cat][id][subject] = '';
+      });
+    }
+    record.internalLabs.forEach(lab => {
+      record.data.internal[id][lab.id] = '';
+    });
+    record.externalSubjects.forEach(sub => {
+      record.data.external[id][sub.id] = '';
+    });
+
+    if (!record.data.final) record.data.final = {};
+    record.data.final[id] = { cgpa: '', sgpa: '', final: '0.00' };
+
+    record.locks.mid1[id] = false;
+    record.locks.mid2[id] = false;
+    record.locks.internal[id] = false;
+    record.locks.external[id] = false;
+    saveWorkbook();
+    renderTable();
+    updateSummary();
+  }
+
+  function changeSemester(value) {
+    state.semester = value;
+    ensureSemesterData(value);
+    saveWorkbook();
+    renderPage();
+  }
+
+  function switchTab(tab) {
+    state.activeTab = tab;
+    saveWorkbook();
+    renderTabs();
+    renderTable();
+  }
+
+
+
+  function saveTabGrades() {
+    saveWorkbook();
+    localStorage.setItem('gradeLastSaved', new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }));
+    updateSummary();
+    alert('Grades successfully saved for ' + markConfig[state.activeTab].label + ' (Semester ' + state.semester + ')!');
+  }
+
+  function updateSummary() {
+    const record = state.records[state.semester];
+    const total = record.students.length;
+
+    let pending = 0;
+    const activeSubjects = state.activeTab === 'internal' ? record.internalLabs : record.subjects;
+    if (activeSubjects && activeSubjects.length > 0) {
+      pending = record.students.filter(student => {
+        return activeSubjects.some(subject => {
+          const val = state.activeTab === 'internal'
+            ? record.data.internal[student.id][subject.id]
+            : (state.activeTab === 'external' ? record.data.external[student.id][subject.id] : record.data[state.activeTab][student.id][subject]);
+          return val === undefined || val === '';
+        });
+      }).length;
+    }
+
+    document.getElementById('summaryTotal').textContent = total;
+    document.getElementById('summaryPending').textContent = pending;
+    const savedText = localStorage.getItem('gradeLastSaved');
+    document.getElementById('summaryLastSaved').textContent = savedText || 'Never';
+  }
+
+
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadWorkbook();
+  });
+</script>
+{% endblock %}

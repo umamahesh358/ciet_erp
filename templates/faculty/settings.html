@@ -1,0 +1,253 @@
+{% extends 'faculty/base_portal.html' %}
+{% load static %}
+
+{% block portal_tab_title %}Profile Settings{% endblock %}
+
+{% block extra_head %}
+<style>
+  .profile-container {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 32px;
+    align-items: start;
+    margin-top: 16px;
+  }
+  .profile-card {
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 24px;
+    padding: 32px 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    backdrop-filter: blur(12px);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .form-card {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    backdrop-filter: blur(12px);
+  }
+  .df-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; width: 100%; }
+  .df-label { font-size: 10.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .df-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 24px !important;
+    font-size: 13.5px;
+    color: #0f172a;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+  }
+  .df-input:focus { border-color: #AF0C3E; box-shadow: 0 0 0 3px rgba(175,12,62,.08); }
+  .avatar-upload-label {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(175, 12, 62, 0.3);
+    transition: transform 0.2s, background-color 0.2s;
+  }
+  .avatar-upload-label:hover {
+    transform: scale(1.08);
+    background: #8F0830;
+  }
+  @media (max-width: 900px) {
+    .profile-container {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block portal_content %}
+<div style="margin-bottom:24px;">
+  <h1 class="section-title">Profile Settings</h1>
+  <p class="section-sub">Manage your professional information, bio, and profile photo.</p>
+</div>
+
+<form id="facultyProfileForm" class="profile-container">
+  <!-- Left Card: Photo & Bio Info -->
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    <div class="profile-card">
+      <!-- Avatar -->
+      <div style="position:relative;width:120px;height:120px;margin:0 auto 20px;">
+        <div id="settings-avatar-wrapper" style="width:120px;height:120px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid var(--border);box-shadow:0 8px 24px rgba(0,0,0,0.05);">
+          <span id="settings-avatar-initials" style="font-size:42px;font-weight:800;color:var(--primary);">FA</span>
+        </div>
+        <label class="avatar-upload-label" title="Change photo">
+          📷<input type="file" id="profile-photo-input" style="display:none;" accept="image/*">
+        </label>
+      </div>
+      <div style="font-size:18px;font-weight:800;color:var(--text);" class="js-profile-name">
+        {{ request.user.full_name|default:request.user.email }}
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;" class="js-profile-designation">
+        {{ request.user.role }}
+      </div>
+      
+      <!-- Bio Display -->
+      <div style="font-size:12.5px;color:var(--muted);margin-top:20px;padding-top:20px;border-top:1px dashed var(--border);font-style:italic;line-height:1.5;text-align:center;width:100%;" id="settings-avatar-bio">
+        Passionate computer science educator committed to mentoring the next generation of engineers through hands-on development.
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Editable Details -->
+  <div style="display:flex;flex-direction:column;gap:24px;">
+    <div class="form-card">
+      <h2 style="font-size:15px;font-weight:800;margin-bottom:24px;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:12px;">Professional Details</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        
+        <div class="df-group" style="grid-column:span 2;">
+          <label class="df-label">Full Name</label>
+          <input type="text" id="profile-name" class="df-input" required placeholder="Full Name">
+        </div>
+        
+        <div class="df-group">
+          <label class="df-label">Email Address</label>
+          <input type="email" id="profile-email" class="df-input" required placeholder="email@domain.com">
+        </div>
+        
+        <div class="df-group">
+          <label class="df-label">Designation</label>
+          <input type="text" id="profile-designation" class="df-input" required placeholder="e.g. Professor">
+        </div>
+        
+        <div class="df-group">
+          <label class="df-label">Department</label>
+          <input type="text" id="profile-department" class="df-input" required placeholder="e.g. Computer Science">
+        </div>
+        
+        <div class="df-group">
+          <label class="df-label">Experience (Years)</label>
+          <input type="text" id="profile-experience" class="df-input" required placeholder="e.g. 10 Years">
+        </div>
+        
+        <div class="df-group" style="grid-column:span 2;">
+          <label class="df-label">Highest Qualification</label>
+          <input type="text" id="profile-qualification" class="df-input" required placeholder="e.g. Ph.D. in Computer Science">
+        </div>
+
+        <div class="df-group" style="grid-column:span 2;">
+          <label class="df-label">Bio / Professional Statement</label>
+          <textarea id="profile-bio" class="df-input" rows="4" placeholder="Describe your teaching philosophy, research interests, or professional goals..."></textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display:flex;gap:12px;padding-bottom:12px;">
+      <button type="submit" class="btn-primary" style="padding:12px 32px;font-size:14px;border-radius:24px !important;">Save Changes</button>
+      <a href="{% url 'faculty-dashboard' %}" class="btn-ghost" style="padding:12px 32px;font-size:14px;text-decoration:none;border-radius:24px !important;line-height:20px;">Cancel</a>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Default values from Django context
+    const defaultName = "{{ request.user.full_name|default:request.user.email }}";
+    const defaultEmail = "{{ request.user.email }}";
+    const defaultRole = "{{ request.user.role }}";
+
+    // Load from local storage or set defaults
+    let profile = {
+      name: defaultName,
+      email: defaultEmail,
+      designation: defaultRole,
+      department: 'Computer Science & Engineering',
+      experience: '12 Years',
+      qualification: 'M.Tech / Ph.D.',
+      bio: 'Passionate computer science educator committed to mentoring the next generation of engineers through hands-on development and skill enhancement cohorts.',
+      picture: ''
+    };
+
+    const saved = localStorage.getItem('facultyProfile');
+    if (saved) {
+      try {
+        profile = { ...profile, ...JSON.parse(saved) };
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Populate form fields
+    document.getElementById('profile-name').value = profile.name;
+    document.getElementById('profile-email').value = profile.email;
+    document.getElementById('profile-designation').value = profile.designation;
+    document.getElementById('profile-department').value = profile.department;
+    document.getElementById('profile-experience').value = profile.experience;
+    document.getElementById('profile-qualification').value = profile.qualification;
+    document.getElementById('profile-bio').value = profile.bio || '';
+
+    // Render avatar picture or initials and bio in the left card
+    function updateAvatarPreview() {
+      const wrapper = document.getElementById('settings-avatar-wrapper');
+      const initialsSpan = document.getElementById('settings-avatar-initials');
+      const bioDisplay = document.getElementById('settings-avatar-bio');
+      
+      if (profile.picture) {
+        wrapper.innerHTML = `<img src="${profile.picture}" style="width:100%;height:100%;object-fit:cover;" alt="Avatar">`;
+      } else {
+        const initials = profile.name.trim().split(/\s+/).map(n => n[0]).slice(0,2).join('').toUpperCase();
+        wrapper.innerHTML = `<span id="settings-avatar-initials" style="font-size:42px;font-weight:800;color:var(--primary);">${initials || 'FA'}</span>`;
+      }
+      
+      if (bioDisplay) {
+        bioDisplay.textContent = profile.bio || 'No bio added yet.';
+      }
+    }
+    updateAvatarPreview();
+
+    // Handle photo file change
+    document.getElementById('profile-photo-input').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          profile.picture = evt.target.result;
+          updateAvatarPreview();
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Save profile changes
+    document.getElementById('facultyProfileForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      profile.name = document.getElementById('profile-name').value;
+      profile.email = document.getElementById('profile-email').value;
+      profile.designation = document.getElementById('profile-designation').value;
+      profile.department = document.getElementById('profile-department').value;
+      profile.experience = document.getElementById('profile-experience').value;
+      profile.qualification = document.getElementById('profile-qualification').value;
+      profile.bio = document.getElementById('profile-bio').value;
+
+      localStorage.setItem('facultyProfile', JSON.stringify(profile));
+      alert('Profile details updated successfully!');
+      window.location.reload();
+    });
+  });
+</script>
+{% endblock %}

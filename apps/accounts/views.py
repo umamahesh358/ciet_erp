@@ -16,6 +16,27 @@ LOCKOUT_SECONDS = 300  # 5 minutes
 LOGIN_ROLES = ['Director', 'Examcell', 'HOD', 'Mentor', 'Faculty', 'Student', 'Parent']
 
 
+def get_role_redirect(request, user, role=None):
+    role = role or getattr(user, 'role', '')
+    if role == 'Student':
+        if request.session.get('is_parent_login'):
+            return 'parent-portal'
+        return 'student-portal'
+    if role == 'Examcell':
+        return 'student-verification-queue'
+    if role == 'Director':
+        return '/admin/'
+    if role == 'HOD':
+        return 'hod-dashboard'
+    if role == 'Mentor':
+        return 'mentor-dashboard'
+    if role == 'Faculty':
+        return 'faculty-dashboard'
+    if role == 'Parent':
+        return 'parent-portal'
+    return 'dashboard'
+
+
 def get_client_ip(request):
     xff = request.META.get('HTTP_X_FORWARDED_FOR')
     if xff:
@@ -34,7 +55,7 @@ class LoginView(View):
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            return redirect('dashboard')
+            return redirect(get_role_redirect(request, request.user))
         return render(request, 'login.html', {})
 
     def post(self, request, *args, **kwargs):
@@ -205,10 +226,7 @@ class VerifyOTPView(View):
                     del request.session['pending_user_role']
                 
                 login(request, user)
-                # Route students directly to their portal
-                if user.role == 'Student':
-                    return redirect('student-portal')
-                return redirect('dashboard')
+                return redirect(get_role_redirect(request, user, role))
             else:
                 form.add_error('otp', 'Invalid or expired OTP code.')
         

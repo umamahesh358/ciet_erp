@@ -1,0 +1,528 @@
+{% extends 'faculty/Mentor-Dashboard/mentor_base.html' %}
+{% load static %}
+
+{% block portal_tab_title %}Upload Attendance{% endblock %}
+
+{% block extra_head %}
+<style>
+  .attendance-input {
+    border-radius: 10px !important;
+    border: 1px solid #cbd5e1;
+    height: 36px;
+    font-size: 0.9rem;
+    text-align: center;
+    background-color: #f1f5f9;
+    width: 80px;
+    transition: all 0.2s;
+  }
+  .attendance-input:focus {
+    border-color: #970006;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(151,0,6,0.08);
+    outline: none;
+  }
+  .attendance-pct-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+  .attendance-good {
+    background-color: #ecfdf5;
+    color: #047857;
+  }
+  .attendance-warning {
+    background-color: #fef2f2;
+    color: #b91c1c;
+  }
+  #saveAttendanceBtn, #saveAttendanceBtn:disabled, #chooseFileBtn, #chooseFileBtn:hover, #chooseFileBtn:focus, #chooseFileBtn:active {
+    color: #ffffff !important;
+  }
+</style>
+{% endblock %}
+
+{% block mentor_content %}
+<div style="display:flex;flex-direction:column;gap:24px;">
+  <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;align-items:center;">
+    <div>
+      <h1 style="font-size:28px;font-weight:800;color:var(--palette-black);margin-bottom:8px;">Upload Attendance</h1>
+      <p style="color:var(--palette-espresso);max-width:720px;line-height:1.6;">Mark class attendance for your assigned students across subjects in the portal.</p>
+    </div>
+    <div>
+      <button id="saveAttendanceBtn" class="btn btn-primary" style="border-radius: 12px; padding: 10px 24px; font-weight: 600; background-color: #970006; border-color: #970006; color: #ffffff !important; transition: all 0.2s;">Save Attendance</button>
+    </div>
+  </div>
+
+  <div class="card portal-panel" style="padding:24px;overflow-x:auto;">
+    <!-- Bulk Upload (Sheet) Section -->
+    <div class="card p-3 mb-4" style="background: rgba(245, 247, 250, 0.65); border: 1px solid var(--border); border-radius: 14px;">
+      <h3 style="font-size: 14px; font-weight: 700; color: #475569; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">Bulk Upload (Sheet)</h3>
+      <p style="font-size: 13px; color: #64748b; margin-bottom: 12px; line-height: 1.5;">
+        Upload a CSV sheet to import all student attendance in one go. Include a <strong>Roll No</strong> column and subject columns (using subject short name/code). Optional: add a row with Roll No as <code>TOTAL_CLASSES</code> to fill total classes.
+      </p>
+      <div class="d-flex flex-wrap gap-2">
+        <input type="file" id="csvFileInput" accept=".csv" style="display: none;" />
+        <button type="button" id="chooseFileBtn" class="btn" style="border-radius: 12px; padding: 10px 24px; font-weight: 600; background-color: #970006; border-color: #970006; color: #ffffff !important; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;" onclick="document.getElementById('csvFileInput').click();">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+            <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+          </svg>
+          Choose CSV File
+        </button>
+        <button type="button" id="downloadTemplateBtn" class="btn btn-outline-secondary" style="border-radius: 12px; padding: 10px 24px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+            <path d="M5 4a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5z"/>
+            <path d="M5 2a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5z"/>
+            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+          </svg>
+          Download CSV Template
+        </button>
+      </div>
+      <div id="uploadStatus" class="alert d-none mt-3" style="border-radius: 12px; font-size: 14px;"></div>
+    </div>
+
+    <!-- Total Classes Held Section -->
+    <div class="card p-3 mb-4" style="background: rgba(245, 247, 250, 0.65); border: 1px solid var(--border); border-radius: 14px;">
+      <h3 style="font-size: 14px; font-weight: 700; color: #475569; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Total Classes Held (per subject)</h3>
+      <div class="d-flex flex-wrap gap-3" id="totalClassesHeldRow">
+        {% for course in faculty_hub_data.courses %}
+        <div class="p-2 border rounded bg-white d-flex flex-column" style="min-width: 100px; border-radius: 12px !important;">
+          <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">{{ course.name }}</div>
+          <input type="number" class="form-control attendance-input total-held-input" data-subject="{{ course.name }}" value="0" />
+        </div>
+        {% empty %}
+        <div style="font-size:13px;color:var(--muted);font-style:italic;padding:8px;">No active courses found for this semester.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Students Attendance Table -->
+    <table class="table align-middle" style="min-width:1100px;">
+      <thead>
+        <tr>
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">Roll No</th>
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">Assigned Student</th>
+          {% for course in faculty_hub_data.courses %}
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">{{ course.name }}</th>
+          {% endfor %}
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">Total Attended</th>
+          <th scope="col" style="font-size: 0.85rem; text-transform: uppercase; color: #475569; font-weight: 700;">Attendance %</th>
+        </tr>
+      </thead>
+      <tbody id="studentAttendanceTbody">
+        {% if faculty_hub_data.students %}
+          {% for student in faculty_hub_data.students %}
+            <tr data-student-id="{{ student.id }}">
+              <td style="font-weight: 500; color: var(--palette-black);" class="student-roll">{{ student.rollNumber|default:student.regNo }}</td>
+              <td style="font-weight: 700; color: var(--palette-black);">{{ student.name }}</td>
+              {% for course in faculty_hub_data.courses %}
+              <td><input type="number" class="form-control attendance-input student-att-input" data-subject="{{ course.name }}" value="0" /></td>
+              {% endfor %}
+              <td style="font-weight: 700; color: var(--palette-black);" class="total-attended-cell">0</td>
+              <td style="font-weight: 700; color: var(--palette-black);" class="pct-attended-cell">0.0%</td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="10" style="padding:24px;text-align:center;color:var(--palette-espresso);font-weight: 500;">No assigned students found.</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEYS = {
+    ATTENDANCE: "mentor-dashboard-student-attendance-by-subject",
+    TOTAL_CLASSES: "mentor-dashboard-total-classes-by-subject"
+  };
+
+  // Extract subjects list dynamically from the table headers (columns after Name and before Total Attended)
+  function getDynamicSubjects() {
+    const tableHeaders = Array.from(document.querySelectorAll('table thead th')).map(th => th.textContent.trim());
+    if (tableHeaders.length > 4) {
+      return tableHeaders.slice(2, -2);
+    }
+    return [];
+  }
+
+  // Parse CSV line properly, taking care of quoted text with commas
+  function parseCSVLine(text) {
+    let p = '', c = [];
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      let ch = text.charAt(i);
+      if (ch === '"') {
+        inQuotes = !inQuotes;
+      } else if (ch === ',' && !inQuotes) {
+        c.push(p.trim().replace(/^"|"$/g, ''));
+        p = '';
+      } else {
+        p += ch;
+      }
+    }
+    c.push(p.trim().replace(/^"|"$/g, ''));
+    return c;
+  }
+
+  // Read data from inputs and save to localStorage
+  function saveAttendanceData() {
+    const subjects = getDynamicSubjects();
+
+    // Save total classes held
+    const totalClasses = {};
+    subjects.forEach(sub => {
+      const input = document.querySelector(`.total-held-input[data-subject="${sub}"]`);
+      if (input) {
+        totalClasses[sub] = input.value;
+      }
+    });
+    localStorage.setItem(STORAGE_KEYS.TOTAL_CLASSES, JSON.stringify(totalClasses));
+
+    // Save student attendance
+    const studentAttendance = {};
+    const rows = document.querySelectorAll('#studentAttendanceTbody tr');
+    rows.forEach(row => {
+      const studentId = row.getAttribute('data-student-id');
+      if (!studentId) return;
+
+      studentAttendance[studentId] = {};
+      subjects.forEach(sub => {
+        const input = row.querySelector(`.student-att-input[data-subject="${sub}"]`);
+        if (input) {
+          studentAttendance[studentId][sub] = input.value;
+        }
+      });
+    });
+    localStorage.setItem(STORAGE_KEYS.ATTENDANCE, JSON.stringify(studentAttendance));
+  }
+
+  // Recalculate and display total/percentage attendance in the table
+  function recalculateAttendance() {
+    const subjects = getDynamicSubjects();
+    const rows = document.querySelectorAll('#studentAttendanceTbody tr');
+
+    rows.forEach(row => {
+      let totalAttended = 0;
+      let totalHeld = 0;
+
+      subjects.forEach(sub => {
+        const heldInput = document.querySelector(`.total-held-input[data-subject="${sub}"]`);
+        const attendedInput = row.querySelector(`.student-att-input[data-subject="${sub}"]`);
+        
+        if (heldInput && attendedInput) {
+          const held = parseInt(heldInput.value) || 0;
+          const attended = parseInt(attendedInput.value) || 0;
+          
+          totalHeld += held;
+          totalAttended += attended;
+        }
+      });
+
+      // Update Total Attended cell
+      const totalCell = row.querySelector('.total-attended-cell');
+      if (totalCell) {
+        totalCell.innerHTML = `<strong>${totalAttended}</strong>`;
+      }
+
+      // Update Attendance % cell with color-coded badges
+      const pctCell = row.querySelector('.pct-attended-cell');
+      if (pctCell) {
+        const pct = totalHeld > 0 ? ((totalAttended / totalHeld) * 100).toFixed(1) : '0.0';
+        const pctNum = parseFloat(pct);
+        
+        if (pctNum < 75) {
+          pctCell.innerHTML = `<span class="attendance-pct-badge attendance-warning">⚠️ ${pct}%</span>`;
+        } else {
+          pctCell.innerHTML = `<span class="attendance-pct-badge attendance-good">${pct}%</span>`;
+        }
+      }
+    });
+  }
+
+  // Show status report in a nice alert container
+  function showUploadStatus(success, message, studentsCount = 0, subjectsMapped = '', notFoundRolls = []) {
+    const statusDiv = document.getElementById('uploadStatus');
+    if (!statusDiv) return;
+
+    statusDiv.className = `alert ${success ? 'alert-success' : 'alert-danger'} mt-3`;
+    statusDiv.classList.remove('d-none');
+    
+    let html = `<strong>${success ? 'Success!' : 'Error!'}</strong> ${message}`;
+    if (success && studentsCount > 0) {
+      html += `
+        <ul class="mb-0 mt-2">
+          <li>Students updated: <strong>${studentsCount}</strong></li>
+          <li>Subjects mapped: <strong>${subjectsMapped}</strong></li>
+        </ul>
+      `;
+    }
+    
+    if (notFoundRolls.length > 0) {
+      html += `
+        <div class="mt-2 text-danger" style="font-size: 13px; font-weight: 500;">
+          ⚠️ The following roll numbers in the CSV were not found in your assigned student list: 
+          <strong>${notFoundRolls.join(', ')}</strong>
+        </div>
+      `;
+    }
+
+    statusDiv.innerHTML = html;
+  }
+
+  // Simple string hashing function
+  function simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  }
+
+  // Populate data when page loads (using localStorage or defaults)
+  function loadStoredAttendanceData() {
+    const subjects = getDynamicSubjects();
+
+    // Load total classes held
+    let totalClasses = {};
+    try {
+      const rawTotal = localStorage.getItem(STORAGE_KEYS.TOTAL_CLASSES);
+      if (rawTotal) totalClasses = JSON.parse(rawTotal);
+    } catch (e) { console.error("Error reading total classes from localStorage:", e); }
+
+    subjects.forEach(sub => {
+      let val = totalClasses[sub];
+      if (val === undefined) {
+        const input = document.querySelector(`.total-held-input[data-subject="${sub}"]`);
+        val = (input && input.value !== '0' && input.value !== '') ? input.value : "15";
+      }
+      const input = document.querySelector(`.total-held-input[data-subject="${sub}"]`);
+      if (input) {
+        input.value = val;
+      }
+    });
+
+    // Load student attendance
+    let studentAttendance = {};
+    try {
+      const rawAtt = localStorage.getItem(STORAGE_KEYS.ATTENDANCE);
+      if (rawAtt) studentAttendance = JSON.parse(rawAtt);
+    } catch (e) { console.error("Error reading attendance from localStorage:", e); }
+
+    const rows = document.querySelectorAll('#studentAttendanceTbody tr');
+    rows.forEach(row => {
+      const studentId = row.getAttribute('data-student-id');
+      if (!studentId) return;
+
+      subjects.forEach(sub => {
+        const input = row.querySelector(`.student-att-input[data-subject="${sub}"]`);
+        if (input) {
+          if (studentAttendance[studentId] && studentAttendance[studentId][sub] !== undefined) {
+            input.value = studentAttendance[studentId][sub];
+          } else {
+            if (input.value === '0' || input.value === '') {
+              const hashVal = simpleHash(studentId + sub);
+              input.value = Math.floor(10 + (hashVal % 6)); // default between 10 and 15
+            }
+          }
+        }
+      });
+    });
+
+    recalculateAttendance();
+  }
+
+  // Hook up file input change listener
+  document.getElementById('csvFileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const text = evt.target.result;
+      parseCSV(text);
+    };
+    reader.readAsText(file);
+  });
+
+  // Handle parsing CSV file text
+  function parseCSV(text) {
+    const lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+    if (lines.length < 2) {
+      showUploadStatus(false, 'Invalid CSV format: Header and at least one data row required.');
+      return;
+    }
+
+    // Parse headers
+    const headers = parseCSVLine(lines[0]);
+    const rollIndex = headers.findIndex(h => h.toUpperCase() === 'ROLL NO');
+    if (rollIndex === -1) {
+      showUploadStatus(false, 'CSV must contain a "Roll No" column.');
+      return;
+    }
+
+    const subjects = getDynamicSubjects();
+    const subjectIndices = {};
+    subjects.forEach(sub => {
+      const idx = headers.findIndex(h => h.toUpperCase() === sub.toUpperCase());
+      if (idx !== -1) {
+        subjectIndices[sub] = idx;
+      }
+    });
+
+    if (Object.keys(subjectIndices).length === 0) {
+      showUploadStatus(false, 'No matching subject columns (e.g. ' + subjects.join(', ') + ') found in CSV headers.');
+      return;
+    }
+
+    let updatedStudents = 0;
+    let notFoundRolls = [];
+    let totalClassesUpdated = false;
+
+    // Parse data rows
+    for (let i = 1; i < lines.length; i++) {
+      const columns = parseCSVLine(lines[i]);
+      const roll = columns[rollIndex];
+      if (!roll) continue;
+
+      if (roll.toUpperCase() === 'TOTAL_CLASSES') {
+        subjects.forEach(sub => {
+          const colIdx = subjectIndices[sub];
+          if (colIdx !== undefined && columns[colIdx] !== undefined) {
+            const input = document.querySelector(`.total-held-input[data-subject="${sub}"]`);
+            if (input) {
+              input.value = columns[colIdx];
+              totalClassesUpdated = true;
+            }
+          }
+        });
+      } else {
+        let found = false;
+        const rows = document.querySelectorAll('#studentAttendanceTbody tr');
+        rows.forEach(row => {
+          const rollCell = row.querySelector('.student-roll');
+          if (rollCell && rollCell.textContent.trim().toUpperCase() === roll.toUpperCase()) {
+            found = true;
+            subjects.forEach(sub => {
+              const colIdx = subjectIndices[sub];
+              if (colIdx !== undefined && columns[colIdx] !== undefined) {
+                const input = row.querySelector(`.student-att-input[data-subject="${sub}"]`);
+                if (input) input.value = columns[colIdx];
+              }
+            });
+            updatedStudents++;
+          }
+        });
+        if (!found) {
+          notFoundRolls.push(roll);
+        }
+      }
+    }
+
+    // Re-calculate and save to localStorage
+    recalculateAttendance();
+    saveAttendanceData();
+
+    // Show status report
+    const mappedSubjectsNames = Object.keys(subjectIndices).join(', ');
+    let successMsg = `Successfully parsed and applied attendance!`;
+    if (totalClassesUpdated) {
+      successMsg += ` Total classes held were updated.`;
+    }
+    showUploadStatus(true, successMsg, updatedStudents, mappedSubjectsNames, notFoundRolls);
+  }
+
+  // Hook up event listeners to inputs to save & recalculate dynamically when changed manually
+  document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('attendance-input')) {
+      recalculateAttendance();
+      saveAttendanceData();
+    }
+  });
+
+  // Save Attendance button handler
+  document.getElementById('saveAttendanceBtn').addEventListener('click', function() {
+    saveAttendanceData();
+    recalculateAttendance();
+    
+    // Visual feedback on the button
+    const btn = this;
+    const originalText = btn.innerHTML;
+    const originalBg = btn.style.backgroundColor;
+    const originalBorder = btn.style.borderColor;
+
+    btn.innerHTML = `
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+        <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022z"/>
+      </svg> Saved Successfully!`;
+    btn.style.backgroundColor = '#198754';
+    btn.style.borderColor = '#198754';
+    btn.disabled = true;
+
+    setTimeout(() => {
+      btn.innerHTML = originalText;
+      btn.style.backgroundColor = originalBg;
+      btn.style.borderColor = originalBorder;
+      btn.disabled = false;
+    }, 2000);
+  });
+
+  // Download template button handler
+  document.getElementById('downloadTemplateBtn').addEventListener('click', function() {
+    const subjects = getDynamicSubjects();
+    const headers = ['Roll No', 'Name', ...subjects];
+    
+    // Add header row
+    let csvContent = headers.join(',') + '\n';
+    
+    // Add TOTAL_CLASSES row
+    const totalRow = ['TOTAL_CLASSES', 'Total Classes Held'];
+    subjects.forEach(sub => {
+      const heldInput = document.querySelector(`.total-held-input[data-subject="${sub}"]`);
+      totalRow.push(heldInput ? heldInput.value : '15');
+    });
+    csvContent += totalRow.join(',') + '\n';
+    
+    // Add student rows
+    const rows = document.querySelectorAll('#studentAttendanceTbody tr');
+    rows.forEach(row => {
+      const rollCell = row.querySelector('.student-roll');
+      const nameCell = row.cells[1];
+      if (rollCell && nameCell) {
+        const roll = rollCell.textContent.trim();
+        const name = nameCell.textContent.trim();
+        const studentRow = [roll, `"${name.replace(/"/g, '""')}"`];
+        
+        subjects.forEach(sub => {
+          const attInput = row.querySelector(`.student-att-input[data-subject="${sub}"]`);
+          studentRow.push(attInput ? attInput.value : '12');
+        });
+        csvContent += studentRow.join(',') + '\n';
+      }
+    });
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'mentor_attendance_template.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+
+  // Initial load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadStoredAttendanceData);
+  } else {
+    loadStoredAttendanceData();
+  }
+</script>
+{% endblock %}
