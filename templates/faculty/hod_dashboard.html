@@ -506,6 +506,7 @@
 
 {% block extra_js %}
 {% if not no_dept %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 {{ perf_labels|json_script:"perf-labels" }}
 {{ perf_values|json_script:"perf-values" }}
 {{ principal_labels|json_script:"principal-labels" }}

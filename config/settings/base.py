@@ -14,6 +14,32 @@ import os
 from pathlib import Path
 import environ
 
+# MongoDB compatibility monkeypatch: force primary keys to map to "_id" and allow IntegerField to accept ObjectIds
+from django.db.models.fields import Field, IntegerField
+from bson.objectid import ObjectId
+
+original_get_attname_column = Field.get_attname_column
+def _patched_get_attname_column(self):
+    attname = self.get_attname()
+    if self.primary_key:
+        return attname, "_id"
+    return attname, (self.db_column or attname)
+Field.get_attname_column = _patched_get_attname_column
+
+original_get_prep_value = IntegerField.get_prep_value
+def _patched_get_prep_value(self, value):
+    if isinstance(value, ObjectId) or (isinstance(value, str) and len(value) == 24 and all(c in '0123456789abcdefABCDEF' for c in value)):
+        return ObjectId(value) if isinstance(value, str) else value
+    try:
+        return original_get_prep_value(self, value)
+    except (TypeError, ValueError) as e:
+        if self.primary_key:
+            return value
+        raise
+IntegerField.get_prep_value = _patched_get_prep_value
+
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 

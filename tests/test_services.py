@@ -15,13 +15,13 @@ class TestServices:
         generate_and_send_otp(user, "login")
         
         record = OTPRecord.objects.get(user=user)
-        assert record.is_used is False
+        assert not record.is_used
         
         # Test valid verification
         result = verify_otp(user, record.otp_code, "login")
         assert result is True
         record.refresh_from_db()
-        assert record.is_used is True
+        assert record.is_used
 
     def test_certification_verification(self):
         dept = Department.objects.create(name="CS", code="CS")
@@ -38,4 +38,4 @@ class TestServices:
         verify_certification(cert.id, verifier, True)
         
         cert.refresh_from_db()
-        assert cert.verified is True
+        assert cert.is_verified is True
